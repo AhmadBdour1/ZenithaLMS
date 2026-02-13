@@ -1,0 +1,183 @@
+@extends('zenithalms.layouts.app')
+
+@section('title', 'Courses - ZenithaLMS')
+
+@section('content')
+<!-- Header -->
+<div class="bg-gradient-to-r from-primary-500 to-accent-purple text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Explore Courses</h1>
+            <p class="text-xl text-primary-100 max-w-3xl mx-auto">
+                Discover our comprehensive collection of courses taught by industry experts
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="bg-white border-b sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex flex-col lg:flex-row gap-4">
+            <!-- Search -->
+            <div class="flex-1">
+                <div class="relative">
+                    <input type="text" 
+                           name="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Search courses..." 
+                           class="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-xl focus:outline-none focus:border-primary-500">
+                    <span class="material-icons-round absolute left-3 top-2.5 text-neutral-400">search</span>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex flex-wrap gap-2">
+                <select name="category" class="px-4 py-2 border border-neutral-300 rounded-xl focus:outline-none focus:border-primary-500">
+                    <option value="">All Categories</option>
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
+                        </option>
+                    @endforeach
+                </select>
+
+                <select name="level" class="px-4 py-2 border border-neutral-300 rounded-xl focus:outline-none focus:border-primary-500">
+                    <option value="">All Levels</option>
+                    <option value="beginner" {{ request('level') == 'beginner' ? 'selected' : '' }}>Beginner</option>
+                    <option value="intermediate" {{ request('level') == 'intermediate' ? 'selected' : '' }}>Intermediate</option>
+                    <option value="advanced" {{ request('level') == 'advanced' ? 'selected' : '' }}>Advanced</option>
+                    <option value="expert" {{ request('level') == 'expert' ? 'selected' : '' }}>Expert</option>
+                </select>
+
+                <select name="price_type" class="px-4 py-2 border border-neutral-300 rounded-xl focus:outline-none focus:border-primary-500">
+                    <option value="">All Prices</option>
+                    <option value="free" {{ request('price_type') == 'free' ? 'selected' : '' }}>Free</option>
+                    <option value="paid" {{ request('price_type') == 'paid' ? 'selected' : '' }}>Paid</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Courses Grid -->
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    @if($courses->count() > 0)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            @foreach($courses as $course)
+                <div class="bg-white rounded-2xl border border-neutral-200 overflow-hidden hover:shadow-xl transition-all duration-300 group">
+                    <!-- Course Image -->
+                    <div class="relative h-48 bg-gradient-to-br from-primary-100 to-accent-purple/20 overflow-hidden">
+                        @if($course->thumbnail)
+                            <img src="{{ asset('storage/' . $course->thumbnail) }}" 
+                                 alt="{{ $course->title }}" 
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                        @else
+                            <div class="w-full h-full flex items-center justify-center">
+                                <span class="material-icons-round text-4xl text-primary-300">school</span>
+                            </div>
+                        @endif
+                        
+                        <!-- Badges -->
+                        <div class="absolute top-3 left-3 flex gap-2">
+                            @if($course->is_featured ?? false)
+                                <span class="px-2 py-1 bg-accent-yellow text-white text-xs font-bold rounded-full">
+                                    FEATURED
+                                </span>
+                            @endif
+                            @if($course->is_free)
+                                <span class="px-2 py-1 bg-accent-green text-white text-xs font-bold rounded-full">
+                                    FREE
+                                </span>
+                            @endif
+                        </div>
+
+                        <!-- Price -->
+                        <div class="absolute bottom-3 right-3">
+                            @if($course->is_free)
+                                <span class="px-3 py-1 bg-accent-green text-white text-sm font-bold rounded-full">
+                                    Free
+                                </span>
+                            @else
+                                <span class="px-3 py-1 bg-primary-500 text-white text-sm font-bold rounded-full">
+                                    ${{ number_format($course->price, 2) }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Course Content -->
+                    <div class="p-6">
+                        <!-- Category and Level -->
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-2 py-1 bg-primary-100 text-primary-600 text-xs font-semibold rounded-full">
+                                {{ $course->category->name }}
+                            </span>
+                            <span class="px-2 py-1 bg-neutral-100 text-neutral-600 text-xs font-semibold rounded-full">
+                                {{ ucfirst($course->level) }}
+                            </span>
+                        </div>
+
+                        <!-- Title -->
+                        <h3 class="font-bold text-lg mb-2 line-clamp-2 group-hover:text-primary-600 transition-colors">
+                            {{ $course->title }}
+                        </h3>
+
+                        <!-- Description -->
+                        <p class="text-neutral-600 text-sm mb-4 line-clamp-3">
+                            {{ Str::limit(strip_tags($course->description), 100) }}
+                        </p>
+
+                        <!-- Instructor -->
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                                <span class="material-icons-round text-primary-600 text-sm">person</span>
+                            </div>
+                            <span class="text-sm text-neutral-600">{{ $course->instructor->name }}</span>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="flex items-center justify-between text-sm text-neutral-500 mb-4">
+                            <span class="flex items-center gap-1">
+                                <span class="material-icons-round text-sm">schedule</span>
+                                {{ $course->duration_minutes / 60 }}h
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <span class="material-icons-round text-sm">people</span>
+                                {{ $course->enrollments->count() }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <span class="material-icons-round text-sm">star</span>
+                                New
+                            </span>
+                        </div>
+
+                        <!-- Action Button -->
+                        <a href="/courses/{{ $course->slug }}" 
+                           class="w-full px-4 py-2 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors text-center">
+                            View Course
+                        </a>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <!-- Pagination -->
+        <div class="mt-12">
+            {{ $courses->links() }}
+        </div>
+    @else
+        <div class="text-center py-12">
+            <div class="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span class="material-icons-round text-3xl text-neutral-400">search_off</span>
+            </div>
+            <h3 class="text-xl font-semibold text-neutral-900 mb-2">No courses found</h3>
+            <p class="text-neutral-600 mb-6">Try adjusting your search criteria or browse all courses</p>
+            <a href="{{ route('courses.index') }}" 
+               class="px-6 py-2 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors">
+                Browse All Courses
+            </a>
+        </div>
+    @endif
+</div>
+@endsection

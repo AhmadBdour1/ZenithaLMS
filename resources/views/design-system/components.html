@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenithaLMS Design System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#EEF2FF',
+                            100: '#E0E7FF',
+                            200: '#C7D2FE',
+                            300: '#A5B4FC',
+                            400: '#818CF8',
+                            500: '#6366F1',
+                            600: '#4F46E5',
+                            700: '#4338CA',
+                            800: '#3730A3',
+                            900: '#312E81',
+                        },
+                        accent: {
+                            purple: '#A855F7',
+                            blue: '#3B82F6',
+                            pink: '#EC4899',
+                            green: '#10B981',
+                            yellow: '#F59E0B',
+                            red: '#EF4444',
+                        },
+                        neutral: {
+                            50: '#F9FAFB',
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            300: '#D1D5DB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'xl': '0.75rem',
+                        '2xl': '1rem',
+                        '3xl': '1.5rem',
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(99, 102, 241, 0.3)',
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.8); }
+        }
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-neutral-50 font-sans">
+    <div class="min-h-screen p-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold gradient-text mb-4">ZenithaLMS Design System</h1>
+            <p class="text-neutral-600 max-w-2xl mx-auto">Modern, accessible, and beautiful UI components for the next-generation learning platform</p>
+        </header>
+
+        <!-- Color Palette -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Color Palette</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Primary Colors -->
+                <div class="bg-white p-6 rounded-2xl shadow-card">
+                    <h3 class="font-semibold mb-4">Primary</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-primary-500 rounded-lg"></div>
+                            <div>
+                                <div class="font-mono text-sm">primary-500</div>
+                                <div class="text-xs text-neutral-500">#6366F1</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-primary-600 rounded-lg"></div>
+                            <div>
+                                <div class="font-mono text-sm">primary-600</div>
+                                <div class="text-xs text-neutral-500">#4F46E5</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accent Colors -->
+                <div class="bg-white p-6 rounded-2xl shadow-card">
+                    <h3 class="font-semibold mb-4">Accent</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-accent-purple rounded-lg"></div>
+                            <div>
+                                <div class="font-mono text-sm">accent-purple</div>
+                                <div class="text-xs text-neutral-500">#A855F7</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-accent-blue rounded-lg"></div>
+                            <div>
+                                <div class="font-mono text-sm">accent-blue</div>
+                                <div class="text-xs text-neutral-500">#3B82F6</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Semantic Colors -->
+                <div class="bg-white p-6 rounded-2xl shadow-card">
+                    <h3 class="font-semibold mb-4">Semantic</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-accent-green rounded-lg"></div>
+                            <div>
+                                <div class="font-mono text-sm">success</div>
+                                <div class="text-xs text-neutral-500">#10B981</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-accent-red rounded-lg"></div>
+                            <div>
+                                <div class="font-mono text-sm">error</div>
+                                <div class="text-xs text-neutral-500">#EF4444</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Neutral Colors -->
+                <div class="bg-white p-6 rounded-2xl shadow-card">
+                    <h3 class="font-semibold mb-4">Neutral</h3>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-neutral-900 rounded-lg"></div>
+                            <div>
+                                <div class="font-mono text-sm">neutral-900</div>
+                                <div class="text-xs text-neutral-500">#111827</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-neutral-100 rounded-lg"></div>
+                            <div>
+                                <div class="font-mono text-sm">neutral-100</div>
+                                <div class="text-xs text-neutral-500">#F3F4F6</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Typography -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Typography</h2>
+            <div class="bg-white p-8 rounded-2xl shadow-card">
+                <div class="space-y-6">
+                    <div>
+                        <h1 class="text-4xl font-bold">Heading 1</h1>
+                        <p class="text-sm text-neutral-500 mt-1">text-4xl font-bold</p>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold">Heading 2</h2>
+                        <p class="text-sm text-neutral-500 mt-1">text-3xl font-bold</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold">Heading 3</h3>
+                        <p class="text-sm text-neutral-500 mt-1">text-2xl font-bold</p>
+                    </div>
+                    <div>
+                        <p class="text-lg font-semibold">Large Body Text</p>
+                        <p class="text-sm text-neutral-500 mt-1">text-lg font-semibold</p>
+                    </div>
+                    <div>
+                        <p class="text-base">Regular body text for content and descriptions. This is the standard text size for most content.</p>
+                        <p class="text-sm text-neutral-500 mt-1">text-base</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-neutral-600">Small text for captions and metadata</p>
+                        <p class="text-sm text-neutral-500 mt-1">text-sm text-neutral-600</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Buttons -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Buttons</h2>
+            <div class="bg-white p-8 rounded-2xl shadow-card">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Primary Button -->
+                    <div>
+                        <h3 class="font-semibold mb-3">Primary</h3>
+                        <div class="space-y-3">
+                            <button class="btn-primary w-full py-3 px-6 text-white font-semibold rounded-xl">
+                                Primary Button
+                            </button>
+                            <button class="btn-primary w-full py-3 px-6 text-white font-semibold rounded-xl flex items-center justify-center gap-2">
+                                <span class="material-icons-round">add</span>
+                                With Icon
+                            </button>
+                            <button class="btn-primary w-full py-3 px-6 text-white font-semibold rounded-xl opacity-50 cursor-not-allowed" disabled>
+                                Disabled
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Secondary Button -->
+                    <div>
+                        <h3 class="font-semibold mb-3">Secondary</h3>
+                        <div class="space-y-3">
+                            <button class="w-full py-3 px-6 bg-neutral-100 hover:bg-neutral-200 text-neutral-900 font-semibold rounded-xl transition-colors">
+                                Secondary Button
+                            </button>
+                            <button class="w-full py-3 px-6 border-2 border-primary-500 text-primary-500 hover:bg-primary-50 font-semibold rounded-xl transition-colors">
+                                Outlined
+                            </button>
+                            <button class="w-full py-3 px-6 text-primary-500 font-semibold rounded-xl hover:bg-primary-50 transition-colors">
+                                Text Only
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Icon Buttons -->
+                    <div>
+                        <h3 class="font-semibold mb-3">Icon Buttons</h3>
+                        <div class="space-y-3">
+                            <button class="w-12 h-12 bg-primary-500 hover:bg-primary-600 text-white rounded-xl flex items-center justify-center transition-colors">
+                                <span class="material-icons-round">add</span>
+                            </button>
+                            <button class="w-12 h-12 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 rounded-xl flex items-center justify-center transition-colors">
+                                <span class="material-icons-round">edit</span>
+                            </button>
+                            <button class="w-12 h-12 bg-accent-red hover:bg-red-600 text-white rounded-xl flex items-center justify-center transition-colors">
+                                <span class="material-icons-round">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cards -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Basic Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-card card-hover">
+                    <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center mb-4">
+                        <span class="material-icons-round text-primary-600">school</span>
+                    </div>
+                    <h3 class="text-lg font-bold mb-2">Course Title</h3>
+                    <p class="text-neutral-600 text-sm mb-4">Description of the course or content goes here with relevant details.</p>
+                    <button class="text-primary-600 font-semibold text-sm hover:text-primary-700">Learn More →</button>
+                </div>
+
+                <!-- Stats Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-card">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-semibold">Progress</h3>
+                        <span class="text-2xl font-bold text-primary-600">75%</span>
+                    </div>
+                    <div class="w-full bg-neutral-200 rounded-full h-2 mb-4">
+                        <div class="bg-primary-500 h-2 rounded-full" style="width: 75%"></div>
+                    </div>
+                    <p class="text-sm text-neutral-600">15 of 20 lessons completed</p>
+                </div>
+
+                <!-- Profile Card -->
+                <div class="bg-white p-6 rounded-2xl shadow-card">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-purple rounded-full flex items-center justify-center">
+                            <span class="material-icons-round text-white">person</span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold">John Doe</h3>
+                            <p class="text-sm text-neutral-500">Instructor</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="px-2 py-1 bg-primary-100 text-primary-600 rounded-full text-xs font-semibold">Active</span>
+                        <span class="px-2 py-1 bg-accent-green text-white rounded-full text-xs font-semibold">Verified</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Form Elements -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Form Elements</h2>
+            <div class="bg-white p-8 rounded-2xl shadow-card">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Text Input</label>
+                        <input type="text" placeholder="Enter text here" class="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Select Dropdown</label>
+                        <select class="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            <option>Choose an option</option>
+                            <option>Option 1</option>
+                            <option>Option 2</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Textarea</label>
+                        <textarea placeholder="Enter longer text here" rows="4" class="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold mb-2">Checkbox</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3">
+                                <input type="checkbox" class="w-4 h-4 text-primary-600 rounded focus:ring-primary-500">
+                                <span class="text-sm">Option 1</span>
+                            </label>
+                            <label class="flex items-center gap-3">
+                                <input type="checkbox" class="w-4 h-4 text-primary-600 rounded focus:ring-primary-500">
+                                <span class="text-sm">Option 2</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Indicators -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Progress Indicators</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Linear Progress -->
+                <div class="bg-white p-6 rounded-2xl shadow-card">
+                    <h3 class="font-semibold mb-4">Linear Progress</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Course Progress</span>
+                                <span>65%</span>
+                            </div>
+                            <div class="w-full bg-neutral-200 rounded-full h-2">
+                                <div class="bg-primary-500 h-2 rounded-full" style="width: 65%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Quiz Score</span>
+                                <span>85%</span>
+                            </div>
+                            <div class="w-full bg-neutral-200 rounded-full h-2">
+                                <div class="bg-accent-green h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Circular Progress -->
+                <div class="bg-white p-6 rounded-2xl shadow-card">
+                    <h3 class="font-semibold mb-4">Circular Progress</h3>
+                    <div class="flex justify-center">
+                        <div class="relative w-24 h-24">
+                            <svg class="w-24 h-24 progress-ring">
+                                <circle cx="48" cy="48" r="36" stroke="#E5E7EB" stroke-width="8" fill="none"></circle>
+                                <circle cx="48" cy="48" r="36" stroke="#6366F1" stroke-width="8" fill="none" 
+                                        stroke-dasharray="226" stroke-dashoffset="56" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-xl font-bold">75%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step Progress -->
+                <div class="bg-white p-6 rounded-2xl shadow-card">
+                    <h3 class="font-semibold mb-4">Step Progress</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-accent-green rounded-full flex items-center justify-center">
+                                <span class="material-icons-round text-white text-sm">check</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm">Step 1</div>
+                                <div class="text-xs text-neutral-500">Completed</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center pulse-glow">
+                                <span class="text-white text-sm font-bold">2</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm">Step 2</div>
+                                <div class="text-xs text-primary-600">In Progress</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 bg-neutral-200 rounded-full flex items-center justify-center">
+                                <span class="text-neutral-500 text-sm font-bold">3</span>
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-sm">Step 3</div>
+                                <div class="text-xs text-neutral-500">Pending</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Alerts & Notifications -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6">Alerts & Notifications</h2>
+            <div class="space-y-4">
+                <div class="bg-accent-green/10 border border-accent-green/20 rounded-xl p-4 flex items-center gap-3">
+                    <span class="material-icons-round text-accent-green">check_circle</span>
+                    <div>
+                        <div class="font-semibold text-accent-green">Success</div>
+                        <div class="text-sm text-neutral-600">Your changes have been saved successfully.</div>
+                    </div>
+                </div>
+                <div class="bg-primary-100 border border-primary-200 rounded-xl p-4 flex items-center gap-3">
+                    <span class="material-icons-round text-primary-600">info</span>
+                    <div>
+                        <div class="font-semibold text-primary-600">Information</div>
+                        <div class="text-sm text-neutral-600">New course materials are available.</div>
+                    </div>
+                </div>
+                <div class="bg-accent-yellow/10 border border-accent-yellow/20 rounded-xl p-4 flex items-center gap-3">
+                    <span class="material-icons-round text-accent-yellow">warning</span>
+                    <div>
+                        <div class="font-semibold text-accent-yellow">Warning</div>
+                        <div class="text-sm text-neutral-600">Your subscription will expire in 3 days.</div>
+                    </div>
+                </div>
+                <div class="bg-accent-red/10 border border-accent-red/20 rounded-xl p-4 flex items-center gap-3">
+                    <span class="material-icons-round text-accent-red">error</span>
+                    <div>
+                        <div class="font-semibold text-accent-red">Error</div>
+                        <div class="text-sm text-neutral-600">Failed to upload file. Please try again.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

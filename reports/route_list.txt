@@ -1,0 +1,157 @@
+GET|HEAD  api/v1/ai/assistants ............................................................. API\AIAssistantAPIController@index
+POST      api/v1/ai/assistants ............................................................. API\AIAssistantAPIController@store
+GET|HEAD  api/v1/ai/assistants/{assistant} ................................................ API\AIAssistantAPIController@show
+PUT       api/v1/ai/assistants/{assistant} ................................................ API\AIAssistantAPIController@update
+DELETE    api/v1/ai/assistants/{assistant} ................................................ API\AIAssistantAPIController@destroy
+GET|HEAD  api/v1/ai/chat ..................................................................... API\AIAssistantAPIController@chat
+GET|HEAD  api/v1/ai/recommendations/courses ................................................. API\AIAssistantAPIController@courseRecommendations
+GET|HEAD  api/v1/ai/recommendations/learning-paths .......................................... API\AIAssistantAPIController@learningPathRecommendations
+GET|HEAD  api/v1/analytics/dashboard ....................................................... API\AnalyticsAPIController@dashboard
+GET|HEAD  api/v1/analytics/revenue .......................................................... API\AnalyticsAPIController@revenue
+GET|HEAD  api/v1/analytics/users ............................................................. API\AnalyticsAPIController@users
+GET|HEAD  api/v1/auth/check .................................................................. API\AuthAPIController@check
+POST      api/v1/auth/forgot-password ..................................................... API\AuthAPIController@forgotPassword
+POST      api/v1/auth/login .................................................................. API\AuthAPIController@login
+POST      api/v1/auth/logout .................................................................. API\AuthAPIController@logout
+POST      api/v1/auth/register ................................................................ API\AuthAPIController@register
+POST      api/v1/auth/reset-password ..................................................... API\AuthAPIController@resetPassword
+GET|HEAD  api/v1/auth/user .................................................................... API\AuthAPIController@user
+GET|HEAD  api/v1/blogs ........................................................................ API\BlogAPIController@index
+POST      api/v1/blogs ........................................................................ API\BlogAPIController@store
+GET|HEAD  api/v1/blogs/{blog} ............................................................... API\BlogAPIController@show
+PUT       api/v1/blogs/{blog} ............................................................... API\BlogAPIController@update
+DELETE    api/v1/blogs/{blog} ............................................................... API\BlogAPIController@destroy
+GET|HEAD  api/v1/categories .................................................................. API\CategoryAPIController@index
+POST      api/v1/categories .................................................................. API\CategoryAPIController@store
+GET|HEAD  api/v1/categories/{category} ..................................................... API\CategoryAPIController@show
+PUT       api/v1/categories/{category} ..................................................... API\CategoryAPIController@update
+DELETE    api/v1/categories/{category} ..................................................... API\CategoryAPIController@destroy
+GET|HEAD  api/v1/certificates ................................................................ API\CertificateAPIController@index
+POST      api/v1/certificates ................................................................ API\CertificateAPIController@store
+GET|HEAD  api/v1/certificates/{certificate} ................................................. API\CertificateAPIController@show
+PUT       api/v1/certificates/{certificate} ................................................. API\CertificateAPIController@update
+DELETE    api/v1/certificates/{certificate} ................................................. API\CertificateAPIController@destroy
+GET|HEAD  api/v1/courses ...................................................................... API\CourseAPIController@index
+POST      api/v1/courses ...................................................................... API\CourseAPIController@store
+GET|HEAD  api/v1/courses/{course} .......................................................... API\CourseAPIController@show
+PUT       api/v1/courses/{course} .......................................................... API\CourseAPIController@update
+DELETE    api/v1/courses/{course} .......................................................... API\CourseAPIController@destroy
+GET|HEAD  api/v1/courses/{course}/enroll .................................................... API\CourseAPIController@enroll
+GET|HEAD  api/v1/courses/{course}/lessons .................................................. API\CourseAPIController@lessons
+GET|HEAD  api/v1/courses/{course)/reviews .................................................. API\CourseAPIController@reviews
+POST      api/v1/courses/{course}/reviews .................................................. API\CourseAPIController@storeReview
+GET|HEAD  api/v1/forums ....................................................................... API\ForumAPIController@index
+POST      api/v1/forums ....................................................................... API\ForumAPIController@store
+GET|HEAD  api/v1/forums/{forum} ............................................................. API\ForumAPIController@show
+PUT       api/v1/forums/{forum} ............................................................. API\ForumAPIController@update
+DELETE    api/v1/forums/{forum} ............................................................. API\ForumAPIController@destroy
+GET|HEAD  api/v1/forums/{forum}/replies ..................................................... API\ForumAPIController@replies
+POST      api/v1/forums/{forum}/replies ..................................................... API\ForumAPIController@storeReply
+GET|HEAD  api/v1/lessons ....................................................................... API\LessonAPIController@index
+POST      api/v1/lessons ....................................................................... API\LessonAPIController@store
+GET|HEAD  api/v1/lessons/{lesson} .......................................................... API\LessonAPIController@show
+PUT       api/v1/lessons/{lesson} .......................................................... API\LessonAPIController@update
+DELETE    api/v1/lessons/{lesson} .......................................................... API\LessonAPIController@destroy
+GET|HEAD  api/v1/notifications ............................................................... API\NotificationAPIController@index
+POST      api/v1/notifications/read ....................................................... API\NotificationAPIController@markAsRead
+GET|HEAD  api/v1/organizations ............................................................... API\OrganizationAPIController@index
+POST      api/v1/organizations ............................................................... API\OrganizationAPIController@store
+GET|HEAD  api/v1/organizations/{organization} .............................................. API\OrganizationAPIController@show
+PUT       api/v1/organizations/{organization} .............................................. API\OrganizationAPIController@update
+DELETE    api/v1/organizations/{organization} .............................................. API\OrganizationAPIController@destroy
+GET|HEAD  api/v1/payments ...................................................................... API\PaymentAPIController@index
+POST      api/v1/payments/process ........................................................... API\PaymentAPIController@process
+GET|HEAD  api/v1/payments/{payment} ......................................................... API\PaymentAPIController@show
+GET|HEAD  api/v1/quizzes ........................................................................ API\QuizAPIController@index
+POST      api/v1/quizzes ........................................................................ API\QuizAPIController@store
+GET|HEAD  api/v1/quizzes/{quiz} .............................................................. API\QuizAPIController@show
+PUT       api/v1/quizzes/{quiz} .............................................................. API\QuizAPIController@update
+DELETE    api/v1/quizzes/{quiz} .............................................................. API\QuizAPIController@destroy
+GET|HEAD  api/v1/quizzes/{quiz}/attempt ..................................................... API\QuizAPIController@attempt
+GET|HEAD  api/v1/quizzes/{quiz}/questions .................................................. API\QuizAPIController@questions
+POST      api/v1/quizzes/{quiz}/submit ..................................................... API\QuizAPIController@submit
+GET|HEAD  api/v1/search ........................................................................ API\SearchAPIController@search
+GET|HEAD  api/v1/user/certificates .......................................................... API\UserAPIController@certificates
+GET|HEAD  api/v1/user/courses ................................................................ API\UserAPIController@courses
+GET|HEAD  api/v1/user/dashboard ............................................................. API\UserAPIController@dashboard
+GET|HEAD  api/v1/user/enrollments ........................................................... API\UserAPIController@enrollments
+GET|HEAD  api/v1/user/notifications ........................................................ API\UserAPIController@notifications
+GET|HEAD  api/v1/user/profile .................................................................. API\UserAPIController@profile
+PUT       api/v1/user/profile .................................................................. API\UserAPIController@updateProfile
+GET|HEAD  api/v1/user/progress ................................................................ API\UserAPIController@progress
+GET|HEAD  api/v1/user/recommendations ...................................................... API\UserAPIController@recommendations
+GET|HEAD  api/v1/user/wallet .................................................................... API\UserAPIController@wallet
+GET|HEAD  api/v1/virtual-classes ............................................................ API\VirtualClassAPIController@index
+POST      api/v1/virtual-classes ............................................................ API\VirtualClassAPIController@store
+GET|HEAD  api/v1/virtual-classes/{virtualClass} ............................................. API\VirtualClassAPIController@show
+PUT       api/v1/virtual-classes/{virtualClass} ............................................. API\VirtualClassAPIController@update
+DELETE    api/v1/virtual-classes/{virtualClass} ............................................. API\VirtualClassAPIController@destroy
+GET|HEAD  api/v1/wallet/add-funds ........................................................... API\WalletAPIController@addFunds
+GET|HEAD  api/v1/wallet/statistics .......................................................... API\WalletAPIController@statistics
+GET|HEAD  api/v1/wallet/transactions ........................................................ API\WalletAPIController@transactions
+POST      api/v1/wallet/transfer ............................................................ API\WalletAPIController@transfer
+POST      api/v1/wallet/withdraw ............................................................ API\WalletAPIController@withdraw
+GET|HEAD  blog .................................................................................. Frontend\BlogController@index
+GET|POST|HEAD broadcasting/auth ........................................................ Illuminate\Broadcasting › BroadcastController@authenticate
+GET|HEAD  confirm-password ............................................................... password.confirm › Auth\ConfirmablePasswordController@show
+POST      confirm-password ............................................................... Auth\ConfirmablePasswordController@store
+GET|HEAD  courses ............................................................................. courses.index
+GET|HEAD  dashboard ....................................................................... zenithalms.dashboard.default
+GET|HEAD  dashboard/admin .................................................................. zenithalms.dashboard.admin
+GET|HEAD  dashboard/instructor ............................................................... zenithalms.dashboard.instructor
+GET|HEAD  dashboard/organization ......................................................... zenithalms.dashboard.organization
+GET|HEAD  dashboard/simple .................................................................. dashboard.simple
+GET|HEAD  dashboard/student ................................................................ zenithalms.dashboard.student
+GET|HEAD  dev/ai .............................................................................. dev.ai
+GET|HEAD  dev/email .......................................................................... dev.email
+GET|HEAD  dev/test ........................................................................... dev.test
+GET|HEAD  ebooks ............................................................................ zenithalms.ebooks.index › Frontend\ZenithaLmsEbookController@index
+POST      ebooks ............................................................................ zenithalms.ebooks.store › Frontend\ZenithaLmsEbookController@store
+GET|HEAD  ebooks/admin .................................................................... zenithalms.ebooks.admin.index › Frontend\ZenithaLmsEbookController@adminIndex
+GET|HEAD  ebooks/admin/{id} ............................................................... zenithalms.ebooks.admin.show › Frontend\ZenithaLmsEbookController@adminShow
+PUT       ebooks/admin/{id} ............................................................... zenithalms.ebooks.admin.update › Frontend\ZenithaLmsEbookController@adminUpdate
+DELETE    ebooks/admin/{id} ............................................................... zenithalms.ebooks.admin.destroy › Frontend\ZenithaLmsEbookController@adminDestroy
+GET|HEAD  ebooks/admin/{id}/edit .......................................................... zenithalms.ebooks.admin.edit › Frontend\ZenithaLmsEbookController@adminEdit
+POST      ebooks/admin/{id}/toggle-featured ............................................... zenithalms.ebooks.admin.toggle-featured › Frontend\ZenithaLmsEbookController@toggleFeatured
+GET|HEAD  ebooks/create ..................................................................... zenithalms.ebooks.create › Frontend\ZenithaLmsEbookController@create
+GET|HEAD  ebooks/download/{ebookId} ....................................................... zenithalms.ebooks.download › Frontend\ZenithaLmsEbookController@download
+POST      ebooks/favorites/{ebookId} ....................................................... zenithalms.ebooks.favorites.add › Frontend\ZenithaLmsEbookController@addToFavorites
+DELETE    ebooks/favorites/{ebookId} ....................................................... zenithalms.ebooks.favorites.remove › Frontend\ZenithaLmsEbookController@removeFromFavorites
+GET|HEAD  ebooks/my-ebooks .................................................................. zenithalms.ebooks.my-ebooks › Frontend\ZenithaLmsEbookController@myEbooks
+GET|HEAD  ebooks/read/{ebookId} ............................................................ zenithalms.ebooks.read › Frontend\ZenithaLmsEbookController@read
+GET|HEAD  ebooks/recommendations .......................................................... zenithalms.ebooks.recommendations › Frontend\ZenithaLmsEbookController@recommendations
+GET|HEAD  ebooks/search .................................................................... zenithalms.ebooks.search › Frontend\ZenithaLmsEbookController@search
+PUT       ebooks/{id} ........................................................................ zenithalms.ebooks.update › Frontend\ZenithaLmsEbookController@update
+DELETE    ebooks/{id} ........................................................................ zenithalms.ebooks.destroy › Frontend\ZenithaLmsEbookController@destroy
+GET|HEAD  ebooks/{id}/edit .................................................................. zenithalms.ebooks.edit › Frontend\ZenithaLmsEbookController@edit
+GET|HEAD  ebooks/{slug} ...................................................................... zenithalms.ebooks.show › Frontend\ZenithaLmsEbookController@show
+POST      email/verification-notification ................................................ verification.send › Auth\EmailVerificationNotificationController@store
+GET|HEAD  forgot-password .................................................................. password.request › Auth\PasswordResetLinkController@create
+POST      forgot-password .................................................................. password.email › Auth\PasswordResetLinkController@store
+GET|HEAD  login ............................................................................... login › Auth\AuthenticatedSessionController@create
+POST      login ............................................................................... Auth\AuthenticatedSessionController@store
+GET|HEAD  login-enhanced .................................................................. login-enhanced
+POST      logout .............................................................................. logout › Auth\AuthenticatedSessionController@destroy
+PUT       password ............................................................................ password.update › Auth\PasswordController@update
+GET|HEAD  profile ............................................................................ profile.edit › ProfileController@edit
+PATCH     profile ............................................................................ profile.update › ProfileController@update
+DELETE    profile ............................................................................ profile.destroy › ProfileController@destroy
+GET|HEAD  register ........................................................................... register › Auth\RegisteredUserController@create
+POST      register ........................................................................... Auth\RegisteredUserController@store
+POST      reset-password .................................................................. password.store › Auth\NewPasswordController@store
+GET|HEAD  reset-password/{token} ......................................................... password.reset › Auth\NewPasswordController@create
+GET|HEAD  robots.txt ......................................................................... robots.txt
+GET|HEAD  sanctum/csrf-cookie ............................................................ sanctum.csrf-cookie › Laravel\Sanctum › CsrfCookieController@show
+GET|HEAD  sitemap-blogs.xml ............................................................... sitemap-blogs.xml
+GET|HEAD  sitemap-ebooks.xml .............................................................. sitemap-ebooks.xml
+GET|HEAD  sitemap.xml ........................................................................ sitemap.xml
+GET|HEAD  storage/{path} .................................................................... storage.local
+GET|HEAD  system/analytics ................................................................ zenithalms.system.analytics
+GET|HEAD  system/reports ................................................................... zenithalms.system.reports
+GET|HEAD  system/settings .................................................................. zenithalms.system.settings
+GET|HEAD  system/users ..................................................................... zenithalms.system.users
+GET|HEAD  up .................................................................................. up
+GET|HEAD  verify-email ...................................................................... verification.notice › Auth\EmailVerificationPromptController
+GET|HEAD  verify-email/{id}/{hash} ......................................................... verification.verify › Auth\VerifyEmailController
+POST      webhooks/email-service ............................................................ webhooks.email-service
+POST      webhooks/payment-gateway/{gateway} .............................................. webhooks.payment-gateway
