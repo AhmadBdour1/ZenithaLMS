@@ -238,7 +238,7 @@ class ZenithaLmsPaymentController extends Controller
         ]);
         
         // Simulate payment processing
-        $this->processPayment($payment);
+        $this->executePayment($payment);
         
         return response()->json([
             'success' => true,
@@ -295,7 +295,7 @@ class ZenithaLmsPaymentController extends Controller
         
         // Apply coupon if provided
         if ($request->filled('coupon_code')) {
-            $discount = $this->applyCoupon($request->coupon_code, $amount);
+            $discount = $this->calculateCouponDiscount($request->coupon_code, $amount);
             $amount = $discount['final_amount'];
         }
         
@@ -332,7 +332,7 @@ class ZenithaLmsPaymentController extends Controller
         ]);
         
         // Simulate payment processing
-        $this->processPayment($payment);
+        $this->executePayment($payment);
         
         return response()->json([
             'success' => true,
@@ -410,7 +410,7 @@ class ZenithaLmsPaymentController extends Controller
             ], 422);
         }
         
-        $discount = $this->applyCoupon($request->coupon_code, $request->amount);
+        $discount = $this->calculateCouponDiscount($request->coupon_code, $request->amount);
         
         return response()->json([
             'success' => true,
@@ -502,7 +502,7 @@ class ZenithaLmsPaymentController extends Controller
     /**
      * Process payment (simulated)
      */
-    private function processPayment($payment)
+    private function executePayment($payment)
     {
         // Simulate payment processing
         $success = rand(1, 100) > 10; // 90% success rate
@@ -683,7 +683,7 @@ class ZenithaLmsPaymentController extends Controller
     /**
      * Apply coupon discount
      */
-    private function applyCoupon($couponCode, $amount)
+    private function calculateCouponDiscount($couponCode, $amount)
     {
         // Simulate coupon validation
         $coupons = [

@@ -113,10 +113,18 @@ class ZenithaLmsServiceProvider extends ServiceProvider
         // Register organization middleware
         $router->aliasMiddleware('organization', \App\Http\Middleware\ZenithaLmsOrganizationMiddleware::class);
         
-        // Register custom middleware
-        $router->aliasMiddleware('zenithalms.auth', \App\Http\Middleware\ZenithaLmsAuthMiddleware::class);
-        $router->aliasMiddleware('zenithalms.api', \App\Http\Middleware\ZenithaLmsApiMiddleware::class);
-        $router->aliasMiddleware('zenithalms.throttle', \App\Http\Middleware\ZenithaLmsThrottleMiddleware::class);
+        // Register optional custom middleware when classes exist
+        $optionalMiddleware = [
+            'zenithalms.auth' => \App\Http\Middleware\ZenithaLmsAuthMiddleware::class,
+            'zenithalms.api' => \App\Http\Middleware\ZenithaLmsApiMiddleware::class,
+            'zenithalms.throttle' => \App\Http\Middleware\ZenithaLmsThrottleMiddleware::class,
+        ];
+
+        foreach ($optionalMiddleware as $alias => $middlewareClass) {
+            if (class_exists($middlewareClass)) {
+                $router->aliasMiddleware($alias, $middlewareClass);
+            }
+        }
     }
     
     /**
@@ -124,58 +132,26 @@ class ZenithaLmsServiceProvider extends ServiceProvider
      */
     private function registerEventListeners()
     {
-        // Register payment event listeners
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\PaymentCompleted::class,
-            \App\Listeners\SendPaymentCompletedNotification::class
-        );
-        
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\PaymentFailed::class,
-            \App\Listeners\SendPaymentFailedNotification::class
-        );
-        
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\CourseEnrolled::class,
-            \App\Listeners\SendCourseEnrollmentNotification::class
-        );
-        
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\QuizCompleted::class,
-            \App\Listeners\SendQuizCompletedNotification::class
-        );
-        
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\CertificateIssued::class,
-            \App\Listeners\SendCertificateIssuedNotification::class
-        );
-        
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\VirtualClassStarted::class,
-            \App\Listeners\SendVirtualClassStartedNotification::class
-        );
-        
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\ForumPostCreated::class,
-            \App\Listeners\SendForumPostNotification::class
-        );
-        
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\BlogPublished::class,
-            \App\Listeners\SendBlogPublishedNotification::class
-        );
-        
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\EbookPurchased::class,
-            \App\Listeners\SendEbookPurchasedNotification::class
-        );
-        
-        \Illuminate\Support\Facades\Event::listen(
-            \App\Events\AssignmentSubmitted::class,
-            \App\Listeners\SendAssignmentSubmittedNotification::class
-        );
+        $listeners = [
+            \App\Events\PaymentCompleted::class => \App\Listeners\SendPaymentCompletedNotification::class,
+            \App\Events\PaymentFailed::class => \App\Listeners\SendPaymentFailedNotification::class,
+            \App\Events\CourseEnrolled::class => \App\Listeners\SendCourseEnrollmentNotification::class,
+            \App\Events\QuizCompleted::class => \App\Listeners\SendQuizCompletedNotification::class,
+            \App\Events\CertificateIssued::class => \App\Listeners\SendCertificateIssuedNotification::class,
+            \App\Events\VirtualClassStarted::class => \App\Listeners\SendVirtualClassStartedNotification::class,
+            \App\Events\ForumPostCreated::class => \App\Listeners\SendForumPostNotification::class,
+            \App\Events\BlogPublished::class => \App\Listeners\SendBlogPublishedNotification::class,
+            \App\Events\EbookPurchased::class => \App\Listeners\SendEbookPurchasedNotification::class,
+            \App\Events\AssignmentSubmitted::class => \App\Listeners\SendAssignmentSubmittedNotification::class,
+        ];
+
+        foreach ($listeners as $eventClass => $listenerClass) {
+            if (class_exists($eventClass) && class_exists($listenerClass)) {
+                \Illuminate\Support\Facades\Event::listen($eventClass, $listenerClass);
+            }
+        }
     }
-    
+
     /**
      * Register view composers
      */

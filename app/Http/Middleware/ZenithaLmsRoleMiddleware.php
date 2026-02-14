@@ -4,8 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\Role;
-use App\Models\User;
 
 class ZenithaLmsRoleMiddleware
 {
@@ -14,10 +12,10 @@ class ZenithaLmsRoleMiddleware
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
-     * @param  string  $role
+     * @param  string  ...$roles
      * @return mixed
      */
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, ...$roles)
     {
         if (!auth()->check()) {
             if ($request->expectsJson()) {
@@ -35,13 +33,13 @@ class ZenithaLmsRoleMiddleware
         $user = auth()->user();
         
         // Check if user has the required role
-        if (!$this->hasRole($user, $role)) {
+        if (!$this->hasRole($user, $roles)) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Insufficient permissions',
                     'code' => 403,
-                    'required_role' => $role,
+                    'required_role' => $roles,
                     'user_role' => $user->role->name ?? 'unknown'
                 ], 403);
             }
@@ -70,9 +68,9 @@ class ZenithaLmsRoleMiddleware
         $request->merge([
             'user_role' => $userRoleName,
             'user_permissions' => $this->getUserPermissions($user),
-            'is_admin' => $this->hasRole($user, 'admin'),
-            'is_instructor' => $this->hasRole($user, 'instructor'),
-            'is_student' => $this->hasRole($user, 'student'),
+            'is_admin' => $this->hasRole($user, ['admin']),
+            'is_instructor' => $this->hasRole($user, ['instructor']),
+            'is_student' => $this->hasRole($user, ['student']),
         ]);
         
         return $next($request);
@@ -90,26 +88,49 @@ class ZenithaLmsRoleMiddleware
     /**
      * Check if user has the specified role
      */
-    private function hasRole($user, $role)
+    private function hasRole($user, array $roles)
     {
-        // Use the User model's helper methods for consistency
-        switch ($role) {
-            case 'admin':
-                return $user->isAdmin();
-            case 'instructor':
-                return $user->isInstructor();
-            case 'student':
-                return $user->isStudent();
-            case 'organization':
-                return $user->isOrganization();
-            default:
-                // Handle multiple roles
-                if (str_contains($role, '|')) {
-                    $roles = explode('|', $role);
-                    return in_array($user->role_name, $roles);
+        $normalizedRoles = [];
+
+        foreach ($roles as $role) {
+            if (!is_string($role) || $role === '') {
+                continue;
+            }
+
+            // Support both `role:admin,instructor` and pipe-delimited `admin|instructor`
+            $parts = preg_split('/[|,]/', $role);
+            foreach ($parts as $part) {
+                $part = trim($part);
+                if ($part !== '') {
+                    $normalizedRoles[] = $part;
                 }
-                return $user->role_name === $role;
+            }
         }
+
+        if ($normalizedRoles === []) {
+            return false;
+        }
+
+        foreach ($normalizedRoles as $role) {
+            switch ($role) {
+                case 'admin':
+                    if ($user->isAdmin()) return true;
+                    break;
+                case 'instructor':
+                    if ($user->isInstructor()) return true;
+                    break;
+                case 'student':
+                    if ($user->isStudent()) return true;
+                    break;
+                case 'organization':
+                    if ($user->isOrganization()) return true;
+                    break;
+                default:
+                    if ($user->role_name === $role) return true;
+            }
+        }
+
+        return false;
     }
     
     /**

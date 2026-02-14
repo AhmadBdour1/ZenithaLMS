@@ -38,6 +38,16 @@ Route::get('/health', function () {
 
 // Public API routes
 Route::prefix('v1')->group(function () {
+    // Versioned health check endpoint
+    Route::get('/health', function () {
+        return response()->json([
+            'status' => 'healthy',
+            'timestamp' => now()->toISOString(),
+            'version' => '1.0.0',
+            'service' => 'ZenithaLMS API'
+        ]);
+    });
+
     // Authentication routes
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);

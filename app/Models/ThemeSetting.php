@@ -53,10 +53,10 @@ class ThemeSetting extends Model
     const CATEGORY_LAYOUT = 'layout';
     const COMPONENTS = 'components';
     const NAVIGATION = 'navigation';
-    const_CONTENT = 'content';
-    const_FORMS = 'forms';
-    const_BUTTONS = 'buttons';
-    const_CARDS = 'cards';
+    const CONTENT = 'content';
+    const FORMS = 'forms';
+    const BUTTONS = 'buttons';
+    const CARDS = 'cards';
 
     /**
      * ZenithaLMS: Relationships
@@ -119,7 +119,7 @@ class ThemeSetting extends Model
 
     public function getKey()
     {
-        return $key;
+        return $this->key;
     }
 
     public function getValue()

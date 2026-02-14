@@ -155,13 +155,13 @@ class ZenithaLmsWebhookController extends Controller
             case 'course.enrolled':
                 return $this->handleCourseEnrolled($request->data);
                 
-            'course.completed':
+            case 'course.completed':
                 return $this->handleCourseCompleted($request->data);
                 
-            'quiz.submitted':
+            case 'quiz.submitted':
                 return $this->handleQuizSubmitted($request->data);
                 
-            'certificate.issued':
+            case 'certificate.issued':
                 return $this->handleCertificateIssued($request->data);
                 
             default:
