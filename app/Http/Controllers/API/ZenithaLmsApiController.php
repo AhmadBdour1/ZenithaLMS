@@ -35,14 +35,14 @@ class ZenithaLmsApiController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'avatar' => $user->avatar ?? null,
-                    'role' => $user->role->name ?? 'user',
+                    'avatar' => $user->avatar_url,
+                    'role' => $user->role_name ?? 'user',
                     'created_at' => $user->created_at->format('Y-m-d H:i:s'),
                 ],
                 'stats' => [
                     'courses_enrolled' => $user->enrollments()->count(),
                     'courses_completed' => $user->enrollments()->where('status', 'completed')->count(),
-                    'quizzes_taken' => $user->quizAttempts()->count(),
+                    'quizzes_taken' => 0, // TODO: Implement quiz attempts relationship
                     'certificates_earned' => $user->certificates()->count(),
                 ],
             ],

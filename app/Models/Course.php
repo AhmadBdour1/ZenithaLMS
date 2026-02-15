@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Services\MediaService;
 
 class Course extends Model
 {
@@ -51,6 +52,31 @@ class Course extends Model
      * Relationships with eager loading by default
      */
     protected $with = ['category', 'instructor'];
+
+    /**
+     * Accessors
+     */
+    public function getThumbnailUrlAttribute(): string
+    {
+        $mediaService = app(MediaService::class);
+        return $mediaService->url($this->thumbnail, '/images/course-placeholder.png');
+    }
+
+    public function getPreviewVideoUrlAttribute(): ?string
+    {
+        if (empty($this->preview_video)) {
+            return null;
+        }
+        
+        // If it's already a URL (YouTube, Vimeo, etc.), return as-is
+        if (filter_var($this->preview_video, FILTER_VALIDATE_URL)) {
+            return $this->preview_video;
+        }
+        
+        // If it's a stored file, use MediaService
+        $mediaService = app(MediaService::class);
+        return $mediaService->url($this->preview_video);
+    }
 
     /**
      * Relationships

@@ -120,8 +120,8 @@ class ZenithaLmsAdminApiController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $user->role->name ?? 'user',
-                    'avatar' => $user->avatar,
+                    'role' => $user->role_name ?? 'student',
+                    'avatar' => $user->avatar_url,
                     'status' => $user->last_login_at && $user->last_login_at->diffInDays(now()) < 30 ? 'active' : 'inactive',
                     'created_at' => $user->created_at->format('Y-m-d H:i:s'),
                     'last_login_at' => $user->last_login_at?->format('Y-m-d H:i:s'),
@@ -142,7 +142,7 @@ class ZenithaLmsAdminApiController extends Controller
      */
     public function user($id)
     {
-        $user = User::with(['role', 'enrollments.course', 'quizAttempts.quiz', 'certificates.course'])
+        $user = User::with(['role', 'enrollments.course', 'certificates.course'])
             ->findOrFail($id);
         
         return response()->json([
@@ -152,8 +152,8 @@ class ZenithaLmsAdminApiController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $user->role->name ?? 'user',
-                    'avatar' => $user->avatar,
+                    'role' => $user->role_name ?? 'student',
+                    'avatar' => $user->avatar_url,
                     'status' => $user->last_login_at && $user->last_login_at->diffInDays(now()) < 30 ? 'active' : 'inactive',
                     'created_at' => $user->created_at->format('Y-m-d H:i:s'),
                     'last_login_at' => $user->last_login_at?->format('Y-m-d H:i:s'),
@@ -173,20 +173,7 @@ class ZenithaLmsAdminApiController extends Controller
                         'completed_at' => $enrollment->completed_at?->format('Y-m-d H:i:s'),
                     ];
                 }),
-                'quiz_attempts' => $user->quizAttempts->map(function ($attempt) {
-                    return [
-                        'id' => $attempt->id,
-                        'quiz' => [
-                            'id' => $attempt->quiz->id,
-                            'title' => $attempt->quiz->title,
-                        ],
-                        'score' => $attempt->score,
-                        'percentage' => $attempt->percentage,
-                        'status' => $attempt->status,
-                        'attempt_number' => $attempt->attempt_number,
-                        'completed_at' => $attempt->completed_at?->format('Y-m-d H:i:s'),
-                    ];
-                }),
+                'quiz_attempts' => [], // TODO: Implement quiz attempts relationship
                 'certificates' => $user->certificates->map(function ($certificate) {
                     return [
                         'id' => $certificate->id,

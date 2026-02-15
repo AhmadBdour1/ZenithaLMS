@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\MediaService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,12 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    private MediaService $mediaService;
+
+    public function __construct(MediaService $mediaService)
+    {
+        $this->mediaService = $mediaService;
+    }
     /**
      * Display the user's profile form.
      */
@@ -26,13 +33,34 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        
+        // Update profile fields
+        $validatedData = $request->validated();
+        $user->fill($validatedData);
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // Handle avatar upload
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar
+            $this->mediaService->deletePublic($user->avatar);
+            
+            // Store new avatar
+            $avatar = $request->file('avatar');
+            $avatarPath = $this->mediaService->storePublic(
+                $avatar, 
+                'avatars', 
+                'user-' . $user->id, 
+                ['jpeg', 'jpg', 'png', 'webp'], 
+                2048 * 1024 // 2MB
+            );
+            $user->avatar = $avatarPath;
         }
 
-        $request->user()->save();
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -47,6 +75,9 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        // Delete user avatar
+        $this->mediaService->deletePublic($user->avatar);
 
         Auth::logout();
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Services\MediaService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -65,20 +66,13 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Get the user's role name (single source of truth)
-     */
-    public function getRoleAttribute()
-    {
-        return $this->role()?->name ?? 'student';
-    }
 
     /**
-     * Get role name attribute (alias for consistency)
+     * Get role name attribute (single source of truth)
      */
     public function getRoleNameAttribute()
     {
-        return $this->role;
+        return $this->role?->name ?? 'student';
     }
 
     /**
@@ -86,7 +80,7 @@ class User extends Authenticatable
      */
     public function isAdmin()
     {
-        return in_array($this->role, ['super_admin', 'admin']);
+        return in_array($this->role_name, ['super_admin', 'admin']);
     }
 
     /**
@@ -94,7 +88,7 @@ class User extends Authenticatable
      */
     public function isInstructor()
     {
-        return $this->role === 'instructor';
+        return $this->role_name === 'instructor';
     }
 
     /**
@@ -102,7 +96,7 @@ class User extends Authenticatable
      */
     public function isStudent()
     {
-        return $this->role === 'student';
+        return $this->role_name === 'student';
     }
 
     /**
@@ -110,7 +104,7 @@ class User extends Authenticatable
      */
     public function isOrganization()
     {
-        return $this->role === 'organization';
+        return $this->role_name === 'organization';
     }
 
     /**
@@ -121,10 +115,6 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class);
-    }
 
     public function organization()
     {
@@ -171,11 +161,12 @@ class User extends Authenticatable
      */
     public function hasPermission($permission)
     {
-        if (!$this->role) {
+        $role = $this->role;
+        if (!$role) {
             return false;
         }
 
-        $permissions = $this->role->permissions ?? [];
+        $permissions = $role->permissions ?? [];
         return in_array($permission, $permissions);
     }
 
@@ -237,5 +228,14 @@ class User extends Authenticatable
             'goals' => $this->goals ? json_decode($this->goals, true) : ['Career Advancement'],
             'availability' => $this->availability ?? 'flexible'
         ];
+    }
+
+    /**
+     * Get avatar URL with fallback
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        $mediaService = app(MediaService::class);
+        return $mediaService->url($this->avatar, '/images/default-avatar.png');
     }
 }

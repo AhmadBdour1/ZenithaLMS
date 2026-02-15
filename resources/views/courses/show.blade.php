@@ -11,12 +11,16 @@
             <div class="lg:col-span-2">
                 <div class="mb-4">
                     <div class="flex items-center gap-2 mb-4">
-                        <span class="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
-                            {{ $course->category->name }}
-                        </span>
-                        <span class="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
-                            {{ ucfirst($course->level) }}
-                        </span>
+                        @if($course->category)
+                            <span class="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
+                                {{ $course->category->name }}
+                            </span>
+                        @endif
+                        @if($course->level)
+                            <span class="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
+                                {{ ucfirst($course->level) }}
+                            </span>
+                        @endif
                         @if($course->is_featured)
                             <span class="px-3 py-1 bg-accent-yellow text-white rounded-full text-sm font-bold">
                                 FEATURED
@@ -30,7 +34,7 @@
                 <!-- Stats -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <div class="text-center">
-                        <div class="text-2xl font-bold">{{ $course->enrollments->count() }}</div>
+                        <div class="text-2xl font-bold">{{ $course->enrollments_count ?? 0 }}</div>
                         <div class="text-sm text-primary-200">Students</div>
                     </div>
                     <div class="text-center">
@@ -38,16 +42,17 @@
                         <div class="text-sm text-primary-200">Rating</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold">{{ $course->duration_minutes / 60 }}h</div>
+                        <div class="text-2xl font-bold">{{ $course->duration_minutes ? round($course->duration_minutes / 60) : 0 }}h</div>
                         <div class="text-sm text-primary-200">Duration</div>
                     </div>
                     <div class="text-center">
-                        <div class="text-2xl font-bold">{{ $course->lessons->count() }}</div>
+                        <div class="text-2xl font-bold">{{ $course->lessons_count ?? 0 }}</div>
                         <div class="text-sm text-primary-200">Lessons</div>
                     </div>
                 </div>
 
                 <!-- Instructor -->
+                @if($course->instructor)
                 <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
                     <div class="flex items-center gap-4">
                         <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
@@ -59,6 +64,7 @@
                         </div>
                     </div>
                 </div>
+                @endif
             </div>
 
             <!-- Course Card -->
@@ -67,7 +73,7 @@
                     <!-- Course Image -->
                     <div class="relative h-48">
                         @if($course->thumbnail)
-                            <img src="{{ asset('storage/' . $course->thumbnail) }}" 
+                            <img src="{{ $course->thumbnail_url }}" 
                                  alt="{{ $course->title }}" 
                                  class="w-full h-full object-cover">
                         @else
@@ -96,23 +102,35 @@
                                 </div>
                             @endif
                             <div class="text-sm text-neutral-500">
-                                {{ $course->enrollments->count() }} students enrolled
+                                {{ $course->enrollments_count ?? 0 }} students enrolled
                             </div>
                         </div>
 
-                        <button class="w-full px-6 py-3 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors mb-3">
-                            Enroll Now
-                        </button>
+                        @if(auth()->check())
+                            @if($isEnrolled)
+                                <button class="w-full px-6 py-3 bg-accent-green text-white rounded-xl font-semibold hover:bg-accent-green/90 transition-colors mb-3">
+                                    Continue Learning
+                                </button>
+                            @else
+                                <button class="w-full px-6 py-3 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors mb-3">
+                                    Enroll Now
+                                </button>
+                            @endif
+                        @else
+                            <a href="{{ route('login') }}" class="block w-full px-6 py-3 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors mb-3 text-center">
+                                Login to Enroll
+                            </a>
+                        @endif
 
                         <!-- Course Features -->
                         <div class="space-y-3">
                             <div class="flex items-center gap-3">
                                 <span class="material-icons-round text-primary-600">check_circle</span>
-                                <span class="text-sm">{{ $course->duration_minutes / 60 }} hours of content</span>
+                                <span class="text-sm">{{ $course->duration_minutes ? round($course->duration_minutes / 60) : 0 }} hours of content</span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <span class="material-icons-round text-primary-600">check_circle</span>
-                                <span class="text-sm">{{ $course->lessons->count() }} lessons</span>
+                                <span class="text-sm">{{ $course->lessons_count ?? 0 }} lessons</span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <span class="material-icons-round text-primary-600">check_circle</span>
@@ -164,8 +182,8 @@
             <section>
                 <h2 class="text-2xl font-bold text-neutral-900 mb-4">Course Content</h2>
                 <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
-                    @if($course->lessons->count() > 0)
-                        @foreach($course->lessons as $index => $lesson)
+                    @if($lessons->count() > 0)
+                        @foreach($lessons as $index => $lesson)
                             <div class="border-b border-neutral-200 last:border-b-0">
                                 <div class="p-4 hover:bg-neutral-50 transition-colors">
                                     <div class="flex items-center justify-between">
@@ -175,7 +193,7 @@
                                             </div>
                                             <div>
                                                 <div class="font-semibold">{{ $lesson->title }}</div>
-                                                <div class="text-sm text-neutral-600">{{ $lesson->duration ?? 'N/A' }} minutes</div>
+                                                <div class="text-sm text-neutral-600">{{ $lesson->duration_minutes ?? 'N/A' }} minutes</div>
                                             </div>
                                         </div>
                                         <span class="material-icons-round text-neutral-400">play_arrow</span>
@@ -219,6 +237,7 @@
         <!-- Sidebar -->
         <div class="space-y-6">
             <!-- Instructor Info -->
+            @if($course->instructor)
             <div class="bg-white rounded-xl p-6 border border-neutral-200">
                 <h3 class="text-lg font-bold text-neutral-900 mb-4">Your Instructor</h3>
                 <div class="flex items-center gap-4 mb-4">
@@ -231,10 +250,11 @@
                     </div>
                 </div>
                 <p class="text-neutral-600 text-sm">
-                    Experienced instructor with expertise in {{ $course->category->name }} 
+                    Experienced instructor with expertise in {{ $course->category->name ?? 'this field' }} 
                     and passion for teaching.
                 </p>
             </div>
+            @endif
         </div>
     </div>
 </div>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\MediaService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -94,12 +95,14 @@ class Ebook extends Model
      */
     public function getThumbnailUrlAttribute()
     {
-        return $this->thumbnail ? asset('storage/' . $this->thumbnail) : null;
+        $mediaService = app(MediaService::class);
+        return $mediaService->url($this->thumbnail, '/images/course-placeholder.png');
     }
 
     public function getFileUrlAttribute()
     {
-        return $this->file_path ? asset('storage/' . $this->file_path) : null;
+        $mediaService = app(MediaService::class);
+        return $mediaService->url($this->file_path);
     }
 
     public function getFileSizeFormattedAttribute()
@@ -131,14 +134,24 @@ class Ebook extends Model
 
     public function canBeAccessedBy($userId)
     {
+        // Defensive guard: Check if access_records table exists
+        if (!\Illuminate\Support\Facades\Schema::hasTable('ebook_access')) {
+            return $this->is_free ?? false;
+        }
+        
         if ($this->is_free) {
             return true;
         }
 
-        return $this->accessRecords()
-            ->where('user_id', $userId)
-            ->where('access_until', '>', now())
-            ->exists();
+        try {
+            return $this->accessRecords()
+                ->where('user_id', $userId)
+                ->where('access_until', '>', now())
+                ->exists();
+        } catch (\Exception $e) {
+            // If relationship fails, deny access
+            return false;
+        }
     }
 
     public function incrementDownloadCount()

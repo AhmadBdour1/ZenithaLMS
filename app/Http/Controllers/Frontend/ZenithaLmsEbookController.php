@@ -4,19 +4,21 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ebook;
-use App\Models\EbookAccess;
-use App\Models\EbookFavorite;
-use App\Models\EbookReview;
 use App\Models\Category;
-use App\Models\User;
+use App\Services\MediaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ZenithaLmsEbookController extends Controller
 {
+    private MediaService $mediaService;
+
+    public function __construct(MediaService $mediaService)
+    {
+        $this->mediaService = $mediaService;
+    }
     /**
      * Display the ebooks marketplace
      */
@@ -179,26 +181,51 @@ class ZenithaLmsEbookController extends Controller
      */
     public function download($ebookId)
     {
-        $user = Auth::user();
-        $ebook = Ebook::findOrFail($ebookId);
+        try {
+            // Defensive guard: Check if ebooks table exists
+            if (!\Illuminate\Support\Facades\Schema::hasTable('ebooks')) {
+                abort(404, 'Ebooks not available');
+            }
+            
+            $user = Auth::user();
+            if (!$user) {
+                abort(401, 'Authentication required');
+            }
+            
+            $ebook = Ebook::find($ebookId);
+            if (!$ebook) {
+                abort(404, 'Ebook not found');
+            }
 
-        // ZenithaLMS: Check access
-        if (!$ebook->canBeAccessedBy($user->id)) {
-            abort(403, 'You do not have access to this ebook');
+            // ZenithaLMS: Check access
+            if (!$ebook->canBeAccessedBy($user->id)) {
+                abort(403, 'You do not have access to this ebook');
+            }
+
+            // ZenithaLMS: Check if downloadable
+            if (!$ebook->is_downloadable) {
+                abort(403, 'This ebook cannot be downloaded');
+            }
+
+            // ZenithaLMS: Check if file exists
+            if (!$ebook->file_path) {
+                abort(404, 'Ebook file not available');
+            }
+
+            // ZenithaLMS: Increment download count
+            $ebook->incrementDownloadCount();
+
+            // ZenithaLMS: Log download
+            $this->logDownload($user, $ebook);
+
+            return Storage::download($ebook->file_path, $ebook->title . '.' . $ebook->file_type);
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            // Re-throw HTTP exceptions (abort, etc.)
+            throw $e;
+        } catch (\Exception $e) {
+            // If anything else fails, return 404 instead of 500
+            abort(404, 'Ebook file not found or cannot be downloaded');
         }
-
-        // ZenithaLMS: Check if downloadable
-        if (!$ebook->is_downloadable) {
-            abort(403, 'This ebook cannot be downloaded');
-        }
-
-        // ZenithaLMS: Increment download count
-        $ebook->incrementDownloadCount();
-
-        // ZenithaLMS: Log download
-        $this->logDownload($user, $ebook);
-
-        return Storage::download($ebook->file_path, $ebook->title . '.' . $ebook->file_type);
     }
 
     /**
@@ -206,18 +233,51 @@ class ZenithaLmsEbookController extends Controller
      */
     public function read($ebookId)
     {
-        $user = Auth::user();
-        $ebook = Ebook::findOrFail($ebookId);
+        try {
+            // Defensive guard: Check if ebooks table exists
+            if (!\Illuminate\Support\Facades\Schema::hasTable('ebooks')) {
+                abort(404, 'Ebooks not available');
+            }
+            
+            $user = Auth::user();
+            if (!$user) {
+                abort(401, 'Authentication required');
+            }
+            
+            $ebook = Ebook::find($ebookId);
+            if (!$ebook) {
+                abort(404, 'Ebook not found');
+            }
 
-        // ZenithaLMS: Check access
-        if (!$ebook->canBeAccessedBy($user->id)) {
-            abort(403, 'You do not have access to this ebook');
+            // ZenithaLMS: Check access
+            if (!$ebook->canBeAccessedBy($user->id)) {
+                abort(403, 'You do not have access to this ebook');
+            }
+
+            // ZenithaLMS: Track reading progress
+            $this->trackReadingProgress($user, $ebook);
+
+            // Check if view exists before rendering
+            if (!view()->exists('zenithalms.ebooks.read')) {
+                // Fallback response if view doesn't exist
+                return response()->json([
+                    'message' => 'Ebook reader not available',
+                    'ebook' => [
+                        'id' => $ebook->id,
+                        'title' => $ebook->title,
+                        'description' => $ebook->description,
+                    ]
+                ]);
+            }
+
+            return view('zenithalms.ebooks.read', compact('ebook'));
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+            // Re-throw HTTP exceptions (abort, etc.)
+            throw $e;
+        } catch (\Exception $e) {
+            // If anything else fails, return 404 instead of 500
+            abort(404, 'Ebook reader not available');
         }
-
-        // ZenithaLMS: Track reading progress
-        $this->trackReadingProgress($user, $ebook);
-
-        return view('zenithalms.ebooks.read', compact('ebook'));
     }
 
     /**
@@ -284,37 +344,55 @@ class ZenithaLmsEbookController extends Controller
 
     private function logDownload($user, $ebook)
     {
-        // ZenithaLMS: Log download for analytics
-        DB::table('ebook_downloads')->insert([
-            'user_id' => $user->id,
-            'ebook_id' => $ebook->id,
-            'downloaded_at' => now(),
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        // Defensive guard: Check if ebook_downloads table exists
+        if (!\Illuminate\Support\Facades\Schema::hasTable('ebook_downloads')) {
+            return; // Skip logging if table doesn't exist
+        }
+        
+        try {
+            // ZenithaLMS: Log download for analytics
+            DB::table('ebook_downloads')->insert([
+                'user_id' => $user->id,
+                'ebook_id' => $ebook->id,
+                'downloaded_at' => now(),
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+        } catch (\Exception $e) {
+            // Silently fail logging to avoid 500 errors
+        }
     }
 
     private function trackReadingProgress($user, $ebook)
     {
-        // ZenithaLMS: Track reading progress
-        $progress = DB::table('ebook_reading_progress')
-            ->where('user_id', $user->id)
-            ->where('ebook_id', $ebook->id)
-            ->first();
+        // Defensive guard: Check if ebook_reading_progress table exists
+        if (!\Illuminate\Support\Facades\Schema::hasTable('ebook_reading_progress')) {
+            return; // Skip tracking if table doesn't exist
+        }
+        
+        try {
+            // ZenithaLMS: Track reading progress
+            $progress = DB::table('ebook_reading_progress')
+                ->where('user_id', $user->id)
+                ->where('ebook_id', $ebook->id)
+                ->first();
 
-        if (!$progress) {
-            DB::table('ebook_reading_progress')->insert([
-                'user_id' => $user->id,
-                'ebook_id' => $ebook->id,
-                'started_at' => now(),
-                'last_accessed_at' => now(),
-                'reading_time_minutes' => 0,
-                'pages_read' => 0,
-            ]);
-        } else {
-            DB::table('ebook_reading_progress')
-                ->where('id', $progress->id)
-                ->update(['last_accessed_at' => now()]);
+            if (!$progress) {
+                DB::table('ebook_reading_progress')->insert([
+                    'user_id' => $user->id,
+                    'ebook_id' => $ebook->id,
+                    'started_at' => now(),
+                    'last_accessed_at' => now(),
+                    'reading_time_minutes' => 0,
+                    'pages_read' => 0,
+                ]);
+            } else {
+                DB::table('ebook_reading_progress')
+                    ->where('id', $progress->id)
+                    ->update(['last_accessed_at' => now()]);
+            }
+        } catch (\Exception $e) {
+            // Silently fail tracking to avoid 500 errors
         }
     }
 
@@ -336,8 +414,8 @@ class ZenithaLmsEbookController extends Controller
             'price' => 'required|numeric|min:0',
             'is_free' => 'boolean',
             'is_downloadable' => 'boolean',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'file' => 'required|file|mimes:pdf,epub,mobi|max:10240',
+            'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+            'file' => 'required|file|mimes:pdf,epub|max:20480',
         ]);
 
         $ebookData = $request->except(['thumbnail', 'file']);
@@ -345,16 +423,28 @@ class ZenithaLmsEbookController extends Controller
         $ebookData['user_id'] = Auth::id();
         $ebookData['status'] = 'active';
 
-        // ZenithaLMS: Handle file uploads
+        // Handle file uploads using MediaService
         if ($request->hasFile('thumbnail')) {
             $thumbnail = $request->file('thumbnail');
-            $thumbnailPath = $thumbnail->store('ebooks/thumbnails', 'public');
+            $thumbnailPath = $this->mediaService->storePublic(
+                $thumbnail, 
+                'ebooks/thumbnails', 
+                Str::slug($request->title), 
+                ['jpeg', 'jpg', 'png', 'webp'], 
+                5120 * 1024 // 5MB
+            );
             $ebookData['thumbnail'] = $thumbnailPath;
         }
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $filePath = $file->store('ebooks/files', 'public');
+            $filePath = $this->mediaService->storePublic(
+                $file, 
+                'ebooks/files', 
+                Str::slug($request->title), 
+                ['pdf', 'epub'], 
+                20480 * 1024 // 20MB
+            );
             $ebookData['file_path'] = $filePath;
             $ebookData['file_type'] = $file->getClientOriginalExtension();
             $ebookData['file_size'] = $file->getSize();
@@ -388,29 +478,41 @@ class ZenithaLmsEbookController extends Controller
             'price' => 'required|numeric|min:0',
             'is_free' => 'boolean',
             'is_downloadable' => 'boolean',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'file' => 'nullable|file|mimes:pdf,epub,mobi|max:10240',
+            'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
+            'file' => 'nullable|file|mimes:pdf,epub|max:20480',
         ]);
 
         $ebookData = $request->except(['thumbnail', 'file']);
         $ebookData['slug'] = Str::slug($request->title);
 
-        // ZenithaLMS: Handle file uploads
+        // Handle file uploads using MediaService
         if ($request->hasFile('thumbnail')) {
-            if ($ebook->thumbnail) {
-                Storage::disk('public')->delete($ebook->thumbnail);
-            }
+            // Delete old thumbnail using MediaService
+            $this->mediaService->deletePublic($ebook->thumbnail);
+            
             $thumbnail = $request->file('thumbnail');
-            $thumbnailPath = $thumbnail->store('ebooks/thumbnails', 'public');
+            $thumbnailPath = $this->mediaService->storePublic(
+                $thumbnail, 
+                'ebooks/thumbnails', 
+                Str::slug($request->title), 
+                ['jpeg', 'jpg', 'png', 'webp'], 
+                5120 * 1024 // 5MB
+            );
             $ebookData['thumbnail'] = $thumbnailPath;
         }
 
         if ($request->hasFile('file')) {
-            if ($ebook->file_path) {
-                Storage::disk('public')->delete($ebook->file_path);
-            }
+            // Delete old file using MediaService
+            $this->mediaService->deletePublic($ebook->file_path);
+            
             $file = $request->file('file');
-            $filePath = $file->store('ebooks/files', 'public');
+            $filePath = $this->mediaService->storePublic(
+                $file, 
+                'ebooks/files', 
+                Str::slug($request->title), 
+                ['pdf', 'epub'], 
+                20480 * 1024 // 20MB
+            );
             $ebookData['file_path'] = $filePath;
             $ebookData['file_type'] = $file->getClientOriginalExtension();
             $ebookData['file_size'] = $file->getSize();
@@ -429,13 +531,9 @@ class ZenithaLmsEbookController extends Controller
     {
         $ebook = Ebook::where('user_id', Auth::id())->findOrFail($id);
 
-        // ZenithaLMS: Delete files
-        if ($ebook->thumbnail) {
-            Storage::disk('public')->delete($ebook->thumbnail);
-        }
-        if ($ebook->file_path) {
-            Storage::disk('public')->delete($ebook->file_path);
-        }
+        // Delete files using MediaService
+        $this->mediaService->deletePublic($ebook->thumbnail);
+        $this->mediaService->deletePublic($ebook->file_path);
 
         $ebook->delete();
 
