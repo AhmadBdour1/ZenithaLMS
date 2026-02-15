@@ -23,3 +23,11 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /setup/Data/
+# Test artifacts / local debug outputs
+/storage/*.xml
+/storage/*.txt
+
+# Local scratch files
+pasted-text-*.txt
+
+
