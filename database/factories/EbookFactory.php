@@ -14,7 +14,7 @@ class EbookFactory extends Factory
     public function definition()
     {
         return [
-            'user_id' => User::factory(),
+            'author_id' => User::factory(),
             'category_id' => Category::factory(),
             'title' => $this->faker->sentence(3),
             'slug' => $this->faker->unique()->slug(),

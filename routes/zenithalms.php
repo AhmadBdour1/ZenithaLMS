@@ -23,43 +23,80 @@ use App\Http\Controllers\Frontend\ZenithaLmsPaymentController;
 // Auth::routes();
 
 // ZenithaLMS: Course Routes
-Route::get('/courses', function () {
-    $categories = \App\Models\Category::all();
-    $courses = \App\Models\Course::with(['instructor', 'category'])->paginate(12);
+Route::get('/courses', function (Request $request) {
+    // Build query builder
+    $query = \App\Models\Course::with(['instructor', 'category'])
+        ->where('is_published', 1);
+    
+    // Search filter (title/description)
+    if ($request->filled('search')) {
+        $searchTerm = $request->get('search');
+        $query->where(function($q) use ($searchTerm) {
+            $q->where('title', 'like', '%' . $searchTerm . '%')
+              ->orWhere('description', 'like', '%' . $searchTerm . '%');
+        });
+    }
+    
+    // Category filter (accept slug OR id)
+    if ($request->filled('category')) {
+        $categoryValue = $request->get('category');
+        $query->where(function($q) use ($categoryValue) {
+            $q->whereHas('category', function($subQ) use ($categoryValue) {
+                $subQ->where('slug', $categoryValue);
+            })->orWhere('category_id', $categoryValue);
+        });
+    }
+    
+    // Level filter (exact match)
+    if ($request->filled('level')) {
+        $query->where('level', $request->get('level'));
+    }
+    
+    // Price type filter
+    if ($request->filled('price_type')) {
+        $priceType = $request->get('price_type');
+        if ($priceType === 'free') {
+            $query->where(function($q) {
+                $q->where('is_free', 1)->orWhere('price', 0);
+            });
+        } elseif ($priceType === 'paid') {
+            $query->where('is_free', 0)->where('price', '>', 0);
+        }
+    }
+    
+    // Sort filter
+    if ($request->filled('sort')) {
+        $sort = $request->get('sort');
+        switch ($sort) {
+            case 'newest':
+                $query->orderBy('created_at', 'desc');
+                break;
+            case 'price_asc':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'featured':
+                $query->orderBy('is_featured', 'desc')->orderBy('created_at', 'desc');
+                break;
+            default:
+                $query->orderBy('created_at', 'desc');
+        }
+    } else {
+        $query->orderBy('created_at', 'desc');
+    }
+    
+    // Get categories for filter dropdown
+    $categories = \App\Models\Category::orderBy('name')->get();
+    
+    // Paginate with query params preserved
+    $courses = $query->paginate(12)->appends($request->query());
+    
     return view('courses.index', compact('categories', 'courses'));
 })->name('courses.index');
 
-// ZenithaLMS: Ebook Routes
-Route::prefix('ebooks')->name('zenithalms.ebooks.')->group(function () {
-    Route::get('/', [ZenithaLmsEbookController::class, 'index'])->name('index');
-    Route::get('/{slug}', [ZenithaLmsEbookController::class, 'show'])->name('show');
-    Route::get('/my-ebooks', [ZenithaLmsEbookController::class, 'myEbooks'])->name('my-ebooks');
-    Route::get('/download/{ebookId}', [ZenithaLmsEbookController::class, 'download'])->name('download');
-    Route::get('/read/{ebookId}', [ZenithaLmsEbookController::class, 'read'])->name('read');
-    Route::post('/favorites/{ebookId}', [ZenithaLmsEbookController::class, 'addToFavorites'])->name('favorites.add');
-    Route::delete('/favorites/{ebookId}', [ZenithaLmsEbookController::class, 'removeFromFavorites'])->name('favorites.remove');
-    Route::get('/search', [ZenithaLmsEbookController::class, 'search'])->name('search');
-    Route::get('/recommendations', [ZenithaLmsEbookController::class, 'recommendations'])->name('recommendations');
-    
-    // Admin routes
-    Route::middleware(['auth', 'role:admin'])->group(function () {
-        Route::get('/admin', [ZenithaLmsEbookController::class, 'adminIndex'])->name('admin.index');
-        Route::get('/admin/{id}', [ZenithaLmsEbookController::class, 'adminShow'])->name('admin.show');
-        Route::get('/admin/{id}/edit', [ZenithaLmsEbookController::class, 'adminEdit'])->name('admin.edit');
-        Route::put('/admin/{id}', [ZenithaLmsEbookController::class, 'adminUpdate'])->name('admin.update');
-        Route::delete('/admin/{id}', [ZenithaLmsEbookController::class, 'adminDestroy'])->name('admin.destroy');
-        Route::post('/admin/{id}/toggle-featured', [ZenithaLmsEbookController::class, 'toggleFeatured'])->name('admin.toggle-featured');
-    });
-    
-    // Instructor/Organization routes
-    Route::middleware(['auth', 'role:instructor,organization'])->group(function () {
-        Route::get('/create', [ZenithaLmsEbookController::class, 'create'])->name('create');
-        Route::post('/', [ZenithaLmsEbookController::class, 'store'])->name('store');
-        Route::get('/{id}/edit', [ZenithaLmsEbookController::class, 'edit'])->name('edit');
-        Route::put('/{id}', [ZenithaLmsEbookController::class, 'update'])->name('update');
-        Route::delete('/{id}', [ZenithaLmsEbookController::class, 'destroy'])->name('destroy');
-    });
-});
+Route::get('/courses/{slug}', [App\Http\Controllers\Frontend\CourseController::class, 'show'])->name('courses.show');
 
 // ZenithaLMS: Ebook Routes
 Route::prefix('ebooks')->name('zenithalms.ebooks.')->group(function () {
@@ -84,7 +121,7 @@ Route::prefix('ebooks')->name('zenithalms.ebooks.')->group(function () {
     });
     
     // Instructor/Organization routes
-    Route::middleware(['auth', 'role:instructor,organization'])->group(function () {
+    Route::middleware(['auth', 'role:instructor,organization_admin'])->group(function () {
         Route::get('/create', [ZenithaLmsEbookController::class, 'create'])->name('create');
         Route::post('/', [ZenithaLmsEbookController::class, 'store'])->name('store');
         Route::get('/{id}/edit', [ZenithaLmsEbookController::class, 'edit'])->name('edit');
@@ -93,8 +130,7 @@ Route::prefix('ebooks')->name('zenithalms.ebooks.')->group(function () {
     });
 });
 
-// ZenithaLMS: Blog Routes - Temporarily commented out
-/*
+// ZenithaLMS: Blog Routes
 Route::prefix('blog')->name('zenithalms.blog.')->group(function () {
     Route::get('/', [ZenithaLmsBlogController::class, 'index'])->name('index');
     Route::get('/{slug}', [ZenithaLmsBlogController::class, 'show'])->name('show');
@@ -120,7 +156,6 @@ Route::prefix('blog')->name('zenithalms.blog.')->group(function () {
         Route::delete('/{id}', [ZenithaLmsBlogController::class, 'destroy'])->name('destroy');
     });
 });
-*/
 
 // Simple blog routes for now
 Route::get('/blog', function () {
@@ -197,29 +232,7 @@ Route::prefix('dashboard')->name('zenithalms.dashboard.')->middleware('auth')->g
             ],
         ];
         return view('zenithalms.dashboard.organization', compact('user', 'stats'));
-    })->name('organization')->middleware('role:organization');
-    
-    // Default dashboard - redirect based on role
-    Route::get('/', function () {
-        $user = auth()->user();
-        $role = $user->role_name;
-        
-        // Redirect based on role
-        switch ($role) {
-            case 'super_admin':
-            case 'admin':
-                return redirect()->route('zenithalms.dashboard.admin');
-            case 'instructor':
-                return redirect()->route('zenithalms.dashboard.instructor');
-            case 'student':
-                return redirect()->route('zenithalms.dashboard.student');
-            case 'organization':
-                return redirect()->route('zenithalms.dashboard.organization');
-            default:
-                // Default to student dashboard for unknown roles
-                return redirect()->route('zenithalms.dashboard.student');
-        }
-    })->name('default');
+    })->name('organization')->middleware('role:organization_admin');
 });
 
 // ZenithaLMS: AI Assistant Routes
@@ -399,7 +412,7 @@ Route::prefix('system')->name('zenithalms.system.')->middleware(['auth', 'role:a
 
 // ZenithaLMS: Utility Routes
 Route::get('/sitemap.xml', function () {
-    return response()->view('zenithalms.sitemap.index')->header('Content-Type', 'text/xml');
+    return response()->view('zenithalms.sitemap.index')->header('Content-Type', 'application/xml');
 });
 
 Route::get('/sitemap-ebooks.xml', function () {

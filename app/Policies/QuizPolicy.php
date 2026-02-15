@@ -39,7 +39,7 @@ class QuizPolicy
      */
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'instructor']);
+        return $user->hasRole(['admin', 'instructor']);
     }
 
     /**
@@ -48,12 +48,12 @@ class QuizPolicy
     public function update(User $user, Quiz $quiz): bool
     {
         // Admin can update any quiz
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return true;
         }
 
         // Instructors can update their own quizzes
-        if ($user->role === 'instructor' && $quiz->created_by === $user->id) {
+        if ($user->isInstructor() && $quiz->created_by === $user->id) {
             return true;
         }
 
@@ -66,12 +66,12 @@ class QuizPolicy
     public function delete(User $user, Quiz $quiz): bool
     {
         // Admin can delete any quiz
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return true;
         }
 
         // Instructors can delete their own quizzes
-        if ($user->role === 'instructor' && $quiz->created_by === $user->id) {
+        if ($user->isInstructor() && $quiz->created_by === $user->id) {
             return true;
         }
 

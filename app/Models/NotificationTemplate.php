@@ -527,7 +527,7 @@ class NotificationTemplate extends Model
                     'type' => self::TYPE_WARNING,
                     'channel' => self::CHANNEL_EMAIL,
                     'subject_template' => 'Assignment Due Soon: {assignment_title}',
-                    'content_template => 'Your assignment "{assignment_title}" is due on {due_date}. Please submit it before the deadline.',
+                    'content_template' => 'Your assignment "{assignment_title}" is due on {due_date}. Please submit it before the deadline.',
                     'variables' => ['assignment_title', 'due_date'],
                     'default_values' => ['Assignment Title', 'December 31, 2025'],
                     'is_active' => true,
@@ -571,7 +571,7 @@ class NotificationTemplate extends Model
         $required = ['name', 'type', 'channel', 'subject_template', 'content_template'];
         
         foreach ($required as $field) {
-            if (!isset($data[$field]) {
+            if (!isset($data[$field])) {
                 return false;
             }
         }

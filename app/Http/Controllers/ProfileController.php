@@ -44,14 +44,12 @@ class ProfileController extends Controller
             // Delete old avatar
             $this->mediaService->deletePublic($user->avatar);
             
-            // Store new avatar
+            // Store new avatar using new MediaService API
             $avatar = $request->file('avatar');
             $avatarPath = $this->mediaService->storePublic(
                 $avatar, 
-                'avatars', 
-                'user-' . $user->id, 
-                ['jpeg', 'jpg', 'png', 'webp'], 
-                2048 * 1024 // 2MB
+                'users.avatar', 
+                $user->avatar
             );
             $user->avatar = $avatarPath;
         }

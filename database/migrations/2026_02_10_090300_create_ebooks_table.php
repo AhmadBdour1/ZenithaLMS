@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('ebooks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id');
+            $table->foreignId('author_id');
             $table->foreignId('category_id')->nullable();
             $table->string('title');
             $table->string('slug')->unique();
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
             
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('author_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('category_id')->references('id')->on('categories')->onDelete('set null');
         });
     }

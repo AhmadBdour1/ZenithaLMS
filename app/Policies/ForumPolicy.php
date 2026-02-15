@@ -28,7 +28,7 @@ class ForumPolicy
      */
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'instructor', 'student']);
+        return $user->hasRole(['admin', 'instructor', 'student']);
     }
 
     /**
@@ -37,17 +37,17 @@ class ForumPolicy
     public function update(User $user, Forum $forum): bool
     {
         // Admin can update any forum
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return true;
         }
 
         // Instructors can update their own forums
-        if ($user->role === 'instructor' && $forum->user_id === $user->id) {
+        if ($user->isInstructor() && $forum->user_id === $user->id) {
             return true;
         }
 
         // Students can update their own forums
-        if ($user->role === 'student' && $forum->user_id === $user->id) {
+        if ($user->isStudent() && $forum->user_id === $user->id) {
             return true;
         }
 
@@ -60,17 +60,17 @@ class ForumPolicy
     public function delete(User $user, Forum $forum): bool
     {
         // Admin can delete any forum
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return true;
         }
 
         // Instructors can delete their own forums
-        if ($user->role === 'instructor' && $forum->user_id === $user->id) {
+        if ($user->isInstructor() && $forum->user_id === $user->id) {
             return true;
         }
 
         // Students can delete their own forums (within time limit)
-        if ($user->role === 'student' && $forum->user_id === $user->id) {
+        if ($user->isStudent() && $forum->user_id === $user->id) {
             // Allow deletion within 24 hours
             return $forum->created_at->diffInHours(now()) < 24;
         }
@@ -79,15 +79,15 @@ class ForumPolicy
     }
 
     /**
-     * Determine whether the user can reply to the forum.
+     * Determine whether the user can reply to forums.
      */
-    public function reply(User $user, Forum $forum): bool
+    public function reply(User $user): bool
     {
-        // Check if forum is locked
-        if ($forum->is_locked) {
+        // Only authenticated users can reply
+        if (!$user) {
             return false;
         }
 
-        return in_array($user->role, ['admin', 'instructor', 'student']);
+        return $user->hasRole(['admin', 'instructor', 'student']);
     }
 }

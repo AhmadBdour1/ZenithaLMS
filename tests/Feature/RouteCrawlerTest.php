@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Support\Install\InstallState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -22,6 +23,9 @@ class RouteCrawlerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        
+        // Mark as installed for tests
+        InstallState::markInstalled(['test' => 'route_crawler_test']);
         
         // Create test users for each role
         $this->testUsers = [
@@ -324,6 +328,11 @@ class RouteCrawlerTest extends TestCase
                 foreach ($routes as $routeGroup) {
                     if (is_array($routeGroup)) {
                         foreach ($routeGroup as $result) {
+                            // Only process valid result arrays
+                            if (!is_array($result) || !array_key_exists('success', $result)) {
+                                continue;
+                            }
+                            
                             $report['summary']['total_routes_tested']++;
                             if ($result['success']) {
                                 $report['summary']['successful_routes']++;
@@ -334,6 +343,22 @@ class RouteCrawlerTest extends TestCase
                                 }
                             }
                         }
+                    } else {
+                        // Handle flat arrays (direct route results)
+                        if (!is_array($routeGroup) || !array_key_exists('success', $routeGroup)) {
+                            continue;
+                        }
+                        
+                        $result = $routeGroup;
+                        $report['summary']['total_routes_tested']++;
+                        if ($result['success']) {
+                            $report['summary']['successful_routes']++;
+                        } else {
+                            $report['summary']['failed_routes']++;
+                            if ($result['status'] >= 500) {
+                                $report['summary']['critical_failures']++;
+                            }
+                        }
                     }
                 }
             }
@@ -341,6 +366,13 @@ class RouteCrawlerTest extends TestCase
 
         // Save report to file
         $reportPath = storage_path('app/reports/backend_crawl_' . now()->format('Y-m-d_H-i-s') . '.json');
+        $reportDir = dirname($reportPath);
+        
+        // Ensure reports directory exists
+        if (!is_dir($reportDir)) {
+            mkdir($reportDir, 0755, true);
+        }
+        
         file_put_contents($reportPath, json_encode($report, JSON_PRETTY_PRINT));
 
         Log::info('Backend crawl report generated', ['report_path' => $reportPath, 'summary' => $report['summary']]);

@@ -3,12 +3,21 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Support\Install\InstallState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Mark as installed for tests
+        InstallState::markInstalled(['test' => 'profile_test']);
+    }
 
     public function test_profile_page_is_displayed(): void
     {

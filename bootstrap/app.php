@@ -3,13 +3,23 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Route;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
+        channels: __DIR__.'/../routes/channels.php',
         then: function () {
+            Route::middleware('web')
+                ->group(base_path('routes/install.php'));
+                
+            Route::middleware('web')
+                ->prefix('admin')
+                ->name('admin.')
+                ->group(base_path('routes/admin.php'));
+                
             Route::middleware('web')
                 ->group(base_path('routes/zenithalms.php'));
         },
@@ -24,13 +34,18 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.rate_limit' => \App\Http\Middleware\ApiRateLimiting::class,
             'api.cache' => \App\Http\Middleware\CacheMiddleware::class,
             'role.check' => \App\Http\Middleware\RoleMiddleware::class,
+            'installed' => \App\Http\Middleware\EnsureInstalled::class,
         ]);
         
-        // Apply security middleware to all API routes
-        $middleware->group('api', [
-            \App\Http\Middleware\SanitizeInput::class,
-            \App\Http\Middleware\SecurityHeaders::class,
-            \App\Http\Middleware\ApiRateLimiting::class,
+        // Apply installation check to all web routes except installer
+        $middleware->group('web', [
+            \App\Http\Middleware\EnsureInstalled::class,
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ]);
         
         // Apply caching to specific API routes (using route middleware)
@@ -38,4 +53,5 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();

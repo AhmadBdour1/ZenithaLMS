@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Certificate;
-use App\Models\Course;
 use App\Models\Enrollment;
+use App\Services\MediaService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -14,8 +14,11 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class ZenithaLmsCertificateController extends Controller
 {
-    public function __construct()
+    private MediaService $mediaService;
+
+    public function __construct(MediaService $mediaService)
     {
+        $this->mediaService = $mediaService;
         $this->middleware('auth');
     }
 
@@ -340,7 +343,10 @@ class ZenithaLmsCertificateController extends Controller
             ->size(200)
             ->generate($verificationUrl);
         
-        $qrCodePath = 'certificates/qr-codes/' . $certificate->certificate_number . '.png';
+        $folder = $this->mediaService->getFolder('certificates.qr_codes');
+        $qrCodePath = $folder . '/' . $certificate->certificate_number . '.png';
+        
+        // Store using Storage directly since it's generated content, not uploaded
         Storage::disk('public')->put($qrCodePath, $qrCode);
         
         $certificate->update(['qr_code' => $qrCodePath]);

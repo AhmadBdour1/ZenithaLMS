@@ -84,16 +84,19 @@ class QuizAPIController extends Controller
         // Authorize quiz start
         $this->authorize('start', $quiz);
         
-        // Check if user has attempts remaining
-        $attemptCount = QuizAttempt::where('user_id', $user->id)
-            ->where('quiz_id', $quizId)
-            ->where('status', 'completed')
-            ->count();
+        // Check if user has attempts remaining (only if max_attempts is set and > 0)
+        $maxAttempts = $quiz->max_attempts;
+        if ($maxAttempts && $maxAttempts > 0) {
+            $attemptCount = QuizAttempt::where('user_id', $user->id)
+                ->where('quiz_id', $quizId)
+                ->where('status', 'completed')
+                ->count();
 
-        if ($attemptCount >= $quiz->attempts_allowed) {
-            return response()->json([
-                'message' => 'No attempts remaining'
-            ], 422);
+            if ($attemptCount >= $maxAttempts) {
+                return response()->json([
+                    'message' => 'No attempts remaining'
+                ], 403);
+            }
         }
 
         // Check if there's an ongoing attempt
@@ -107,7 +110,7 @@ class QuizAPIController extends Controller
                 'message' => 'Quiz already in progress',
                 'attempt_id' => $ongoingAttempt->id,
                 'quiz' => $quiz->load('questions.options'),
-                'time_limit' => $quiz->duration_minutes,
+                'time_limit' => $quiz->time_limit_minutes,
                 'started_at' => $ongoingAttempt->started_at,
             ]);
         }
@@ -121,10 +124,9 @@ class QuizAPIController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Quiz started successfully',
             'attempt_id' => $attempt->id,
             'quiz' => $quiz->load('questions.options'),
-            'time_limit' => $quiz->duration_minutes,
+            'time_limit' => $quiz->time_limit_minutes,
             'started_at' => $attempt->started_at,
         ]);
     }

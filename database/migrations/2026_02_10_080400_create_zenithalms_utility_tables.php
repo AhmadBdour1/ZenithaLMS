@@ -176,12 +176,14 @@ return new class extends Migration
             $table->id();
             $table->string('key')->unique();
             $table->text('value');
-            $table->string('type')->default('text'); // text, boolean, number, json
+            $table->string('type')->default('string'); // string, boolean, integer, float, json
             $table->string('group')->default('general'); // general, payment, email, etc.
             $table->text('description')->nullable();
             $table->boolean('is_public')->default(false);
             $table->json('setting_data')->nullable(); // ZenithaLMS setting metadata
             $table->timestamps();
+            
+            $table->index(['group', 'is_public']);
         });
 
         // ZenithaLMS Cache Settings Table

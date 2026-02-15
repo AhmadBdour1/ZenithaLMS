@@ -238,7 +238,7 @@ class ZenithaLmsPaymentController extends Controller
         ]);
         
         // Simulate payment processing
-        $this->processPayment($payment);
+        $this->simulatePaymentProcessing($payment);
         
         return response()->json([
             'success' => true,
@@ -295,7 +295,7 @@ class ZenithaLmsPaymentController extends Controller
         
         // Apply coupon if provided
         if ($request->filled('coupon_code')) {
-            $discount = $this->applyCoupon($request->coupon_code, $amount);
+            $discount = $this->calculateCouponDiscount($request->coupon_code, $amount);
             $amount = $discount['final_amount'];
         }
         
@@ -332,7 +332,7 @@ class ZenithaLmsPaymentController extends Controller
         ]);
         
         // Simulate payment processing
-        $this->processPayment($payment);
+        $this->simulatePaymentProcessing($payment);
         
         return response()->json([
             'success' => true,
@@ -410,7 +410,7 @@ class ZenithaLmsPaymentController extends Controller
             ], 422);
         }
         
-        $discount = $this->applyCoupon($request->coupon_code, $request->amount);
+        $discount = $this->calculateCouponDiscount($request->coupon_code, $request->amount);
         
         return response()->json([
             'success' => true,
@@ -500,46 +500,11 @@ class ZenithaLmsPaymentController extends Controller
     }
 
     /**
-     * Process payment (simulated)
+     * Execute payment processing (internal helper)
      */
-    private function processPayment($payment)
+    private function executePayment($payment)
     {
-        // Simulate payment processing
-        $success = rand(1, 100) > 10; // 90% success rate
-        
-        if ($success) {
-            $payment->update([
-                'status' => 'completed',
-                'completed_at' => now(),
-                'gateway_transaction_id' => 'txn_' . uniqid(),
-                'gateway_response' => [
-                    'status' => 'success',
-                    'message' => 'Payment processed successfully',
-                ],
-            ]);
-            
-            // Grant access to course if applicable
-            if ($payment->course_id) {
-                $this->grantCourseAccess($payment->user_id, $payment->course_id);
-            }
-            
-            // Add funds to wallet if applicable
-            if ($payment->type === 'wallet_funding') {
-                $this->addFundsToWallet($payment->user_id, $payment->amount);
-            }
-            
-            // Send notification
-            $this->sendPaymentNotification($payment);
-        } else {
-            $payment->update([
-                'status' => 'failed',
-                'failed_at' => now(),
-                'gateway_response' => [
-                    'status' => 'failed',
-                    'message' => 'Payment processing failed',
-                ],
-            ]);
-        }
+        return $this->simulatePaymentProcessing($payment);
     }
 
     /**
@@ -681,9 +646,9 @@ class ZenithaLmsPaymentController extends Controller
     }
 
     /**
-     * Apply coupon discount
+     * Calculate coupon discount (internal helper)
      */
-    private function applyCoupon($couponCode, $amount)
+    private function calculateCouponDiscount(string $couponCode, float $amount): array
     {
         // Simulate coupon validation
         $coupons = [
@@ -720,6 +685,49 @@ class ZenithaLmsPaymentController extends Controller
             'discount_type' => $coupon['discount_type'],
             'discount_value' => $coupon['discount_value'],
         ];
+    }
+
+    /**
+     * Process payment (simulated)
+     */
+    private function simulatePaymentProcessing($payment)
+    {
+        // Simulate payment processing
+        $success = rand(1, 100) > 10; // 90% success rate
+        
+        if ($success) {
+            $payment->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+                'gateway_transaction_id' => 'txn_' . uniqid(),
+                'gateway_response' => [
+                    'status' => 'success',
+                    'message' => 'Payment processed successfully',
+                ],
+            ]);
+            
+            // Grant access to course if applicable
+            if ($payment->course_id) {
+                $this->grantCourseAccess($payment->user_id, $payment->course_id);
+            }
+            
+            // Add funds to wallet if applicable
+            if ($payment->type === 'wallet_funding') {
+                $this->addFundsToWallet($payment->user_id, $payment->amount);
+            }
+            
+            // Send notification
+            $this->sendPaymentNotification($payment);
+        } else {
+            $payment->update([
+                'status' => 'failed',
+                'failed_at' => now(),
+                'gateway_response' => [
+                    'status' => 'failed',
+                    'message' => 'Payment processing failed',
+                ],
+            ]);
+        }
     }
 
     /**

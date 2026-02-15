@@ -12,7 +12,7 @@ class Ebook extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'user_id',
+        'author_id',
         'category_id',
         'title',
         'slug',
@@ -42,9 +42,9 @@ class Ebook extends Model
     /**
      * ZenithaLMS: Relationships
      */
-    public function user()
+    public function author()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'author_id');
     }
 
     public function category()
@@ -58,6 +58,14 @@ class Ebook extends Model
     }
 
     public function accessRecords()
+    {
+        return $this->hasMany(EbookAccess::class);
+    }
+
+    /**
+     * Get ebook accesses (alias for accessRecords)
+     */
+    public function accesses()
     {
         return $this->hasMany(EbookAccess::class);
     }
@@ -96,13 +104,13 @@ class Ebook extends Model
     public function getThumbnailUrlAttribute()
     {
         $mediaService = app(MediaService::class);
-        return $mediaService->url($this->thumbnail, '/images/course-placeholder.png');
+        return $mediaService->publicUrl($this->thumbnail, '/images/course-placeholder.png');
     }
 
     public function getFileUrlAttribute()
     {
         $mediaService = app(MediaService::class);
-        return $mediaService->url($this->file_path);
+        return $mediaService->publicUrl($this->file_path);
     }
 
     public function getFileSizeFormattedAttribute()

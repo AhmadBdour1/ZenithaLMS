@@ -1,0 +1,159 @@
+﻿
+   PASS  Tests\Unit\CouponDiscountRegressionTest
+  ظ£ô calculate coupon discount valid coupon returns correct structure                                             0.25s  
+  ظ£ô calculate coupon discount invalid coupon returns original amount                                             0.02s  
+  ظ£ô calculate coupon discount fixed amount                                                                       0.02s  
+  ظ£ô no duplicate method names in api controller                                                                  0.02s  
+
+   PASS  Tests\Unit\ExampleTest
+  ظ£ô that true is true                                                                                            0.02s  
+
+   PASS  Tests\Feature\Auth\AuthenticationTest
+  ظ£ô login screen can be rendered                                                                                 0.41s  
+  ظ£ô users can authenticate using the login screen                                                                0.11s  
+  ظ£ô users can not authenticate with invalid password                                                             0.24s  
+  ظ£ô users can logout                                                                                             0.04s  
+  ظ£ô dashboard redirects based on user role                                                                       0.03s  
+
+   PASS  Tests\Feature\Auth\EmailVerificationTest
+  ظ£ô email verification screen can be rendered                                                                    0.04s  
+  ظ£ô email can be verified                                                                                        0.03s  
+  ظ£ô email is not verified with invalid hash                                                                      0.04s  
+
+   PASS  Tests\Feature\Auth\PasswordConfirmationTest
+  ظ£ô confirm password screen can be rendered                                                                      0.03s  
+  ظ£ô password can be confirmed                                                                                    0.03s  
+  ظ£ô password is not confirmed with invalid password                                                              0.23s  
+
+   PASS  Tests\Feature\Auth\PasswordResetTest
+  ظ£ô reset password link screen can be rendered                                                                   0.04s  
+  ظ£ô reset password link can be requested                                                                         0.24s  
+  ظ£ô reset password screen can be rendered                                                                        0.25s  
+  ظ£ô password can be reset with valid token                                                                       0.26s  
+
+   PASS  Tests\Feature\Auth\PasswordUpdateTest
+  ظ£ô password can be updated                                                                                      0.03s  
+  ظ£ô correct password must be provided to update password                                                         0.03s  
+
+   PASS  Tests\Feature\Auth\RegistrationTest
+  ظ£ô registration screen can be rendered                                                                          0.04s  
+  ظ£ô new users can register                                                                                       0.03s  
+
+   PASS  Tests\Feature\BlogAuthorizationTest
+  ظ£ô unauthorized user cannot update others blog                                                                  0.05s  
+  ظ£ô unauthorized user cannot delete others blog                                                                  0.03s  
+  ظ£ô unauthorized user cannot edit others blog page                                                               0.03s  
+  ظ£ô authorized user can update own blog                                                                          0.03s  
+  ظ£ô authorized user can delete own blog                                                                          0.05s  
+  ظ£ô admin can update any blog                                                                                    0.03s  
+  ظ£ô admin can delete any blog                                                                                    0.03s  
+
+   PASS  Tests\Feature\CourseAuthorizationTest
+  ظ£ô course policy allows instructor to update own course                                                         0.04s  
+  ظ£ô course policy denies instructor from updating others course                                                  0.03s  
+  ظ£ô course policy allows admin to update any course                                                              0.03s  
+  ظ£ô course policy allows instructor to delete own course                                                         0.03s  
+  ظ£ô course policy denies instructor from deleting others course                                                  0.03s  
+  ظ£ô course policy allows admin to delete any course                                                              0.07s  
+  ظ£ô course policy allows instructor to manage own media                                                          0.03s  
+  ظ£ô course policy denies instructor from managing others media                                                   0.03s  
+  ظ£ô course policy allows admin to manage any media                                                               0.03s  
+  ظ£ô course policy view published course allows anyone                                                            0.03s  
+  ظ£ô course policy view unpublished course denies non owner                                                       0.03s  
+  ظ£ô course policy view unpublished course allows owner                                                           0.03s  
+
+   PASS  Tests\Feature\EbookAuthorizationTest
+  ظ£ô unauthorized user cannot update others ebook                                                                 1.04s  
+  ظ£ô unauthorized user cannot delete others ebook                                                                 0.46s  
+  ظ£ô unauthorized user cannot edit others ebook page                                                              0.46s  
+  ظ£ô unauthorized user cannot replace others ebook file                                                           0.49s  
+  ظ£ô authorized user can update own ebook                                                                         0.44s  
+  ظ£ô admin can update any ebook                                                                                   0.43s  
+  ظ£ô admin can delete any ebook                                                                                   0.43s  
+  ظ£ô admin can update any ebook via api                                                                           0.44s  
+  ظ£ô unauthorized user cannot download others ebook via api                                                       0.04s  
+  ظ£ô authorized user can download own ebook via api                                                               0.06s  
+  ظ£ô admin can download any ebook via api                                                                         0.05s  
+  ظ£ô unauthenticated user cannot download ebook via api                                                           0.03s  
+
+   PASS  Tests\Feature\EbookUploadSecurityTest
+  ظ£ô ebook file rejects image                                                                                     0.05s  
+  ظ£ô ebook file rejects dangerous extension                                                                       0.03s  
+  ظ£ô ebook file rejects oversized file                                                                            0.03s  
+  ظ£ô ebook file rejects double extension                                                                          0.04s  
+  ظ£ô ebook file accepts pdf and creates record                                                                    0.03s  
+  ظ£ô ebook pdf stored on private disk and path is relative                                                        0.03s  
+
+   PASS  Tests\Feature\ExampleTest
+  ظ£ô the application returns a successful response                                                                0.03s  
+
+   PASS  Tests\Feature\MediaNormalizePathsCommandTest
+  ظ£ô command normalizes course thumbnail path                                                                     0.03s  
+  ظ£ô command normalizes course thumbnail full url                                                                 0.03s  
+  ظ£ô command keeps external video urls                                                                            0.03s  
+  ظ£ô command normalizes local video path                                                                          0.03s  
+  ظ£ô command normalizes ebook thumbnail path                                                                      0.03s  
+  ظ£ô command normalizes ebook file path                                                                           0.04s  
+  ظ£ô command normalizes user avatar path                                                                          0.03s  
+  ظ£ô command normalizes user avatar full url                                                                      0.03s  
+  ظ£ô command provides output report                                                                               0.04s  
+  ظ£ô command handles empty paths                                                                                  0.04s  
+  ظ£ô command handles already normalized paths                                                                     0.03s  
+
+   PASS  Tests\Feature\ProfileTest
+  ظ£ô profile page is displayed                                                                                    0.06s  
+  ظ£ô profile information can be updated                                                                           0.03s  
+  ظ£ô email verification status is unchanged when the email address is unchanged                                   0.03s  
+  ظ£ô user can delete their account                                                                                0.03s  
+  ظ£ô correct password must be provided to delete account                                                          0.03s  
+
+   PASS  Tests\Feature\RouteCrawlerTest
+  ظ£ô public routes crawl                                                                                          0.10s  
+  ظ£ô authenticated routes crawl                                                                                   0.19s  
+  ظ£ô api routes crawl                                                                                             0.06s  
+  ظ£ô authentication flows                                                                                         0.04s  
+  ظ£ô generate crawl report                                                                                        0.25s  
+
+   PASS  Tests\Feature\UploadValidationSecurityTest
+  ظ£ô avatar oversized rejected                                                                                    0.03s  
+  ظ£ô avatar disallowed extension rejected                                                                         0.03s  
+  ظ£ô avatar mime mismatch rejected                                                                                0.03s  
+  ظ£ô avatar dangerous double extension rejected                                                                   0.03s  
+
+   PASS  Tests\Feature\UploadValidationTest
+  ظ£ô avatar upload basic functionality                                                                            0.03s  
+  ظ£ô ebook upload basic functionality                                                                             0.03s  
+  ظ£ô media service config structure                                                                               0.02s  
+  ظ£ô media service validation rules                                                                               0.02s  
+  ظ£ô media service instantiation                                                                                  0.02s  
+  ظ£ô media service folder resolution                                                                              0.03s  
+Response content: {"message":"Reply added successfully","reply":{"forum_id":"1","user_id":259,"content":"Debitis minima molestiae eaque magnam voluptatem velit. Incidunt libero commodi id labore deserunt omnis sapiente. Nihil optio et vero.","updated_at":"2026-02-15T19:41:07.000000Z","created_at":"2026-02-15T19:41:07.000000Z","id":1}}Response content: {"message":"Joined class successfully","meeting_link":"https:\/\/zoom.us\/test","meeting_id":"test123","password":null}
+   PASS  Tests\Feature\ZenithaLmsApiTest
+  ظ£ô api health check                                                                                             0.54s  
+  ظ£ô user registration                                                                                            0.42s  
+  ظ£ô user login                                                                                                   0.41s  
+  ظ£ô get courses list                                                                                             0.47s  
+  ظ£ô get course details                                                                                           0.44s  
+  ظ£ô course enrollment                                                                                            0.44s  
+  ظ£ô get user courses                                                                                             0.47s  
+  ظ£ô get ebooks list                                                                                              0.42s  
+  ظ£ô get quizzes list                                                                                             0.46s  
+  ظ£ô start quiz                                                                                                   0.45s  
+  ظ£ô get forums list                                                                                              0.43s  
+  ظ£ô reply to forum                                                                                               0.46s  
+  ظ£ô get virtual classes list                                                                                     0.94s  
+  ظ£ô join virtual class                                                                                           0.46s  
+  ظ£ô get user notifications                                                                                       0.42s  
+  ظ£ô mark notification as read                                                                                    0.44s  
+  ظ£ô get user wallet                                                                                              0.46s  
+  ظ£ô add funds to wallet                                                                                          0.46s  
+  ظ£ô search functionality                                                                                         1.08s  
+  ظ£ô get personalized recommendations                                                                             0.44s  
+  ظ£ô admin dashboard                                                                                              0.46s  
+  ظ£ô instructor dashboard                                                                                         0.46s  
+  ظ£ô unauthorized access                                                                                          0.41s  
+  ظ£ô forbidden access                                                                                             0.45s  
+
+  Tests:    117 passed (765 assertions)
+  Duration: 21.33s
+

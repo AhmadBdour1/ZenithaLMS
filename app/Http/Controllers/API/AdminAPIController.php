@@ -19,13 +19,13 @@ class AdminAPIController extends Controller
     {
         $user = $request->user();
         
-        // Check if user is super_admin
+        // Check if user is admin
         if (!$user || !$user->role_id) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
         
         $role = \App\Models\Role::find($user->role_id);
-        if (!$role || $role->name !== 'super_admin') {
+        if (!$role || $user->role_name !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
         

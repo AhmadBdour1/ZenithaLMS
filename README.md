@@ -2,7 +2,32 @@
 
 ## 🎯 Overview
 
-ZenithaLMS is a comprehensive, AI-powered Learning Management System built with Laravel 12, PHP 8.4, and modern web technologies. It provides a complete solution for online education with advanced features including AI-powered recommendations, adaptive learning, multi-tenant architecture, and comprehensive analytics.
+ZenithaLMS is a comprehensive, AI-powered Learning Management System built with Laravel, PHP 8.1+, and modern web technologies. It provides a complete solution for online education with advanced features including AI-powered recommendations, adaptive learning, multi-tenant architecture, and comprehensive analytics.
+
+## 🚀 Quick Installation
+
+### Web Installer (Recommended)
+
+1. Upload files to your web server
+2. Visit your website - you'll be automatically redirected to the installer
+3. Follow the on-screen instructions
+
+### CLI Installer
+
+```bash
+php artisan zenitha:install
+```
+
+## 📋 Requirements
+
+- **PHP**: >= 8.1
+- **Database**: MySQL 8.0+ or PostgreSQL 12+ or SQLite 3.8+
+- **Web Server**: Apache, Nginx, or Laravel Valet
+- **PHP Extensions**: PDO, MBString, Tokenizer, XML, CTYPE, JSON, BCMath, FileInfo, OpenSSL
+
+## 📚 Documentation
+
+For detailed installation instructions, see [docs/INSTALLATION.md](docs/INSTALLATION.md).
 
 ## 🚀 Features
 
@@ -29,6 +54,8 @@ ZenithaLMS is a comprehensive, AI-powered Learning Management System built with 
 - **Coupon System**: Advanced coupon management with usage tracking
 - **Refund Processing**: Automated refund handling with proper notifications
 - **Revenue Analytics**: Comprehensive payment and revenue tracking
+- **Real-time Updates**: Live notifications and real-time data updates
+- **Accessibility**: WCAG compliant design for inclusive learning
 
 ### 👥 User Management
 - **Multi-Role System**: Admin, Instructor, Student, and Organization roles

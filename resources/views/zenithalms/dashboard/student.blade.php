@@ -77,8 +77,8 @@
             <section>
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-neutral-900">Recent Activity</h2>
-                    <a href="{{ route('zenithalms.student.activity') }}" class="text-primary-600 hover:text-primary-800 font-medium">
-                        View All
+                    <a href="{{ route('courses.index') }}" class="text-primary-600 hover:text-primary-800 font-medium">
+                        View Courses
                     </a>
                 </div>
                 
@@ -131,7 +131,7 @@
             <section>
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-neutral-900">Current Courses</h2>
-                    <a href="{{ route('zenithalms.student.courses') }}" class="text-primary-600 hover:text-primary-800 font-medium">
+                    <a href="#" class="text-primary-600 hover:text-primary-800 font-medium">
                         View All
                     </a>
                 </div>
@@ -170,7 +170,7 @@
                                 </div>
                                 
                                 <div class="flex gap-2">
-                                    <a href="{{ route('zenithalms.courses.show', $course->slug) }}" 
+                                    <a href="#" 
                                        class="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg font-semibold hover:bg-primary-600 transition-colors text-center">
                                         Continue
                                     </a>
@@ -311,19 +311,19 @@
                 <h2 class="text-xl font-bold text-neutral-900 mb-4">Quick Actions</h2>
                 <div class="bg-white rounded-xl p-6 border border-neutral-200">
                     <div class="space-y-3">
-                        <a href="{{ route('zenithalms.courses.index') }}" 
+                        <a href="#" 
                            class="w-full px-4 py-3 bg-primary-500 text-white rounded-lg font-semibold hover:bg-primary-600 transition-colors text-center block">
                             <span class="material-icons-round text-sm mr-2">school</span>
                             Browse Courses
                         </a>
                         
-                        <a href="{{ route('zenithalms.quiz.index') }}" 
+                        <a href="#" 
                            class="w-full px-4 py-3 bg-accent-purple text-white rounded-lg font-semibold hover:bg-accent-purple/90 transition-colors text-center block">
                             <span class="material-icons-round text-sm mr-2">quiz</span>
                             Take Quiz
                         </a>
                         
-                        <a href="{{ route('zenithalms.forum.index') }}" 
+                        <a href="#" 
                            class="w-full px-4 py-3 border border-neutral-300 text-neutral-700 rounded-lg font-semibold hover:border-primary-500 transition-colors text-center block">
                             <span class="material-icons-round text-sm mr-2">forum</span>
                             Join Forum
@@ -389,4 +389,4 @@ document.addEventListener('DOMContentLoaded', function() {
     loadRecommendations();
 });
 </script>
-@endsection
+@endpush

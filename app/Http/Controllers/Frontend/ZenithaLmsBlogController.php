@@ -7,14 +7,21 @@ use App\Models\Blog;
 use App\Models\Category;
 use App\Models\Tag;
 use App\Models\User;
+use App\Services\MediaService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class ZenithaLmsBlogController extends Controller
 {
-    public function __construct()
+    use AuthorizesRequests;
+    
+    private MediaService $mediaService;
+
+    public function __construct(MediaService $mediaService)
     {
+        $this->mediaService = $mediaService;
         $this->middleware('auth')->only(['create', 'store', 'edit', 'update', 'destroy']);
     }
 
@@ -141,10 +148,19 @@ class ZenithaLmsBlogController extends Controller
         $blogData['slug'] = Str::slug($request->title);
         $blogData['user_id'] = Auth::id();
 
-        // ZenithaLMS: Handle featured image upload
+        // ZenithaLMS: Handle featured image upload using MediaService
         if ($request->hasFile('featured_image')) {
             $image = $request->file('featured_image');
-            $imagePath = $image->store('blog/images', 'public');
+            $limits = $this->mediaService->getLimits('images');
+            $folder = $this->mediaService->getFolder('blog.images');
+            
+            $imagePath = $this->mediaService->storePublic(
+                $image, 
+                $folder, 
+                Str::slug($request->title), 
+                $limits['allowed'], 
+                $limits['max_size'] * 1024
+            );
             $blogData['featured_image'] = $imagePath;
         }
 
@@ -169,7 +185,9 @@ class ZenithaLmsBlogController extends Controller
      */
     public function edit($id)
     {
-        $blog = Blog::where('user_id', Auth::id())->findOrFail($id);
+        $blog = Blog::findOrFail($id);
+        $this->authorize('update', $blog);
+        
         $categories = Category::where('is_active', true)->get();
         $tags = Tag::orderBy('name')->get();
         
@@ -181,7 +199,8 @@ class ZenithaLmsBlogController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $blog = Blog::where('user_id', Auth::id())->findOrFail($id);
+        $blog = Blog::findOrFail($id);
+        $this->authorize('update', $blog);
 
         $request->validate([
             'title' => 'required|string|max:255',
@@ -189,38 +208,32 @@ class ZenithaLmsBlogController extends Controller
             'content' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'is_featured' => 'boolean',
-            'tags' => 'array',
-            'tags.*' => 'exists:tags,id',
             'status' => 'required|in:draft,published',
         ]);
 
-        $blogData = $request->except(['featured_image', 'tags']);
+        $blogData = $request->except(['featured_image']);
         $blogData['slug'] = Str::slug($request->title);
 
-        // ZenithaLMS: Handle featured image upload
+        // ZenithaLMS: Handle featured image upload using MediaService
         if ($request->hasFile('featured_image')) {
-            if ($blog->featured_image) {
-                Storage::disk('public')->delete($blog->featured_image);
-            }
+            // Delete old featured image
+            $this->mediaService->deletePublic($blog->featured_image);
+            
             $image = $request->file('featured_image');
-            $imagePath = $image->store('blog/images', 'public');
+            $limits = $this->mediaService->getLimits('images');
+            $folder = $this->mediaService->getFolder('blog.images');
+            
+            $imagePath = $this->mediaService->storePublic(
+                $image, 
+                $folder, 
+                Str::slug($request->title), 
+                $limits['allowed'], 
+                $limits['max_size'] * 1024
+            );
             $blogData['featured_image'] = $imagePath;
         }
 
         $blog->update($blogData);
-
-        // ZenithaLMS: Sync tags
-        if ($request->has('tags')) {
-            $blog->tags()->sync($request->tags);
-        } else {
-            $blog->tags()->detach();
-        }
-
-        // ZenithaLMS: Regenerate AI summary if published
-        if ($blog->status === 'published') {
-            $blog->generateAiSummary();
-        }
 
         return redirect()->route('zenithalms.blog.show', $blog->slug)
             ->with('success', 'Blog post updated successfully!');
@@ -231,12 +244,11 @@ class ZenithaLmsBlogController extends Controller
      */
     public function destroy($id)
     {
-        $blog = Blog::where('user_id', Auth::id())->findOrFail($id);
+        $blog = Blog::findOrFail($id);
+        $this->authorize('delete', $blog);
 
-        // ZenithaLMS: Delete featured image
-        if ($blog->featured_image) {
-            Storage::disk('public')->delete($blog->featured_image);
-        }
+        // ZenithaLMS: Delete featured image using MediaService
+        $this->mediaService->deletePublic($blog->featured_image);
 
         $blog->delete();
 

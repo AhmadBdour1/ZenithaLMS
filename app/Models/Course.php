@@ -59,7 +59,7 @@ class Course extends Model
     public function getThumbnailUrlAttribute(): string
     {
         $mediaService = app(MediaService::class);
-        return $mediaService->url($this->thumbnail, '/images/course-placeholder.png');
+        return $mediaService->publicUrl($this->thumbnail, '/images/course-placeholder.png');
     }
 
     public function getPreviewVideoUrlAttribute(): ?string
@@ -75,7 +75,7 @@ class Course extends Model
         
         // If it's a stored file, use MediaService
         $mediaService = app(MediaService::class);
-        return $mediaService->url($this->preview_video);
+        return $mediaService->publicUrl($this->preview_video);
     }
 
     /**

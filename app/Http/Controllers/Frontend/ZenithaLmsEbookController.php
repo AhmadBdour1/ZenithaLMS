@@ -218,7 +218,7 @@ class ZenithaLmsEbookController extends Controller
             // ZenithaLMS: Log download
             $this->logDownload($user, $ebook);
 
-            return Storage::download($ebook->file_path, $ebook->title . '.' . $ebook->file_type);
+            return Storage::disk('public')->download($ebook->file_path, $ebook->title . '.' . $ebook->file_type);
         } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
             // Re-throw HTTP exceptions (abort, etc.)
             throw $e;
@@ -413,7 +413,6 @@ class ZenithaLmsEbookController extends Controller
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
             'is_free' => 'boolean',
-            'is_downloadable' => 'boolean',
             'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
             'file' => 'required|file|mimes:pdf,epub|max:20480',
         ]);
@@ -423,27 +422,22 @@ class ZenithaLmsEbookController extends Controller
         $ebookData['user_id'] = Auth::id();
         $ebookData['status'] = 'active';
 
-        // Handle file uploads using MediaService
+        // Handle thumbnail upload
         if ($request->hasFile('thumbnail')) {
             $thumbnail = $request->file('thumbnail');
             $thumbnailPath = $this->mediaService->storePublic(
                 $thumbnail, 
-                'ebooks/thumbnails', 
-                Str::slug($request->title), 
-                ['jpeg', 'jpg', 'png', 'webp'], 
-                5120 * 1024 // 5MB
+                'ebooks.thumbnail'
             );
             $ebookData['thumbnail'] = $thumbnailPath;
         }
 
+        // Handle file upload
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $filePath = $this->mediaService->storePublic(
+            $filePath = $this->mediaService->storePrivate(
                 $file, 
-                'ebooks/files', 
-                Str::slug($request->title), 
-                ['pdf', 'epub'], 
-                20480 * 1024 // 20MB
+                'ebooks.file'
             );
             $ebookData['file_path'] = $filePath;
             $ebookData['file_type'] = $file->getClientOriginalExtension();
@@ -461,7 +455,11 @@ class ZenithaLmsEbookController extends Controller
 
     public function edit($id)
     {
-        $ebook = Ebook::where('user_id', Auth::id())->findOrFail($id);
+        $ebook = Ebook::findOrFail($id);
+        
+        // Enforce authorization
+        $this->authorize('update', $ebook);
+        
         $categories = Category::where('is_active', true)->get();
         
         return view('zenithalms.ebooks.edit', compact('ebook', 'categories'));
@@ -469,7 +467,10 @@ class ZenithaLmsEbookController extends Controller
 
     public function update(Request $request, $id)
     {
-        $ebook = Ebook::where('user_id', Auth::id())->findOrFail($id);
+        $ebook = Ebook::findOrFail($id);
+        
+        // Enforce authorization
+        $this->authorize('update', $ebook);
 
         $request->validate([
             'title' => 'required|string|max:255',
@@ -477,7 +478,6 @@ class ZenithaLmsEbookController extends Controller
             'category_id' => 'required|exists:categories,id',
             'price' => 'required|numeric|min:0',
             'is_free' => 'boolean',
-            'is_downloadable' => 'boolean',
             'thumbnail' => 'nullable|image|mimes:jpeg,jpg,png,webp|max:5120',
             'file' => 'nullable|file|mimes:pdf,epub|max:20480',
         ]);
@@ -493,25 +493,21 @@ class ZenithaLmsEbookController extends Controller
             $thumbnail = $request->file('thumbnail');
             $thumbnailPath = $this->mediaService->storePublic(
                 $thumbnail, 
-                'ebooks/thumbnails', 
-                Str::slug($request->title), 
-                ['jpeg', 'jpg', 'png', 'webp'], 
-                5120 * 1024 // 5MB
+                'ebooks.thumbnail',
+                $ebook->thumbnail
             );
             $ebookData['thumbnail'] = $thumbnailPath;
         }
 
         if ($request->hasFile('file')) {
             // Delete old file using MediaService
-            $this->mediaService->deletePublic($ebook->file_path);
+            $this->mediaService->deletePrivate($ebook->file_path);
             
             $file = $request->file('file');
-            $filePath = $this->mediaService->storePublic(
+            $filePath = $this->mediaService->storePrivate(
                 $file, 
-                'ebooks/files', 
-                Str::slug($request->title), 
-                ['pdf', 'epub'], 
-                20480 * 1024 // 20MB
+                'ebooks.file',
+                $ebook->file_path
             );
             $ebookData['file_path'] = $filePath;
             $ebookData['file_type'] = $file->getClientOriginalExtension();
@@ -529,11 +525,14 @@ class ZenithaLmsEbookController extends Controller
 
     public function destroy($id)
     {
-        $ebook = Ebook::where('user_id', Auth::id())->findOrFail($id);
+        $ebook = Ebook::findOrFail($id);
+        
+        // Enforce authorization
+        $this->authorize('delete', $ebook);
 
         // Delete files using MediaService
         $this->mediaService->deletePublic($ebook->thumbnail);
-        $this->mediaService->deletePublic($ebook->file_path);
+        $this->mediaService->deletePrivate($ebook->file_path);
 
         $ebook->delete();
 

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
+use App\Services\DashboardRedirectService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +15,7 @@ Route::get('/login-enhanced', function () {
     return view('auth.login-enhanced');
 })->name('login-enhanced');
 
-// Unified dashboard entry point - using closure for now
+// Unified dashboard entry point - using centralized service
 Route::get('/dashboard', function () {
     $user = Auth::user();
     
@@ -22,23 +23,7 @@ Route::get('/dashboard', function () {
         return redirect()->route('login');
     }
     
-    $role = $user->role_name;
-    
-    // Redirect based on role
-    switch ($role) {
-        case 'super_admin':
-        case 'admin':
-            return redirect()->route('zenithalms.dashboard.admin');
-        case 'instructor':
-            return redirect()->route('zenithalms.dashboard.instructor');
-        case 'student':
-            return redirect()->route('zenithalms.dashboard.student');
-        case 'organization':
-            return redirect()->route('zenithalms.dashboard.organization');
-        default:
-            // Default to student dashboard for unknown roles
-            return redirect()->route('zenithalms.dashboard.student');
-    }
+    return redirect()->route(DashboardRedirectService::getDashboardRouteForUser($user));
 })
     ->name('dashboard')
     ->middleware('auth');
@@ -55,3 +40,6 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// ZenithaLMS: Main LMS routes are loaded from routes/zenithalms.php via bootstrap/app.php
+// This keeps web.php clean for basic auth and core routes only

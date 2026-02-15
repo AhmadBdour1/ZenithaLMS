@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Health check endpoint
+// Health check endpoint (always available)
 Route::get('/health', function () {
     return response()->json([
         'status' => 'healthy',
@@ -36,8 +36,18 @@ Route::get('/health', function () {
     ]);
 });
 
+// Apply installation check to all API routes except health
+Route::middleware('installed')->group(function () {
+
 // Public API routes
 Route::prefix('v1')->group(function () {
+    // Health check endpoint
+    Route::get('/health', function () {
+        return response()->json([
+            'status' => 'ok'
+        ]);
+    });
+    
     // Authentication routes
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
@@ -52,6 +62,9 @@ Route::prefix('v1')->group(function () {
     // Public ebook routes
     Route::get('/ebooks', [EbookAPIController::class, 'index']);
     Route::get('/ebooks/{id}', [EbookAPIController::class, 'show']);
+    
+    // Protected ebook download route
+    Route::middleware('auth:sanctum')->get('/ebooks/{id}/download', [\App\Http\Controllers\API\EbookDownloadController::class, 'download']);
     
     // Public quiz routes
     Route::get('/quizzes', [QuizAPIController::class, 'index']);
@@ -152,3 +165,5 @@ Route::get('/docs', function () {
         'base_url' => url('/api'),
     ]);
 });
+
+}); // Close the installed middleware group

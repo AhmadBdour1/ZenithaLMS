@@ -14,10 +14,10 @@ class ZenithaLmsRoleMiddleware
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
-     * @param  string  $role
+     * @param  string  ...$roles
      * @return mixed
      */
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, ...$roles)
     {
         if (!auth()->check()) {
             if ($request->expectsJson()) {
@@ -34,20 +34,40 @@ class ZenithaLmsRoleMiddleware
         
         $user = auth()->user();
         
-        // Check if user has the required role
-        if (!$this->hasRole($user, $role)) {
+        // Normalize roles (handle comma and pipe separators)
+        $normalizedRoles = [];
+        foreach ($roles as $role) {
+            if (str_contains($role, ',')) {
+                $normalizedRoles = array_merge($normalizedRoles, explode(',', $role));
+            } elseif (str_contains($role, '|')) {
+                $normalizedRoles = array_merge($normalizedRoles, explode('|', $role));
+            } else {
+                $normalizedRoles[] = $role;
+            }
+        }
+        
+        // Check if user has any of the required roles
+        $hasRole = false;
+        foreach ($normalizedRoles as $role) {
+            if ($this->hasRole($user, trim($role))) {
+                $hasRole = true;
+                break;
+            }
+        }
+        
+        if (!$hasRole) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Insufficient permissions',
                     'code' => 403,
-                    'required_role' => $role,
-                    'user_role' => $user->role->name ?? 'unknown'
+                    'required_roles' => $normalizedRoles,
+                    'user_role' => $this->getUserRoleName($user)
                 ], 403);
             }
             
-            return redirect()->route('dashboard')
-                ->with('error', 'You do not have permission to access this page.');
+            // Return 403 for web requests instead of redirecting to login
+            abort(403, 'You do not have permission to access this page.');
         }
         
         // Check if user is active
@@ -83,8 +103,14 @@ class ZenithaLmsRoleMiddleware
      */
     private function getUserRoleName($user)
     {
-        // Use the single source of truth from User model
-        return $user->role_name ?? 'user';
+        $user->loadMissing('role');
+
+        $name =
+            $user->role->name
+            ?? Role::query()->whereKey($user->role_id)->value('name')
+            ?? (string) ($user->role_name ?? '');
+
+        return strtolower(trim((string) $name));
     }
     
     /**
@@ -92,23 +118,25 @@ class ZenithaLmsRoleMiddleware
      */
     private function hasRole($user, $role)
     {
-        // Use the User model's helper methods for consistency
+        $userRoleName = $this->getUserRoleName($user);
+        
         switch ($role) {
             case 'admin':
-                return $user->isAdmin();
+                return $userRoleName === 'admin';
             case 'instructor':
-                return $user->isInstructor();
+                return $userRoleName === 'instructor';
             case 'student':
-                return $user->isStudent();
+                return $userRoleName === 'student';
             case 'organization':
-                return $user->isOrganization();
+            case 'organization_admin':
+                return $userRoleName === 'organization_admin';
             default:
                 // Handle multiple roles
                 if (str_contains($role, '|')) {
                     $roles = explode('|', $role);
-                    return in_array($user->role_name, $roles);
+                    return in_array($userRoleName, $roles);
                 }
-                return $user->role_name === $role;
+                return $userRoleName === $role;
         }
     }
     
@@ -126,13 +154,9 @@ class ZenithaLmsRoleMiddleware
      */
     private function getUserPermissions($user)
     {
-        $role = $user->role;
+        $roleName = $this->getUserRoleName($user);
         
-        if (!$role) {
-            return [];
-        }
-        
-        switch ($role->name) {
+        switch ($roleName) {
             case 'admin':
                 return [
                     'manage_users' => true,
@@ -165,6 +189,15 @@ class ZenithaLmsRoleMiddleware
                     'view_progress' => true,
                     'participate_forum' => true,
                     'view_certificates' => true,
+                ];
+                
+            case 'organization_admin':
+                return [
+                    'manage_members' => true,
+                    'assign_courses' => true,
+                    'view_progress' => true,
+                    'manage_organization_settings' => true,
+                    'view_analytics' => true,
                 ];
                 
             default:

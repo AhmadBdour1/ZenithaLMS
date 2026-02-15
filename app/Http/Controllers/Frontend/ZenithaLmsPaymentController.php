@@ -153,7 +153,7 @@ class ZenithaLmsPaymentController extends Controller
 
             // ZenithaLMS: Apply coupon if used
             if ($request->coupon_code) {
-                $this->applyCoupon($request->coupon_code, $order->id);
+                $this->recordCouponUsage($request->coupon_code, $order->id);
             }
 
             // ZenithaLMS: Grant access to purchased items
@@ -426,6 +426,14 @@ class ZenithaLmsPaymentController extends Controller
         }
     }
 
+    /**
+     * Apply coupon (private helper)
+     */
+    private function applyCouponHelper($couponCode, $amount)
+    {
+        return $this->calculateCouponDiscount($couponCode, $amount);
+    }
+
     private function calculateTax($amount)
     {
         // ZenithaLMS: Calculate tax (10% for example)
@@ -508,12 +516,13 @@ class ZenithaLmsPaymentController extends Controller
         }
     }
 
-    private function applyCoupon($couponCode, $orderId)
+    private function recordCouponUsage(string $couponCode, int $orderId): void
     {
         $coupon = Coupon::where('code', $couponCode)->first();
         $user = Auth::user();
+        $order = Order::find($orderId);
         
-        if ($coupon) {
+        if ($coupon && $order) {
             // ZenithaLMS: Create coupon usage record
             CouponUsage::create([
                 'user_id' => $user->id,

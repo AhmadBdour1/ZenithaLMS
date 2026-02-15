@@ -10,7 +10,7 @@
             <!-- Course Info -->
             <div class="lg:col-span-2">
                 <div class="mb-4">
-                    <div class="flex items-center gap-2 mb-4">
+                    <div class="flex flex-wrap items-center gap-2 mb-4">
                         @if($course->category)
                             <span class="px-3 py-1 bg-white/20 rounded-full text-sm font-semibold">
                                 {{ $course->category->name }}
@@ -27,8 +27,8 @@
                             </span>
                         @endif
                     </div>
-                    <h1 class="text-3xl md:text-4xl font-bold mb-4">{{ $course->title }}</h1>
-                    <p class="text-xl text-primary-100 mb-6">{{ $course->description }}</p>
+                    <h1 class="text-3xl md:text-4xl font-bold mb-4 break-words">{{ $course->title }}</h1>
+                    <p class="text-xl text-primary-100 mb-6 break-words">{{ $course->description }}</p>
                 </div>
 
                 <!-- Stats -->
@@ -55,11 +55,11 @@
                 @if($course->instructor)
                 <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6">
                     <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                             <span class="material-icons-round text-2xl">person</span>
                         </div>
-                        <div>
-                            <div class="font-semibold text-lg">{{ $course->instructor->name }}</div>
+                        <div class="min-w-0 flex-1">
+                            <div class="font-semibold text-lg break-words">{{ $course->instructor->name }}</div>
                             <div class="text-primary-200">Expert Instructor</div>
                         </div>
                     </div>
@@ -68,14 +68,15 @@
             </div>
 
             <!-- Course Card -->
-            <div>
-                <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-full">
                     <!-- Course Image -->
-                    <div class="relative h-48">
+                    <div class="relative h-48 w-full">
                         @if($course->thumbnail)
-                            <img src="{{ $course->thumbnail_url }}" 
+                            <img src="{{ $course->thumbnail_url ?? asset('images/course-placeholder.png') }}" 
                                  alt="{{ $course->title }}" 
-                                 class="w-full h-full object-cover">
+                                 class="w-full h-full object-cover"
+                                 onerror="this.src='{{ asset('images/course-placeholder.png') }}'">
                         @else
                             <div class="w-full h-full bg-gradient-to-br from-primary-100 to-accent-purple/20 flex items-center justify-center">
                                 <span class="material-icons-round text-4xl text-primary-300">school</span>
@@ -92,16 +93,16 @@
                     </div>
 
                     <!-- Price and Enrollment -->
-                    <div class="p-6">
+                    <div class="p-6 w-full">
                         <div class="text-center mb-6">
                             @if($course->is_free)
                                 <div class="text-3xl font-bold text-accent-green mb-2">Free</div>
                             @else
-                                <div class="text-3xl font-bold text-neutral-900 mb-2">
+                                <div class="text-3xl font-bold text-neutral-900 mb-2 break-words">
                                     ${{ number_format($course->price, 2) }}
                                 </div>
                             @endif
-                            <div class="text-sm text-neutral-500">
+                            <div class="text-sm text-neutral-500 break-words">
                                 {{ $course->enrollments_count ?? 0 }} students enrolled
                             </div>
                         </div>
@@ -117,7 +118,7 @@
                                 </button>
                             @endif
                         @else
-                            <a href="{{ route('login') }}" class="block w-full px-6 py-3 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors mb-3 text-center">
+                            <a href="{{ route('login') }}" class="block w-full px-6 py-3 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors mb-3 text-center break-words">
                                 Login to Enroll
                             </a>
                         @endif
@@ -125,20 +126,20 @@
                         <!-- Course Features -->
                         <div class="space-y-3">
                             <div class="flex items-center gap-3">
-                                <span class="material-icons-round text-primary-600">check_circle</span>
-                                <span class="text-sm">{{ $course->duration_minutes ? round($course->duration_minutes / 60) : 0 }} hours of content</span>
+                                <span class="material-icons-round text-primary-600 flex-shrink-0">check_circle</span>
+                                <span class="text-sm break-words">{{ $course->duration_minutes ? round($course->duration_minutes / 60) : 0 }} hours of content</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="material-icons-round text-primary-600">check_circle</span>
-                                <span class="text-sm">{{ $course->lessons_count ?? 0 }} lessons</span>
+                                <span class="material-icons-round text-primary-600 flex-shrink-0">check_circle</span>
+                                <span class="text-sm break-words">{{ $course->lessons_count ?? 0 }} lessons</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="material-icons-round text-primary-600">check_circle</span>
-                                <span class="text-sm">Certificate of completion</span>
+                                <span class="material-icons-round text-primary-600 flex-shrink-0">check_circle</span>
+                                <span class="text-sm break-words">Certificate of completion</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="material-icons-round text-primary-600">check_circle</span>
-                                <span class="text-sm">Lifetime access</span>
+                                <span class="material-icons-round text-primary-600 flex-shrink-0">check_circle</span>
+                                <span class="text-sm break-words">Lifetime access</span>
                             </div>
                         </div>
                     </div>
@@ -152,19 +153,19 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Main Content -->
-        <div class="lg:col-span-2 space-y-8">
+        <div class="lg:col-span-2 space-y-8 w-full">
             <!-- What You'll Learn -->
             <section>
-                <h2 class="text-2xl font-bold text-neutral-900 mb-4">What You'll Learn</h2>
-                <div class="bg-white rounded-xl p-6 border border-neutral-200">
+                <h2 class="text-2xl font-bold text-neutral-900 mb-4 break-words">What You'll Learn</h2>
+                <div class="bg-white rounded-xl p-6 border border-neutral-200 w-full">
                     <div class="prose max-w-none">
                         @if($course->what_you_will_learn)
                             @if(is_array($course->what_you_will_learn))
                                 <ul class="space-y-2">
                                     @foreach($course->what_you_will_learn as $item)
                                         <li class="flex items-start gap-2">
-                                            <span class="material-icons-round text-primary-600 text-sm mt-1">check</span>
-                                            <span>{{ $item }}</span>
+                                            <span class="material-icons-round text-primary-600 text-sm mt-1 flex-shrink-0">check</span>
+                                            <span class="break-words">{{ $item }}</span>
                                         </li>
                                     @endforeach
                                 </ul>
@@ -180,81 +181,124 @@
 
             <!-- Course Content -->
             <section>
-                <h2 class="text-2xl font-bold text-neutral-900 mb-4">Course Content</h2>
-                <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+                <h2 class="text-2xl font-bold text-neutral-900 mb-4 break-words">Course Content</h2>
+                <div class="bg-white rounded-xl border border-neutral-200 overflow-hidden w-full">
                     @if($lessons->count() > 0)
                         @foreach($lessons as $index => $lesson)
                             <div class="border-b border-neutral-200 last:border-b-0">
                                 <div class="p-4 hover:bg-neutral-50 transition-colors">
                                     <div class="flex items-center justify-between">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-sm font-semibold text-primary-600">
+                                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                                            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center text-sm font-semibold text-primary-600 flex-shrink-0">
                                                 {{ $index + 1 }}
                                             </div>
-                                            <div>
-                                                <div class="font-semibold">{{ $lesson->title }}</div>
+                                            <div class="min-w-0 flex-1">
+                                                <div class="font-semibold break-words">{{ $lesson->title }}</div>
                                                 <div class="text-sm text-neutral-600">{{ $lesson->duration_minutes ?? 'N/A' }} minutes</div>
                                             </div>
                                         </div>
-                                        <span class="material-icons-round text-neutral-400">play_arrow</span>
+                                        <span class="material-icons-round text-neutral-400 flex-shrink-0">play_arrow</span>
                                     </div>
                                 </div>
                             </div>
                         @endforeach
                     @else
-                        <div class="p-8 text-center">
-                            <span class="material-icons-round text-4xl text-neutral-300 mb-4">video_library</span>
-                            <p class="text-neutral-600">Course content will be available soon.</p>
+                        <div class="p-6 text-center text-neutral-500">
+                            <span class="material-icons-round text-4xl mb-2">video_library</span>
+                            <p>Course content will be available soon.</p>
                         </div>
                     @endif
                 </div>
             </section>
 
             <!-- Requirements -->
-            @if($course->requirements)
             <section>
-                <h2 class="text-2xl font-bold text-neutral-900 mb-4">Requirements</h2>
-                <div class="bg-white rounded-xl p-6 border border-neutral-200">
+                <h2 class="text-2xl font-bold text-neutral-900 mb-4 break-words">Requirements</h2>
+                <div class="bg-white rounded-xl p-6 border border-neutral-200 w-full">
                     <div class="prose max-w-none">
-                        @if(is_array($course->requirements))
-                            <ul class="space-y-2">
-                                @foreach($course->requirements as $requirement)
-                                    <li class="flex items-start gap-2">
-                                        <span class="material-icons-round text-primary-600 text-sm mt-1">check</span>
-                                        <span>{{ $requirement }}</span>
-                                    </li>
-                                @endforeach
-                            </ul>
+                        @if($course->requirements)
+                            @if(is_array($course->requirements))
+                                <ul class="space-y-2">
+                                    @foreach($course->requirements as $requirement)
+                                        <li class="flex items-start gap-2">
+                                            <span class="material-icons-round text-primary-600 text-sm mt-1 flex-shrink-0">check_circle</span>
+                                            <span class="break-words">{{ $requirement }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @else
+                                {!! nl2br(e($course->requirements)) !!}
+                            @endif
                         @else
-                            {!! nl2br(e($course->requirements)) !!}
+                            <p class="text-neutral-600">No specific requirements for this course.</p>
                         @endif
                     </div>
                 </div>
             </section>
-            @endif
         </div>
 
         <!-- Sidebar -->
-        <div class="space-y-6">
-            <!-- Instructor Info -->
-            @if($course->instructor)
-            <div class="bg-white rounded-xl p-6 border border-neutral-200">
-                <h3 class="text-lg font-bold text-neutral-900 mb-4">Your Instructor</h3>
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center">
-                        <span class="material-icons-round text-2xl text-primary-600">person</span>
+        <div class="lg:col-span-1 space-y-6 w-full">
+            <!-- Course Info Card -->
+            <div class="bg-white rounded-xl p-6 border border-neutral-200 w-full">
+                <h3 class="text-lg font-semibold mb-4 break-words">Course Info</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-neutral-600">Duration</span>
+                        <span class="font-medium">{{ $course->duration_minutes ? round($course->duration_minutes / 60) : 0 }} hours</span>
                     </div>
-                    <div>
-                        <div class="font-semibold">{{ $course->instructor->name }}</div>
-                        <div class="text-sm text-neutral-600">Expert Instructor</div>
+                    <div class="flex justify-between">
+                        <span class="text-neutral-600">Lessons</span>
+                        <span class="font-medium">{{ $course->lessons_count ?? 0 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-neutral-600">Level</span>
+                        <span class="font-medium">{{ ucfirst($course->level ?? 'All') }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-neutral-600">Students</span>
+                        <span class="font-medium">{{ $course->enrollments_count ?? 0 }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-neutral-600">Language</span>
+                        <span class="font-medium">English</span>
                     </div>
                 </div>
-                <p class="text-neutral-600 text-sm">
-                    Experienced instructor with expertise in {{ $course->category->name ?? 'this field' }} 
-                    and passion for teaching.
-                </p>
+            </div>
+
+            <!-- Categories -->
+            @if($course->category || $course->tags)
+            <div class="bg-white rounded-xl p-6 border border-neutral-200 w-full">
+                <h3 class="text-lg font-semibold mb-4 break-words">Categories & Tags</h3>
+                <div class="flex flex-wrap gap-2">
+                    @if($course->category)
+                        <span class="px-3 py-1 bg-primary-100 text-primary-600 rounded-full text-sm">
+                            {{ $course->category->name }}
+                        </span>
+                    @endif
+                    @if($course->tags && is_array($course->tags))
+                        @foreach($course->tags as $tag)
+                            <span class="px-3 py-1 bg-neutral-100 text-neutral-600 rounded-full text-sm">
+                                {{ $tag }}
+                            </span>
+                        @endforeach
+                    @endif
+                </div>
             </div>
             @endif
+
+            <!-- Share -->
+            <div class="bg-white rounded-xl p-6 border border-neutral-200 w-full">
+                <h3 class="text-lg font-semibold mb-4 break-words">Share This Course</h3>
+                <div class="flex gap-2">
+                    <button class="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors text-sm">
+                        <span class="material-icons-round text-sm">share</span>
+                    </button>
+                    <button class="flex-1 px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg hover:bg-neutral-200 transition-colors text-sm">
+                        <span class="material-icons-round text-sm">favorite_border</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>

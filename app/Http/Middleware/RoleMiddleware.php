@@ -19,7 +19,7 @@ class RoleMiddleware
             return response()->json(['message' => 'Unauthenticated'], 401);
         }
         
-        if (!$user->roles()->where('name', $role)->exists()) {
+        if ($user->role?->name !== $role) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
         

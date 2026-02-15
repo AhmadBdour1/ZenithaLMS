@@ -73,7 +73,6 @@ class EbookAPIController extends Controller
             'is_free' => $ebook->is_free,
             'is_published' => $ebook->is_published,
             'is_featured' => $ebook->is_featured,
-            'file_path' => $ebook->file_path,
             'file_size' => $ebook->file_size,
             'file_type' => $ebook->file_type,
             'cover_image' => $ebook->cover_image,

@@ -68,43 +68,102 @@ class User extends Authenticatable
 
 
     /**
-     * Get role name attribute (single source of truth)
+     * Get role name attribute (robust single source of truth)
      */
-    public function getRoleNameAttribute()
+    public function getRoleNameAttribute(): string
     {
-        return $this->role?->name ?? 'student';
+        $this->loadMissing('role');
+
+        $name =
+            $this->role->name
+            ?? Role::query()->whereKey($this->role_id)->value('name')
+            ?? 'student';
+
+        return strtolower(trim((string) $name));
+    }
+
+    /**
+     * Robust role name resolution (same as policies)
+     */
+    public function roleName(): string
+    {
+        return $this->role_name;
+    }
+
+    /**
+     * Check if user has specific role(s)
+     */
+    public function hasRole(string|array $roles): bool
+    {
+        $userRole = $this->roleName();
+        $roleList = is_array($roles) ? $roles : [$roles];
+        
+        return in_array($userRole, $roleList, true);
     }
 
     /**
      * Check if user is admin
      */
-    public function isAdmin()
+    public function isAdmin(): bool
     {
-        return in_array($this->role_name, ['super_admin', 'admin']);
+        return $this->roleName() === 'admin';
     }
 
     /**
      * Check if user is instructor
      */
-    public function isInstructor()
+    public function isInstructor(): bool
     {
-        return $this->role_name === 'instructor';
+        return $this->roleName() === 'instructor';
     }
 
     /**
      * Check if user is student
      */
-    public function isStudent()
+    public function isStudent(): bool
     {
-        return $this->role_name === 'student';
+        return $this->roleName() === 'student';
     }
 
     /**
-     * Check if user is organization
+     * Check if user is organization admin
      */
-    public function isOrganization()
+    public function isOrganizationAdmin(): bool
     {
-        return $this->role_name === 'organization';
+        return $this->roleName() === 'organization_admin';
+    }
+
+    /**
+     * Check if user is content manager
+     */
+    public function isContentManager(): bool
+    {
+        return $this->roleName() === 'content_manager';
+    }
+
+    /**
+     * Check if user has any admin-level role
+     */
+    public function isAdminLevel(): bool
+    {
+        return $this->hasRole(['admin', 'organization_admin', 'content_manager']);
+    }
+
+    /**
+     * Check if user can create content
+     */
+    public function canCreateContent(): bool
+    {
+        return $this->hasRole(['admin', 'instructor', 'organization_admin', 'content_manager']);
+    }
+
+    /**
+     * Alias for backward compatibility - maps organization to organization_admin
+     * @deprecated Use isOrganizationAdmin() instead
+     */
+    public function isOrganization(): bool
+    {
+        return $this->isOrganizationAdmin();
     }
 
     /**
@@ -216,6 +275,54 @@ class User extends Authenticatable
     }
 
     /**
+     * Get user's orders
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Get user's wallet
+     */
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    /**
+     * Get user's wallets
+     */
+    public function wallets()
+    {
+        return $this->hasMany(Wallet::class);
+    }
+
+    /**
+     * Get user's refunds
+     */
+    public function refunds()
+    {
+        return $this->hasMany(Refund::class);
+    }
+
+    /**
+     * Get user's authored ebooks
+     */
+    public function authoredEbooks()
+    {
+        return $this->hasMany(Ebook::class, 'author_id');
+    }
+
+    /**
+     * Get user's ebook accesses
+     */
+    public function ebookAccesses()
+    {
+        return $this->hasMany(EbookAccess::class);
+    }
+
+    /**
      * Get learning profile
      */
     public function getLearningProfileAttribute()
@@ -236,6 +343,6 @@ class User extends Authenticatable
     public function getAvatarUrlAttribute(): string
     {
         $mediaService = app(MediaService::class);
-        return $mediaService->url($this->avatar, '/images/default-avatar.png');
+        return $mediaService->publicUrl($this->avatar, '/images/default-avatar.png');
     }
 }

@@ -3,95 +3,102 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Course;
-use App\Models\Enrollment;
+use App\Http\Requests\CourseEnrollRequest;
+use App\Services\CourseService;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 
 class CourseAPIController extends Controller
 {
+    private CourseService $courseService;
+    private PaymentService $paymentService;
+
+    public function __construct(CourseService $courseService, PaymentService $paymentService)
+    {
+        $this->courseService = $courseService;
+        $this->paymentService = $paymentService;
+    }
+
     /**
      * Display a listing of courses.
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $query = Course::with(['instructor:id,name,email', 'category:id,name'])
-            ->withCount(['enrollments', 'lessons'])
-            ->orderBy('created_at', 'desc');
+        $filters = [
+            'category_id' => $request->category_id,
+            'instructor_id' => $request->instructor_id,
+            'search' => $request->search,
+            'is_published' => $request->is_published ?? true,
+            'level' => $request->level,
+        ];
 
-        // Apply filters
-        if ($request->category_id) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        if ($request->instructor_id) {
-            $query->where('instructor_id', $request->instructor_id);
-        }
-
-        if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('title', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('description', 'LIKE', '%' . $request->search . '%');
-            });
-        }
-
-        // Apply price filter
+        // Apply price filters
         if ($request->min_price) {
-            $query->where('price', '>=', $request->min_price);
+            $filters['min_price'] = $request->min_price;
         }
 
         if ($request->max_price) {
-            $query->where('price', '<=', $request->max_price);
+            $filters['max_price'] = $request->max_price;
         }
 
-        // Pagination with optimized page size
         $perPage = min($request->input('per_page', 15), 50);
-        $courses = $query->paginate($perPage);
+        $courses = $this->courseService->getCourses($filters, $perPage);
 
         return response()->json([
+            'success' => true,
             'data' => $courses->items(),
             'pagination' => [
                 'current_page' => $courses->currentPage(),
                 'last_page' => $courses->lastPage(),
                 'per_page' => $courses->perPage(),
                 'total' => $courses->total(),
-                'has_more' => $courses->hasMorePages(),
-            ]
+            ],
         ]);
     }
-
-    /**
+        /**
      * Display the specified course.
      */
-    public function show($slug)
+    public function show($slug): JsonResponse
     {
-        // Use cache for course details
-        $cacheKey = "course_show:{$slug}";
+        $course = $this->courseService->getCourseBySlug($slug);
         
-        $course = Cache::remember($cacheKey, 3600, function () use ($slug) {
-            return Course::with([
-                'instructor:id,name,email,bio',
-                'category:id,name',
-                'lessons' => function ($query) {
-                    $query->select('id', 'course_id', 'title', 'content', 'order', 'duration_minutes')
-                          ->orderBy('order');
-                },
-                'enrollments' => function ($query) {
-                    $query->select('id', 'course_id', 'user_id', 'created_at')
-                          ->with('user:id,name,email')
-                          ->latest()
-                          ->take(10);
-                }
-            ])->where('slug', $slug)
-              ->firstOrFail();
-        });
+        if (!$course) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Course not found'
+            ], 404);
+        }
 
+        // Transform course data for API response
         return response()->json([
-            'course' => $course,
+            'id' => $course->id,
+            'title' => $course->title,
+            'description' => $course->description ?? '',
+            'price' => (float) $course->price,
+            'thumbnail' => $course->thumbnail,
+            'is_free' => (bool) $course->is_free,
+            'is_published' => (bool) $course->is_published,
+            'level' => $course->level,
+            'category' => $course->category,
+            'instructor' => $course->instructor,
+            'lessons' => $course->lessons->map(function ($lesson) {
+                return [
+                    'id' => $lesson->id,
+                    'course_id' => $lesson->course_id,
+                    'title' => $lesson->title,
+                    'content' => $lesson->content,
+                    'order' => (int) $lesson->sort_order,
+                    'duration_minutes' => $lesson->duration_minutes,
+                ];
+            }),
+            'enrollments_count' => $course->enrollments_count ?? $course->enrollments->count(),
+            'created_at' => $course->created_at?->toISOString(),
+            'updated_at' => $course->updated_at?->toISOString(),
             'stats' => [
-                'total_enrollments' => $course->enrollments_count,
-                'total_lessons' => $course->lessons_count,
+                'total_enrollments' => $course->enrollments_count ?? $course->enrollments->count(),
+                'total_lessons' => $course->lessons_count ?? $course->lessons->count(),
                 'total_duration' => $course->lessons->sum('duration_minutes'),
                 'recent_enrollments' => $course->enrollments->take(5),
             ]
@@ -101,77 +108,70 @@ class CourseAPIController extends Controller
     /**
      * Enroll user in course
      */
-    public function enroll(Request $request, $courseId)
+    public function enroll(CourseEnrollRequest $request, $courseId): JsonResponse
     {
         $user = $request->user();
         
-        $course = Course::findOrFail($courseId);
+        $paymentData = [
+            'payment_method' => $request->payment_method ?? 'wallet',
+            'payment_details' => $request->payment_details ?? [],
+            'coupon_code' => $request->coupon_code,
+        ];
 
-        // Check if already enrolled
-        $existingEnrollment = Enrollment::where('user_id', $user->id)
-            ->where('course_id', $course->id)
-            ->first();
+        $result = $this->paymentService->processCoursePayment($user, $courseId, $paymentData);
 
-        if ($existingEnrollment) {
+        if ($result['success']) {
             return response()->json([
-                'message' => 'Already enrolled in this course',
-                'enrollment' => $existingEnrollment
-            ], 422);
+                'success' => true,
+                'message' => $result['message'],
+                'enrollment' => $result['enrollment'] ?? null,
+                'payment' => $result['payment'] ?? null,
+            ]);
         }
 
-        // Create enrollment
-        $enrollment = Enrollment::create([
-            'user_id' => $user->id,
-            'course_id' => $course->id,
-            'organization_id' => $course->organization_id ?? 1, // Default to org 1 if null
-            'status' => 'active',
-            'progress_percentage' => 0.0,
-            'enrolled_at' => now(),
-        ]);
-
         return response()->json([
-            'message' => 'Enrolled successfully',
-            'enrollment' => $enrollment
-        ]);
+            'success' => false,
+            'message' => $result['message'],
+        ], 422);
     }
 
     /**
      * Get user's enrolled courses
      */
-    public function myCourses(Request $request)
+    public function myCourses(Request $request): JsonResponse
     {
         $user = $request->user();
+        $filters = $request->only(['status']);
 
-        // Try to get from cache first
-        $enrollments = CacheService::cacheUserCourses($user->id);
+        $courses = $this->courseService->getUserCourses($user, $filters);
 
         return response()->json([
-    'data' => $enrollments->map(function ($enrollment) use ($user) {
-        return [
-            'id' => $enrollment->course->id,
-            'title' => $enrollment->course->title,
-            'slug' => $enrollment->course->slug,
-            'description' => $enrollment->course->description,
-            'thumbnail' => $enrollment->course->thumbnail,
-            'progress_percentage' => $enrollment->progress_percentage,
-            'status' => $enrollment->status,
-            'enrolled_at' => $enrollment->enrolled_at,
-            'completed_at' => $enrollment->completed_at,
-            'instructor' => $enrollment->course->instructor,
-            'category' => $enrollment->course->category,
-            'lessons_count' => $enrollment->course->lessons->count(),
-            'completed_lessons' => $enrollment->course->lessons->filter(function ($lesson) use ($user) {
-                return $lesson->isCompletedByUser($user->id);
-            })->count(),
-        ];
-    }),
-    'pagination' => [
-        'current_page' => $enrollments->currentPage(),
-        'last_page' => $enrollments->lastPage(),
-        'per_page' => $enrollments->perPage(),
-        'total' => $enrollments->total(),
-    ]
-]);
-
+            'data' => $courses->map(function ($course) use ($user) {
+                $enrollment = $user->enrollments()->where('course_id', $course->id)->first();
+                return [
+                    'id' => $course->id,
+                    'title' => $course->title,
+                    'slug' => $course->slug,
+                    'description' => $course->description,
+                    'thumbnail' => $course->thumbnail,
+                    'progress_percentage' => $enrollment?->progress_percentage ?? 0,
+                    'status' => $enrollment?->status ?? 'active',
+                    'enrolled_at' => $enrollment?->enrolled_at,
+                    'completed_at' => $enrollment?->completed_at,
+                    'instructor' => $course->instructor,
+                    'category' => $course->category,
+                    'lessons_count' => $course->lessons->count(),
+                    'completed_lessons' => $course->lessons->filter(function ($lesson) use ($user) {
+                        return $lesson->isCompletedByUser($user->id);
+                    })->count(),
+                ];
+            }),
+            'pagination' => [
+                'current_page' => 1,
+                'last_page' => 1,
+                'per_page' => $courses->count(),
+                'total' => $courses->count(),
+            ],
+        ]);
     }
 }

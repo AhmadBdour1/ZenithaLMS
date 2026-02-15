@@ -51,4 +51,14 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
         $response->assertRedirect('/');
     }
+
+    public function test_dashboard_redirects_based_on_user_role(): void
+    {
+        // Test student role (default)
+        $student = User::factory()->create(['role_id' => 3]); // Assuming role_id 3 is student
+        
+        $response = $this->actingAs($student)->get('/dashboard');
+        
+        $response->assertRedirect(route('zenithalms.dashboard.student'));
+    }
 }

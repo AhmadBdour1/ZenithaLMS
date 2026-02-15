@@ -120,11 +120,11 @@
                         Student Dashboard
                     </button>
 
-                    <!-- Organization Dashboard -->
-                    <button onclick="quickLogin('organization')" 
+                    <!-- Organization Admin Dashboard -->
+                    <button onclick="quickLogin('organization_admin')" 
                             class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg font-medium hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg">
                         <span class="material-icons-round">business</span>
-                        Organization Dashboard
+                        Organization Admin Dashboard
                     </button>
                 </div>
 
@@ -154,7 +154,7 @@
                 admin: { email: 'admin@zenithalms.com', password: 'password' },
                 instructor: { email: 'instructor@zenithalms.com', password: 'password' },
                 student: { email: 'student@zenithalms.com', password: 'password' },
-                organization: { email: 'org@zenithalms.com', password: 'password' }
+                organization_admin: { email: 'org@zenithalms.com', password: 'password' }
             };
 
             const cred = credentials[role];

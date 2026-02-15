@@ -16,22 +16,22 @@ class VirtualClassPolicy
     }
 
     /**
-     * Determine whether the user can view the virtual class.
+     * Determine whether the user can view the class.
      */
     public function view(User $user, VirtualClass $class): bool
     {
         // Admin can view any class
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return true;
         }
 
         // Instructor can view their own classes
-        if ($user->role === 'instructor' && $class->instructor_id === $user->id) {
+        if ($user->isInstructor() && $class->instructor_id === $user->id) {
             return true;
         }
 
         // Students can view classes they're enrolled in
-        if ($user->role === 'student' && $class->course_id) {
+        if ($user->isStudent() && $class->course_id) {
             return $user->enrollments()
                 ->where('course_id', $class->course_id)
                 ->exists();
@@ -41,25 +41,25 @@ class VirtualClassPolicy
     }
 
     /**
-     * Determine whether the user can create virtual classes.
+     * Determine whether the user can create classes.
      */
     public function create(User $user): bool
     {
-        return in_array($user->role, ['admin', 'instructor']);
+        return $user->hasRole(['admin', 'instructor']);
     }
 
     /**
-     * Determine whether the user can update the virtual class.
+     * Determine whether the user can update the class.
      */
     public function update(User $user, VirtualClass $class): bool
     {
         // Admin can update any class
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return true;
         }
 
         // Instructors can update their own classes
-        if ($user->role === 'instructor' && $class->instructor_id === $user->id) {
+        if ($user->isInstructor() && $class->instructor_id === $user->id) {
             return true;
         }
 
@@ -67,17 +67,17 @@ class VirtualClassPolicy
     }
 
     /**
-     * Determine whether the user can delete the virtual class.
+     * Determine whether the user can delete the class.
      */
     public function delete(User $user, VirtualClass $class): bool
     {
         // Admin can delete any class
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return true;
         }
 
         // Instructors can delete their own classes
-        if ($user->role === 'instructor' && $class->instructor_id === $user->id) {
+        if ($user->isInstructor() && $class->instructor_id === $user->id) {
             return true;
         }
 
@@ -85,22 +85,22 @@ class VirtualClassPolicy
     }
 
     /**
-     * Determine whether the user can join the virtual class.
+     * Determine whether the user can join the class.
      */
     public function join(User $user, VirtualClass $class): bool
     {
         // Admin can join any class
-        if ($user->role === 'admin') {
+        if ($user->isAdmin()) {
             return true;
         }
 
         // Instructor can join their own classes
-        if ($user->role === 'instructor' && $class->instructor_id === $user->id) {
+        if ($user->isInstructor() && $class->instructor_id === $user->id) {
             return true;
         }
 
         // Students can join classes they're enrolled in
-        if ($user->role === 'student' && $class->course_id) {
+        if ($user->isStudent() && $class->course_id) {
             return $user->enrollments()
                 ->where('course_id', $class->course_id)
                 ->exists();

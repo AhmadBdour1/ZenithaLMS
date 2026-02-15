@@ -2,30 +2,77 @@
 
 namespace Tests\Feature;
 
-use Tests\TestCase;
 use App\Models\User;
 use App\Models\Course;
-use App\Models\Enrollment;
 use App\Models\Quiz;
-use App\Models\QuizAttempt;
 use App\Models\Forum;
 use App\Models\Blog;
 use App\Models\Ebook;
+use App\Models\Enrollment;
 use App\Models\Payment;
 use App\Models\Certificate;
+use App\Support\Install\InstallState;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Tests\TestCase;
 
 class ZenithaLmsApiTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
-    
+
     protected function setUp(): void
     {
         parent::setUp();
         
+        // Mark as installed for tests
+        InstallState::markInstalled(['test' => 'zenithalms_api_test']);
+        
         // Create test data
         $this->createTestData();
+    }
+    
+    /**
+     * Create test data
+     */
+    private function createTestData(): void
+    {
+        // Create roles
+        $adminRole = \App\Models\Role::factory()->create(['name' => 'admin']);
+        $instructorRole = \App\Models\Role::factory()->create(['name' => 'instructor']);
+        $studentRole = \App\Models\Role::factory()->create(['name' => 'student']);
+        
+        // Create categories
+        \App\Models\Category::factory()->count(5)->create();
+        
+        // Create users
+        User::factory()->count(10)->create();
+        
+        // Create courses
+        Course::factory()->count(15)->create();
+        
+        // Create quizzes
+        Quiz::factory()->count(10)->create();
+        
+        // Create forums
+        Forum::factory()->count(20)->create();
+        
+        // Create blogs
+        Blog::factory()->count(25)->create();
+        
+        // Create ebooks
+        Ebook::factory()->count(12)->create();
+        
+        // Create virtual classes
+        \App\Models\VirtualClass::factory()->count(8)->create();
+        
+        // Create enrollments
+        Enrollment::factory()->count(30)->create();
+        
+        // Create payments
+        Payment::factory()->count(25)->create();
+        
+        // Create certificates
+        Certificate::factory()->count(15)->create();
     }
     
     /**
@@ -154,8 +201,16 @@ class ZenithaLmsApiTest extends TestCase
      */
     public function test_course_enrollment()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['organization_id' => 1]);
         $course = Course::first();
+        
+        // Create a wallet for the user with sufficient balance
+        $wallet = \App\Models\Wallet::create([
+            'user_id' => $user->id,
+            'balance' => 1000.00,
+            'currency' => 'USD',
+            'is_active' => true,
+        ]);
         
         $response = $this->actingAs($user, 'sanctum')
                         ->post("/api/v1/user/courses/{$course->id}/enroll");
@@ -287,7 +342,7 @@ class ZenithaLmsApiTest extends TestCase
         
         $response = $this->actingAs($user, 'sanctum')
                         ->post("/api/v1/quizzes/{$quiz->id}/start");
-        
+
         $response->assertStatus(200)
                  ->assertJsonStructure([
                      'attempt_id',
@@ -623,25 +678,9 @@ class ZenithaLmsApiTest extends TestCase
      */
     public function test_admin_dashboard()
     {
-        $admin = User::factory()->create();
-        $adminRole = \App\Models\Role::where('name', 'super_admin')->first();
+        $admin = User::factory()->admin()->create();
         
-        if (!$adminRole) {
-            $adminRole = \App\Models\Role::create([
-                'name' => 'super_admin',
-                'display_name' => 'Super Admin',
-                'description' => 'Full system access',
-                'level' => 0,
-                'is_active' => true,
-                'permissions' => []
-            ]);
-        }
-        
-        $admin->role_id = $adminRole->id;
-        $admin->save();
-        
-        $response = $this->actingAs($admin, 'sanctum')
-                        ->get('/api/v1/admin/dashboard');
+        $response = $this->actingAs($admin)->get('/api/v1/admin/dashboard');
         
         $response->assertStatus(200)
                  ->assertJsonStructure([
@@ -723,47 +762,4 @@ class ZenithaLmsApiTest extends TestCase
         $response->assertStatus(403);
     }
     
-    /**
-     * Create test data
-     */
-    private function createTestData()
-    {
-        // Create roles
-        \App\Models\Role::factory()->create(['name' => 'admin']);
-        \App\Models\Role::factory()->create(['name' => 'instructor']);
-        \App\Models\Role::factory()->create(['name' => 'student']);
-        
-        // Create categories
-        \App\Models\Category::factory()->count(5)->create();
-        
-        // Create users
-        User::factory()->count(10)->create();
-        
-        // Create courses
-        Course::factory()->count(15)->create();
-        
-        // Create quizzes
-        Quiz::factory()->count(10)->create();
-        
-        // Create forums
-        Forum::factory()->count(20)->create();
-        
-        // Create blogs
-        Blog::factory()->count(25)->create();
-        
-        // Create ebooks
-        Ebook::factory()->count(12)->create();
-        
-        // Create virtual classes
-        \App\Models\VirtualClass::factory()->count(8)->create();
-        
-        // Create enrollments
-        Enrollment::factory()->count(30)->create();
-        
-        // Create payments
-        Payment::factory()->count(25)->create();
-        
-        // Create certificates
-        Certificate::factory()->count(15)->create();
     }
-}

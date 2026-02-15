@@ -22,14 +22,13 @@ class DashboardController extends Controller
         
         // Redirect based on role
         switch ($role) {
-            case 'super_admin':
             case 'admin':
                 return redirect()->route('zenithalms.dashboard.admin');
             case 'instructor':
                 return redirect()->route('zenithalms.dashboard.instructor');
             case 'student':
                 return redirect()->route('zenithalms.dashboard.student');
-            case 'organization':
+            case 'organization_admin':
                 return redirect()->route('zenithalms.dashboard.organization');
             default:
                 // Default to student dashboard for unknown roles

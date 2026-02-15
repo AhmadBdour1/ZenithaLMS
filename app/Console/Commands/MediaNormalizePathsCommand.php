@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Services\MediaService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class MediaNormalizePathsCommand extends Command
 {
@@ -29,25 +29,36 @@ class MediaNormalizePathsCommand extends Command
     {
         $this->info('Starting media path normalization...');
 
+        $mediaService = new MediaService();
+        
+        // Track updates
+        $updatedCourses = 0;
+        $updatedEbooks = 0;
+        $updatedUsers = 0;
+
         // Normalize courses.thumbnail
-        $this->normalizeCourseThumbnails();
+        $updatedCourses += $this->normalizeCourseThumbnails($mediaService);
 
         // Normalize courses.preview_video (only local paths)
-        $this->normalizeCoursePreviewVideos();
+        $updatedCourses += $this->normalizeCoursePreviewVideos($mediaService);
 
         // Normalize ebooks.thumbnail
-        $this->normalizeEbookThumbnails();
+        $updatedEbooks += $this->normalizeEbookThumbnails($mediaService);
 
         // Normalize ebooks.file_path
-        $this->normalizeEbookFilePaths();
+        $updatedEbooks += $this->normalizeEbookFilePaths($mediaService);
 
         // Normalize users.avatar
-        $this->normalizeUserAvatars();
+        $updatedUsers += $this->normalizeUserAvatars($mediaService);
 
+        // Output final report
         $this->info('Media path normalization completed!');
+        $this->info("updated_courses: {$updatedCourses}");
+        $this->info("updated_ebooks: {$updatedEbooks}");
+        $this->info("updated_users: {$updatedUsers}");
     }
 
-    private function normalizeCourseThumbnails()
+    private function normalizeCourseThumbnails(MediaService $mediaService): int
     {
         $this->info('Normalizing courses.thumbnail...');
         
@@ -58,7 +69,7 @@ class MediaNormalizePathsCommand extends Command
 
         $count = 0;
         foreach ($courses as $course) {
-            $normalizedPath = $this->normalizePath($course->thumbnail);
+            $normalizedPath = $mediaService->normalizePath($course->thumbnail);
             if ($normalizedPath !== $course->thumbnail) {
                 DB::table('courses')
                     ->where('id', $course->id)
@@ -68,9 +79,10 @@ class MediaNormalizePathsCommand extends Command
         }
 
         $this->info("Updated {$count} course thumbnail paths");
+        return $count;
     }
 
-    private function normalizeCoursePreviewVideos()
+    private function normalizeCoursePreviewVideos(MediaService $mediaService): int
     {
         $this->info('Normalizing courses.preview_video (local paths only)...');
         
@@ -83,7 +95,7 @@ class MediaNormalizePathsCommand extends Command
         foreach ($courses as $course) {
             // Only normalize local paths, keep external URLs
             if ($this->isLocalPath($course->preview_video)) {
-                $normalizedPath = $this->normalizePath($course->preview_video);
+                $normalizedPath = $mediaService->normalizePath($course->preview_video);
                 if ($normalizedPath !== $course->preview_video) {
                     DB::table('courses')
                         ->where('id', $course->id)
@@ -94,9 +106,10 @@ class MediaNormalizePathsCommand extends Command
         }
 
         $this->info("Updated {$count} course preview video paths");
+        return $count;
     }
 
-    private function normalizeEbookThumbnails()
+    private function normalizeEbookThumbnails(MediaService $mediaService): int
     {
         $this->info('Normalizing ebooks.thumbnail...');
         
@@ -107,7 +120,7 @@ class MediaNormalizePathsCommand extends Command
 
         $count = 0;
         foreach ($ebooks as $ebook) {
-            $normalizedPath = $this->normalizePath($ebook->thumbnail);
+            $normalizedPath = $mediaService->normalizePath($ebook->thumbnail);
             if ($normalizedPath !== $ebook->thumbnail) {
                 DB::table('ebooks')
                     ->where('id', $ebook->id)
@@ -117,9 +130,10 @@ class MediaNormalizePathsCommand extends Command
         }
 
         $this->info("Updated {$count} ebook thumbnail paths");
+        return $count;
     }
 
-    private function normalizeEbookFilePaths()
+    private function normalizeEbookFilePaths(MediaService $mediaService): int
     {
         $this->info('Normalizing ebooks.file_path...');
         
@@ -130,7 +144,7 @@ class MediaNormalizePathsCommand extends Command
 
         $count = 0;
         foreach ($ebooks as $ebook) {
-            $normalizedPath = $this->normalizePath($ebook->file_path);
+            $normalizedPath = $mediaService->normalizePath($ebook->file_path);
             if ($normalizedPath !== $ebook->file_path) {
                 DB::table('ebooks')
                     ->where('id', $ebook->id)
@@ -140,9 +154,10 @@ class MediaNormalizePathsCommand extends Command
         }
 
         $this->info("Updated {$count} ebook file paths");
+        return $count;
     }
 
-    private function normalizeUserAvatars()
+    private function normalizeUserAvatars(MediaService $mediaService): int
     {
         $this->info('Normalizing users.avatar...');
         
@@ -153,7 +168,7 @@ class MediaNormalizePathsCommand extends Command
 
         $count = 0;
         foreach ($users as $user) {
-            $normalizedPath = $this->normalizePath($user->avatar);
+            $normalizedPath = $mediaService->normalizePath($user->avatar);
             if ($normalizedPath !== $user->avatar) {
                 DB::table('users')
                     ->where('id', $user->id)
@@ -163,32 +178,20 @@ class MediaNormalizePathsCommand extends Command
         }
 
         $this->info("Updated {$count} user avatar paths");
-    }
-
-    private function normalizePath(string $path): string
-    {
-        // Remove leading "storage/"
-        if (str_starts_with($path, 'storage/')) {
-            return substr($path, 9);
-        }
-
-        // Handle URLs with "/storage/" - extract path after /storage/
-        if (str_contains($path, '/storage/')) {
-            $parts = explode('/storage/', $path);
-            if (isset($parts[1])) {
-                // Remove query parameters if any
-                $pathPart = explode('?', $parts[1])[0];
-                return $pathPart;
-            }
-        }
-
-        return $path;
+        return $count;
     }
 
     private function isLocalPath(string $path): bool
     {
         // Check if it's a local storage path (not external URL)
-        return !filter_var($path, FILTER_VALIDATE_URL) || 
-               str_starts_with($path, 'http') && str_contains($path, '/storage/');
+        // Keep external URLs like youtube.com, vimeo.com, etc.
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            // It's a URL, check if it's external (not local storage)
+            $host = parse_url($path, PHP_URL_HOST);
+            return $host === null || str_contains($path, '/storage/');
+        }
+        
+        // Not a URL, treat as local path
+        return true;
     }
 }

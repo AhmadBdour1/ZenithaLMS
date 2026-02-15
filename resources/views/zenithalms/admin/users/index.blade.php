@@ -90,11 +90,10 @@
                 <select id="role-filter" 
                         class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
                     <option value="">All Roles</option>
-                    <option value="super_admin">Super Admin</option>
                     <option value="admin">Admin</option>
                     <option value="instructor">Instructor</option>
                     <option value="student">Student</option>
-                    <option value="organization">Organization</option>
+                    <option value="organization_admin">Organization Admin</option>
                 </select>
                 
                 <select id="status-filter" 
@@ -163,7 +162,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-gray-600 text-sm">Admin Users</p>
-                        <p class="text-2xl font-bold text-gray-900">{{ App\Models\User::whereHas('role', function($q) { $q->whereIn('name', ['admin', 'super_admin']); })->count() }}</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ App\Models\User::whereHas('role', function($q) { $q->where('name', 'admin'); })->count() }}</p>
                     </div>
                     <div class="p-3 bg-purple-100 rounded-full">
                         <span class="material-icons-round text-purple-600">admin_panel_settings</span>
@@ -247,7 +246,7 @@ function loadStaticUsers() {
             id: 1,
             name: 'John Anderson',
             email: 'admin@zenithalms.com',
-            role: 'super_admin',
+            role: 'admin',
             is_active: true,
             created_at: '2024-01-15',
             last_login_at: '2024-02-12 10:30:00'
@@ -305,11 +304,10 @@ function updateUsersTable(users) {
         row.className = 'hover:bg-gray-50 transition-colors';
         
         const roleColors = {
-            'super_admin': 'bg-red-100 text-red-800',
             'admin': 'bg-orange-100 text-orange-800',
             'instructor': 'bg-blue-100 text-blue-800',
             'student': 'bg-green-100 text-green-800',
-            'organization': 'bg-purple-100 text-purple-800'
+            'organization_admin': 'bg-purple-100 text-purple-800'
         };
         
         const statusClass = user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';

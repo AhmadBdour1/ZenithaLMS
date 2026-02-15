@@ -28,8 +28,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Use the unified dashboard route that redirects by role
-        return redirect()->intended('/dashboard');
+        // Redirect to central dashboard route, which will handle role-based redirection
+        return redirect()->intended(route('dashboard'));
     }
 
     /**

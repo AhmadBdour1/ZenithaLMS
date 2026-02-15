@@ -43,6 +43,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Deployment Mode
+    |--------------------------------------------------------------------------
+    |
+    | This value determines the deployment mode of your application.
+    | Options: standard, enterprise
+    |
+    */
+
+    'product_mode' => env('APP_PRODUCT_MODE', 'standard'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------
     |
