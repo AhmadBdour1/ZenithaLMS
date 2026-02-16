@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Organization;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class OrganizationFactory extends Factory
 {
@@ -17,8 +18,9 @@ class OrganizationFactory extends Factory
             'domain' => $this->faker->unique()->domainName(),
             'description' => $this->faker->paragraph(),
             'logo' => $this->faker->imageUrl(),
-            'email' => $this->faker->companyEmail(),
-            'phone' => $this->faker->phoneNumber(),
+            'email' => $this->faker->unique()->safeEmail(),
+            // 'email' => 'org_' . Str::uuid() . '@example.test',
+            'phone' => $this->faker->e164PhoneNumber(),
             'address' => $this->faker->streetAddress(),
             'city' => $this->faker->city(),
             'country' => $this->faker->country(),
