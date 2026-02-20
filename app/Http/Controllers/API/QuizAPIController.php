@@ -273,7 +273,7 @@ class QuizAPIController extends Controller
             'passing_score' => 'sometimes|integer|min:0|max:100',
             'max_attempts' => 'sometimes|integer|min:1',
             'difficulty' => 'sometimes|in:easy,medium,hard',
-            'is_published' => 'boolean',
+            'is_published' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -283,7 +283,8 @@ class QuizAPIController extends Controller
             ], 422);
         }
 
-        $quiz->update($request->all());
+        $this->authorize('update', $quiz);
+        $quiz->update($validator->validated());
 
         return response()->json([
             'message' => 'Quiz updated successfully',
@@ -298,13 +299,7 @@ class QuizAPIController extends Controller
     {
         $quiz = Quiz::findOrFail($id);
 
-        // Check if user has permission (simplified - in real app, check role)
-        if ($request->user()->id !== $quiz->course->instructor_id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
-
+        $this->authorize('delete', $quiz);
         $quiz->delete();
 
         return response()->json([

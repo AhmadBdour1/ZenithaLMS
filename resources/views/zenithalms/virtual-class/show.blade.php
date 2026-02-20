@@ -115,7 +115,7 @@
                 <h2 class="text-2xl font-bold text-neutral-900 mb-4">About This Class</h2>
                 <div class="bg-white rounded-xl border border-neutral-200 p-6">
                     <div class="prose max-w-none">
-                        {!! $virtualClass->description !!}
+                        {{ $virtualClass->description }}
                     </div>
                     
                     <!-- Class Tags -->

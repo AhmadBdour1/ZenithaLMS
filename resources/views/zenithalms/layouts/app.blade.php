@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +12,24 @@
     <!-- Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Accessibility improvements -->
+    <meta name="description" content="@yield('description', 'ZenithaLMS - Your AI-powered learning platform for modern education')">
+    <meta name="keywords" content="learning, education, courses, ebooks, AI, online learning">
+    <meta name="author" content="ZenithaLMS">
+    
+    <!-- Open Graph meta tags for social sharing -->
+    <meta property="og:title" content="@yield('title', 'ZenithaLMS - Reach Your Learning Peak')">
+    <meta property="og:description" content="@yield('description', 'Your AI-powered learning platform for modern education')">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('images/zenithalms-og-image.png') }}">
+    
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', 'ZenithaLMS - Reach Your Learning Peak')">
+    <meta name="twitter:description" content="@yield('description', 'Your AI-powered learning platform for modern education')">
+    <meta name="twitter:image" content="{{ asset('images/zenithalms-og-image.png') }}">
     
     <!-- Custom Tailwind Config -->
     <script>
@@ -99,60 +117,70 @@
     </style>
 </head>
 <body class="bg-neutral-50 font-sans">
+    <!-- Skip to main content link for screen readers -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white p-2 rounded-md z-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        {{ __('Skip to main content') }}
+    </a>
+
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b sticky top-0 z-50">
+    <nav role="navigation" aria-label="{{ __('Main navigation') }}" class="bg-white shadow-sm border-b sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <div class="flex items-center">
-                    <a href="/" class="flex items-center gap-2">
-                        <div class="w-8 h-8 zenithalms-gradient rounded-lg flex items-center justify-center">
+                    <a href="/" class="flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2" aria-label="ZenithaLMS {{ __('Home') }}">
+                        <div class="w-8 h-8 zenithalms-gradient rounded-lg flex items-center justify-center" aria-hidden="true">
                             <span class="material-icons-round text-white text-sm">school</span>
                         </div>
-                        <span class="font-bold text-xl zenithalms-gradient-text">ZenithaLMS</span>
+                        <span class="font-bold text-xl zenithalms-gradient-text">{{ __('ZenithaLMS') }}</span>
                     </a>
                 </div>
 
+                <!-- Mobile menu button -->
+                <button type="button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500" aria-expanded="false" aria-label="{{ __('Toggle main menu') }}">
+                    <span class="material-icons-round">menu</span>
+                </button>
+
                 <!-- Navigation Links -->
                 <div class="hidden md:flex items-center space-x-8">
-                    <a href="/" class="text-neutral-600 hover:text-primary-600 transition-colors">Home</a>
-                    <a href="/courses" class="text-neutral-600 hover:text-primary-600 transition-colors">Courses</a>
-                    <a href="/ebooks" class="text-neutral-600 hover:text-primary-600 transition-colors">Ebooks</a>
-                    <a href="/blog" class="text-neutral-600 hover:text-primary-600 transition-colors">Blog</a>
-                    <a href="/dashboard/instructor" class="text-neutral-600 hover:text-primary-600 transition-colors">Instructor</a>
-                    <a href="/dashboard/student" class="text-neutral-600 hover:text-primary-600 transition-colors">Student</a>
-                    <a href="/ai/assistant" class="text-neutral-600 hover:text-primary-600 transition-colors">AI Assistant</a>
+                    <a href="/" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Home') }}</a>
+                    <a href="/courses" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Courses') }}</a>
+                    <a href="/ebooks" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Ebooks') }}</a>
+                    <a href="/blog" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Blog') }}</a>
+                    <a href="/dashboard/instructor" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Instructor') }}</a>
+                    <a href="/dashboard/student" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Student') }}</a>
+                    <a href="/ai/assistant" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('AI Assistant') }}</a>
                 </div>
 
                 <!-- Auth Buttons -->
                 <div class="flex items-center space-x-4">
                     @guest
-                        <a href="/login-enhanced" class="px-4 py-2 text-primary-600 hover:text-primary-700 transition-colors">
-                            Sign In
+                        <a href="/login-enhanced" class="px-4 py-2 text-primary-600 hover:text-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md" aria-label="{{ __('Sign in to your account') }}">
+                            {{ __('Sign In') }}
                         </a>
-                        <a href="/register" class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors">
-                            Get Started
+                        <a href="/register" class="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500" aria-label="{{ __('Create a new account') }}">
+                            {{ __('Get Started') }}
                         </a>
-                        <a href="/login-enhanced" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg">
+                        <a href="/login-enhanced" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg focus:outline-none focus:ring-2 focus:ring-purple-500" aria-label="{{ __('Quick access to dashboard') }}">
                             <span class="flex items-center gap-2">
-                                <span class="material-icons-round text-sm">speed</span>
-                                Quick Access
+                                <span class="material-icons-round text-sm" aria-hidden="true">speed</span>
+                                {{ __('Quick Access') }}
                             </span>
                         </a>
                     @endguest
                     
                     @auth
                         <div class="flex items-center space-x-4">
-                            <a href="/dashboard/student" class="text-neutral-600 hover:text-primary-600 transition-colors">
-                                Dashboard
+                            <a href="/dashboard/student" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2" aria-label="{{ __('Go to dashboard') }}">
+                                {{ __('Dashboard') }}
                             </a>
-                            <a href="/profile" class="text-neutral-600 hover:text-primary-600 transition-colors">
-                                Profile
+                            <a href="/profile" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2" aria-label="{{ __('View your profile') }}">
+                                {{ __('Profile') }}
                             </a>
                             <form method="POST" action="/logout">
                                 @csrf
-                                <button type="submit" class="px-4 py-2 text-primary-600 hover:text-primary-700 transition-colors">
-                                    Logout
+                                <button type="submit" class="px-4 py-2 text-primary-600 hover:text-primary-700 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md" aria-label="{{ __('Sign out of your account') }}">
+                                    {{ __('Logout') }}
                                 </button>
                             </form>
                         </div>
@@ -163,59 +191,59 @@
     </nav>
 
     <!-- Main Content -->
-    <main>
+    <main id="main-content" role="main" aria-label="{{ __('Main content') }}">
         @yield('content')
     </main>
 
     <!-- Footer -->
-    <footer class="bg-neutral-900 text-white py-12">
+    <footer role="contentinfo" aria-label="{{ __('Site information') }}" class="bg-neutral-900 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
                     <div class="flex items-center gap-2 mb-4">
-                        <div class="w-8 h-8 zenithalms-gradient rounded-lg flex items-center justify-center">
+                        <div class="w-8 h-8 zenithalms-gradient rounded-lg flex items-center justify-center" aria-hidden="true">
                             <span class="material-icons-round text-white text-sm">school</span>
                         </div>
-                        <span class="font-bold text-xl">ZenithaLMS</span>
+                        <span class="font-bold text-xl">{{ __('ZenithaLMS') }}</span>
                     </div>
                     <p class="text-neutral-400">
-                        Your AI-powered learning platform for modern education.
+                        {{ __('Your AI-powered learning platform for modern education.') }}
                     </p>
                 </div>
                 
                 <div>
-                    <h3 class="font-semibold mb-4">Platform</h3>
+                    <h3 class="font-semibold mb-4">{{ __('Platform') }}</h3>
                     <ul class="space-y-2 text-neutral-400">
-                        <li><a href="/courses" class="hover:text-white transition-colors">Courses</a></li>
-                        <li><a href="/ebooks" class="hover:text-white transition-colors">Ebooks</a></li>
-                        <li><a href="/blog" class="hover:text-white transition-colors">Blog</a></li>
-                        <li><a href="/ai/assistant" class="hover:text-white transition-colors">AI Assistant</a></li>
+                        <li><a href="/courses" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('Courses') }}</a></li>
+                        <li><a href="/ebooks" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('Ebooks') }}</a></li>
+                        <li><a href="/blog" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('Blog') }}</a></li>
+                        <li><a href="/ai/assistant" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('AI Assistant') }}</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="font-semibold mb-4">Resources</h3>
+                    <h3 class="font-semibold mb-4">{{ __('Resources') }}</h3>
                     <ul class="space-y-2 text-neutral-400">
-                        <li><a href="#" class="hover:text-white transition-colors">Help Center</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Community</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('Help Center') }}</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('Documentation') }}</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('Blog') }}</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('Community') }}</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="font-semibold mb-4">Company</h3>
+                    <h3 class="font-semibold mb-4">{{ __('Company') }}</h3>
                     <ul class="space-y-2 text-neutral-400">
-                        <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('About Us') }}</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('Careers') }}</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('Contact') }}</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded-md p-1">{{ __('Privacy Policy') }}</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="border-t border-neutral-800 mt-8 pt-8 text-center text-neutral-400">
-                <p>&copy; 2026 ZenithaLMS. All rights reserved.</p>
+                <p>&copy; {{ date('Y') }} {{ __('ZenithaLMS. All rights reserved.') }}</p>
             </div>
         </div>
     </footer>

@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Ebook;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class EbookAPIController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of ebooks.
      */
@@ -139,24 +141,19 @@ class EbookAPIController extends Controller
     {
         $ebook = Ebook::findOrFail($id);
 
-        // Check if user owns this ebook
-        if ($ebook->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
+        $this->authorize('update', $ebook);
 
         $validator = Validator::make($request->all(), [
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
-            'excerpt' => 'nullable|string',
+            'excerpt' => 'sometimes|nullable|string',
             'content' => 'sometimes|string',
             'price' => 'sometimes|numeric|min:0',
-            'is_free' => 'boolean',
-            'is_featured' => 'boolean',
+            'is_free' => 'sometimes|boolean',
+            'is_featured' => 'sometimes|boolean',
             'category_id' => 'sometimes|exists:categories,id',
-            'cover_image' => 'nullable|string',
-            'file_path' => 'nullable|string',
+            'cover_image' => 'sometimes|nullable|string',
+            'file_path' => 'sometimes|nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -166,7 +163,7 @@ class EbookAPIController extends Controller
             ], 422);
         }
 
-        $ebook->update($request->all());
+        $ebook->update($validator->validated());
 
         return response()->json([
             'message' => 'Ebook updated successfully',
@@ -181,13 +178,7 @@ class EbookAPIController extends Controller
     {
         $ebook = Ebook::findOrFail($id);
 
-        // Check if user owns this ebook
-        if ($ebook->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
-
+        $this->authorize('delete', $ebook);
         $ebook->delete();
 
         return response()->json([

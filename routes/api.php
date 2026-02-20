@@ -13,8 +13,11 @@ use App\Http\Controllers\API\RecommendationAPIController;
 use App\Http\Controllers\API\AdminAPIController;
 use App\Http\Controllers\API\InstructorAPIController;
 use App\Http\Controllers\API\ZenithaLmsApiController;
+use App\Http\Controllers\API\ZenithaLmsPaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,6 +42,16 @@ Route::get('/health', function () {
 
 // Apply installation check to all API routes except health
 Route::middleware('installed')->group(function () {
+
+// Define rate limiting for financial operations
+RateLimiter::for('financial', function (Request $request) {
+    return Limit::perMinute(10)->by($request->user()?->id ?? $request->ip());
+});
+
+// Define rate limiting for sensitive operations
+RateLimiter::for('sensitive', function (Request $request) {
+    return Limit::perMinute(5)->by($request->user()?->id ?? $request->ip());
+});
 
 // Public API routes
 Route::prefix('v1')->group(function () {
@@ -74,3 +87,33 @@ Route::get('/docs', function () {
         'base_url' => url('/api'),
     ]);
 }); // Close the installed middleware group
+
+// Protected API routes with authentication
+Route::middleware(['auth:sanctum', 'installed'])->prefix('v1')->group(function () {
+    
+    // Payment routes with rate limiting
+    Route::middleware(['throttle:financial'])->group(function () {
+        Route::post('/payments/process', [ZenithaLmsPaymentController::class, 'processPayment']);
+        Route::post('/payments/add-funds', [ZenithaLmsPaymentController::class, 'addFunds']);
+        Route::post('/payments/apply-coupon', [ZenithaLmsPaymentController::class, 'applyCoupon']);
+    });
+    
+    // Other payment routes (less restrictive)
+    Route::get('/payments', [ZenithaLmsPaymentController::class, 'index']);
+    Route::get('/payments/{id}', [ZenithaLmsPaymentController::class, 'show']);
+    Route::get('/payments/gateways', [ZenithaLmsPaymentController::class, 'paymentGateways']);
+    Route::get('/payments/methods', [ZenithaLmsPaymentController::class, 'paymentMethods']);
+    Route::get('/payments/statistics', [ZenithaLmsPaymentController::class, 'statistics']);
+    Route::get('/payments/wallet', [ZenithaLmsPaymentController::class, 'wallet']);
+    Route::get('/payments/wallet/transactions', [ZenithaLmsPaymentController::class, 'walletTransactions']);
+    
+    // Sensitive operations with stricter rate limiting
+    Route::middleware(['throttle:sensitive'])->group(function () {
+        Route::post('/account/delete', function () {
+            // Account deletion endpoint
+        });
+        Route::post('/password/reset', function () {
+            // Password reset endpoint
+        });
+    });
+});

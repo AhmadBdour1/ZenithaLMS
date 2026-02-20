@@ -20,17 +20,34 @@ class ZenithaLmsWebhookController extends Controller
     public function stripe(Request $request)
     {
         $payload = $request->getContent();
-        $sigHeader = $request->header('stripe-signature');
+        $sigHeader = $request->header('Stripe-Signature');
+        $endpointSecret = config('services.stripe.webhook_secret');
         
         // Verify webhook signature
         $event = null;
         
         try {
-            $event = \Stripe\Webhook::constructEvent($payload, $sigHeader);
-        } catch (\Exception $e) {
+            $event = \Stripe\Webhook::constructEvent(
+                $payload,
+                $sigHeader,
+                $endpointSecret
+            );
+        } catch (\Stripe\Exception\SignatureVerificationException $e) {
+            \Log::error('Stripe webhook signature verification failed', [
+                'error' => $e->getMessage(),
+                'signature_header' => $sigHeader ? 'present' : 'missing'
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid webhook signature',
+            ], 400);
+        } catch (\Exception $e) {
+            \Log::error('Stripe webhook processing error', [
+                'error' => $e->getMessage()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'Webhook processing failed',
             ], 400);
         }
         
@@ -155,13 +172,13 @@ class ZenithaLmsWebhookController extends Controller
             case 'course.enrolled':
                 return $this->handleCourseEnrolled($request->data);
                 
-            'course.completed':
+            case 'course.completed':
                 return $this->handleCourseCompleted($request->data);
                 
-            'quiz.submitted':
+            case 'quiz.submitted':
                 return $this->handleQuizSubmitted($request->data);
                 
-            'certificate.issued':
+            case 'certificate.issued':
                 return $this->handleCertificateIssued($request->data);
                 
             default:

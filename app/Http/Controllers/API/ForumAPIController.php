@@ -7,9 +7,11 @@ use App\Models\Forum;
 use App\Models\ForumReply;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ForumAPIController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of forums.
      */
@@ -126,19 +128,14 @@ class ForumAPIController extends Controller
     {
         $forum = Forum::findOrFail($id);
 
-        // Check if user owns this forum or is admin
-        if ($forum->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
+        $this->authorize('update', $forum);
 
         $validator = Validator::make($request->all(), [
             'title' => 'sometimes|string|max:255',
             'content' => 'sometimes|string',
             'category' => 'sometimes|string|max:100',
-            'is_pinned' => 'boolean',
-            'is_locked' => 'boolean',
+            'is_pinned' => 'sometimes|boolean',
+            'is_locked' => 'sometimes|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -148,7 +145,7 @@ class ForumAPIController extends Controller
             ], 422);
         }
 
-        $forum->update($request->all());
+        $forum->update($validator->validated());
 
         return response()->json([
             'message' => 'Forum updated successfully',
@@ -163,13 +160,7 @@ class ForumAPIController extends Controller
     {
         $forum = Forum::findOrFail($id);
 
-        // Check if user owns this forum or is admin
-        if ($forum->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'Unauthorized'
-            ], 403);
-        }
-
+        $this->authorize('delete', $forum);
         $forum->delete();
 
         return response()->json([
