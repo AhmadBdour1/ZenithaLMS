@@ -19,3 +19,13 @@ if (!function_exists('product_mode')) {
         return (string) config('app.product_mode', 'standard');
     }
 }
+
+if (!function_exists('feature')) {
+    /**
+     * Get a feature flag value.
+     */
+    function feature(string $name, bool $default = true): bool
+    {
+        return app(\App\Services\FeatureFlagService::class)->isEnabled($name, $default);
+    }
+}

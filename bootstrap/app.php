@@ -35,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.cache' => \App\Http\Middleware\CacheMiddleware::class,
             'role.check' => \App\Http\Middleware\RoleMiddleware::class,
             'installed' => \App\Http\Middleware\EnsureInstalled::class,
+            'feature' => \App\Http\Middleware\EnsureFeatureEnabled::class,
         ]);
         
         // Apply installation check to all web routes except installer

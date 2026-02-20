@@ -30,4 +30,10 @@ Thumbs.db
 # Local scratch files
 pasted-text-*.txt
 
+/storage/*-tests.txt
+/storage/junit.xml
+/storage/list-tests.txt
+/storage/run-tests.txt
+/storage/missing-tests.txt
 
+storage/app/installed.json

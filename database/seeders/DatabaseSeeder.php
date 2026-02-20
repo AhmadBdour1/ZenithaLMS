@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             SkillSeeder::class,
             UserSeeder::class,
             CourseSeeder::class,
+            FeatureFlagSeeder::class,
         ]);
 
         // Create some sample enrollments

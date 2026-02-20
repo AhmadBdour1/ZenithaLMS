@@ -41,6 +41,7 @@
     37 => 'App\\Providers\\QueryOptimizationServiceProvider',
     38 => 'App\\Providers\\AppServiceProvider',
     39 => 'App\\Providers\\ZenithaLmsServiceProvider',
+    40 => 'App\\Modules\\ModuleServiceProvider',
   ),
   'eager' => 
   array (
@@ -69,6 +70,7 @@
     22 => 'App\\Providers\\QueryOptimizationServiceProvider',
     23 => 'App\\Providers\\AppServiceProvider',
     24 => 'App\\Providers\\ZenithaLmsServiceProvider',
+    25 => 'App\\Modules\\ModuleServiceProvider',
   ),
   'deferred' => 
   array (
