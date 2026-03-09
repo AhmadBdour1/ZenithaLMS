@@ -18,22 +18,59 @@ class AdminSettingsTest extends TestCase
         
         // Mark as installed for tests
         InstallState::markInstalled(['test' => 'admin_settings_test']);
+        
+        // Run the test roles seeder to ensure all roles and permissions exist
+        $this->artisan('db:seed', ['--class' => 'Database\\Seeders\\TestRolesSeeder']);
     }
 
     public function test_admin_can_view_settings_page(): void
     {
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'admin'], [
+        // Create admin role manually
+        $adminRole = \App\Models\Role::firstOrCreate(['slug' => 'admin'], [
+            'name' => 'admin',
             'display_name' => 'Administrator',
-            'description' => 'Admin role',
+            'description' => 'System administrator',
+            'is_system' => true,
+            'is_active' => true,
+            'level' => 100,
         ]);
         
-        $admin = User::factory()->create(['role_id' => $adminRole->id]);
+        // Create admin permission manually
+        $adminPermission = \App\Models\Permission::firstOrCreate(['slug' => 'admin.access'], [
+            'name' => 'Admin Access',
+            'display_name' => 'Admin Access',
+            'slug' => 'admin.access',
+            'description' => 'Access to admin area',
+            'group' => 'admin',
+            'type' => 'admin',
+            'entity' => 'admin_setting',
+            'action' => 'configure',
+            'is_system' => true,
+            'is_active' => true,
+        ]);
+        
+        // Assign permission to role
+        $adminRole->permissions()->sync([$adminPermission->id]);
+        
+        // Create admin user with role
+        $admin = User::factory()->create();
+        $admin->roles()->attach($adminRole->id);
+        
+        // Debug: Check if admin has the permission
+        $hasPermission = $admin->hasPermission('admin.access');
+        $isAdmin = $admin->isAdmin();
         
         // Create some test settings
         app(SettingService::class)->set('site_name', 'Test Site', 'string', 'general', true);
         app(SettingService::class)->set('maintenance_mode', false, 'boolean', 'system', false);
         
         $response = $this->actingAs($admin)->get('/admin/settings');
+        
+        // For debugging, let's check what we get
+        if ($response->getStatusCode() === 403) {
+            $this->assertTrue($hasPermission, 'Admin should have admin.access permission');
+            $this->assertTrue($isAdmin, 'Admin should be admin');
+        }
         
         $response->assertStatus(200);
         $response->assertSee('System Settings');
@@ -44,12 +81,36 @@ class AdminSettingsTest extends TestCase
 
     public function test_admin_can_update_setting(): void
     {
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'admin'], [
+        // Create admin role manually
+        $adminRole = \App\Models\Role::firstOrCreate(['slug' => 'admin'], [
+            'name' => 'admin',
             'display_name' => 'Administrator',
-            'description' => 'Admin role',
+            'description' => 'System administrator',
+            'is_system' => true,
+            'is_active' => true,
+            'level' => 100,
         ]);
         
-        $admin = User::factory()->create(['role_id' => $adminRole->id]);
+        // Create admin permission manually
+        $adminPermission = \App\Models\Permission::firstOrCreate(['slug' => 'admin.access'], [
+            'name' => 'Admin Access',
+            'display_name' => 'Admin Access',
+            'slug' => 'admin.access',
+            'description' => 'Access to admin area',
+            'group' => 'admin',
+            'type' => 'admin',
+            'entity' => 'admin_setting',
+            'action' => 'configure',
+            'is_system' => true,
+            'is_active' => true,
+        ]);
+        
+        // Assign permission to role
+        $adminRole->permissions()->sync([$adminPermission->id]);
+        
+        // Create admin user with role
+        $admin = User::factory()->create();
+        $admin->roles()->attach($adminRole->id);
         
         // Create initial setting
         app(SettingService::class)->set('site_name', 'Old Name', 'string', 'general', true);
@@ -73,12 +134,7 @@ class AdminSettingsTest extends TestCase
 
     public function test_non_admin_forbidden(): void
     {
-        $studentRole = \App\Models\Role::firstOrCreate(['name' => 'student'], [
-            'display_name' => 'Student',
-            'description' => 'Student role',
-        ]);
-        
-        $student = User::factory()->create(['role_id' => $studentRole->id]);
+        $student = User::factory()->student()->create();
         
         $response = $this->actingAs($student)->get('/admin/settings');
         
@@ -94,12 +150,7 @@ class AdminSettingsTest extends TestCase
 
     public function test_can_update_boolean_setting(): void
     {
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'admin'], [
-            'display_name' => 'Administrator',
-            'description' => 'Admin role',
-        ]);
-        
-        $admin = User::factory()->create(['role_id' => $adminRole->id]);
+        $admin = User::factory()->admin()->create();
         
         // Create initial boolean setting
         app(SettingService::class)->set('maintenance_mode', false, 'boolean', 'system', false);
@@ -122,12 +173,7 @@ class AdminSettingsTest extends TestCase
 
     public function test_can_update_integer_setting(): void
     {
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'admin'], [
-            'display_name' => 'Administrator',
-            'description' => 'Admin role',
-        ]);
-        
-        $admin = User::factory()->create(['role_id' => $adminRole->id]);
+        $admin = User::factory()->admin()->create();
         
         app(SettingService::class)->set('max_upload_size', 1024, 'integer', 'system', false);
         
@@ -148,12 +194,7 @@ class AdminSettingsTest extends TestCase
 
     public function test_can_update_json_setting(): void
     {
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'admin'], [
-            'display_name' => 'Administrator',
-            'description' => 'Admin role',
-        ]);
-        
-        $admin = User::factory()->create(['role_id' => $adminRole->id]);
+        $admin = User::factory()->admin()->create();
         
         $config = ['feature1' => true, 'feature2' => false];
         app(SettingService::class)->set('feature_flags', $config, 'json', 'system', false);
@@ -177,12 +218,7 @@ class AdminSettingsTest extends TestCase
 
     public function test_validation_fails_for_invalid_type(): void
     {
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'admin'], [
-            'display_name' => 'Administrator',
-            'description' => 'Admin role',
-        ]);
-        
-        $admin = User::factory()->create(['role_id' => $adminRole->id]);
+        $admin = User::factory()->admin()->create();
         
         app(SettingService::class)->set('integer_setting', 10, 'integer', 'test', false);
         

@@ -15,6 +15,11 @@ Route::get('/login-enhanced', function () {
     return view('auth.login-enhanced');
 })->name('login-enhanced');
 
+// Quick Access page for demo accounts
+Route::get('/quick-access', function () {
+    return view('quick-access');
+})->name('quick-access');
+
 // Unified dashboard entry point - using centralized service
 Route::get('/dashboard', function () {
     $user = Auth::user();

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ZenithaLmsVirtualClassController extends Controller
 {
@@ -243,7 +244,10 @@ class ZenithaLmsVirtualClassController extends Controller
      */
     public function create()
     {
-        $this->authorize('manage_virtual_classes');
+        // Check if user has permission to manage virtual classes
+        if (!auth()->user()->hasRole(['admin', 'instructor'])) {
+            abort(403, 'Unauthorized access');
+        }
         
         $courses = Course::where('is_published', true)->get();
         return view('zenithalms.virtual-class.create', compact('courses'));
@@ -251,7 +255,10 @@ class ZenithaLmsVirtualClassController extends Controller
 
     public function store(Request $request)
     {
-        $this->authorize('manage_virtual_classes');
+        // Check if user has permission to manage virtual classes
+        if (!auth()->user()->hasRole(['admin', 'instructor'])) {
+            abort(403, 'Unauthorized access');
+        }
         
         $request->validate([
             'title' => 'required|string|max:255',
@@ -284,7 +291,10 @@ class ZenithaLmsVirtualClassController extends Controller
 
     public function edit($id)
     {
-        $this->authorize('manage_virtual_classes');
+        // Check if user has permission to manage virtual classes
+        if (!auth()->user()->hasRole(['admin', 'instructor'])) {
+            abort(403, 'Unauthorized access');
+        }
         
         $virtualClass = VirtualClass::findOrFail($id);
         $courses = Course::where('is_published', true)->get();
@@ -294,7 +304,10 @@ class ZenithaLmsVirtualClassController extends Controller
 
     public function update(Request $request, $id)
     {
-        $this->authorize('manage_virtual_classes');
+        // Check if user has permission to manage virtual classes
+        if (!auth()->user()->hasRole(['admin', 'instructor'])) {
+            abort(403, 'Unauthorized access');
+        }
         
         $virtualClass = VirtualClass::findOrFail($id);
 
@@ -320,7 +333,10 @@ class ZenithaLmsVirtualClassController extends Controller
 
     public function start($id)
     {
-        $this->authorize('manage_virtual_classes');
+        // Check if user has permission to manage virtual classes
+        if (!auth()->user()->hasRole(['admin', 'instructor'])) {
+            abort(403, 'Unauthorized access');
+        }
         
         $virtualClass = VirtualClass::findOrFail($id);
         
@@ -337,7 +353,10 @@ class ZenithaLmsVirtualClassController extends Controller
 
     public function end($id)
     {
-        $this->authorize('manage_virtual_classes');
+        // Check if user has permission to manage virtual classes
+        if (!auth()->user()->hasRole(['admin', 'instructor'])) {
+            abort(403, 'Unauthorized access');
+        }
         
         $virtualClass = VirtualClass::findOrFail($id);
         
@@ -359,7 +378,10 @@ class ZenithaLmsVirtualClassController extends Controller
 
     public function destroy($id)
     {
-        $this->authorize('manage_virtual_classes');
+        // Check if user has permission to manage virtual classes
+        if (!auth()->user()->hasRole(['admin', 'instructor'])) {
+            abort(403, 'Unauthorized access');
+        }
         
         $virtualClass = VirtualClass::findOrFail($id);
         $virtualClass->delete();

@@ -97,9 +97,14 @@ class InstallerController extends Controller
                 'name' => $request->admin_name,
                 'email' => $request->admin_email,
                 'password' => Hash::make($request->admin_password),
-                'role_id' => \App\Models\Role::where('name', 'admin')->first()->id,
                 'email_verified_at' => now(),
             ]);
+
+            // Assign admin role to user
+            $adminRole = \App\Models\Role::where('name', 'admin')->first();
+            if ($adminRole) {
+                $admin->roles()->attach($adminRole->id);
+            }
 
             // Update app name
             $this->updateEnvironmentFile('APP_NAME', $request->site_name);

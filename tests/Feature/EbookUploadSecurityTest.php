@@ -24,9 +24,8 @@ class EbookUploadSecurityTest extends TestCase
         // Create a category for ebook tests
         Category::factory()->create(['id' => 1]);
         
-        // Create roles for testing
-        \App\Models\Role::factory()->create(['name' => 'instructor']);
-        \App\Models\Role::factory()->create(['name' => 'organization_admin']);
+        // Roles are already created by TestRolesSeeder in TestCase.php
+        // No need to create them again
     }
 
     protected function createInstructorUser(): User

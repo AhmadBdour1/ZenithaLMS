@@ -27,30 +27,35 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // ZenithaLMS Languages Table
-        Schema::create('languages', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('code')->unique(); // en, ar, fr, etc.
-            $table->string('native_name');
-            $table->string('flag_icon')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->boolean('is_default')->default(false);
-            $table->integer('sort_order')->default(0);
-            $table->json('language_settings')->nullable(); // ZenithaLMS language settings
-            $table->timestamps();
-        });
+        // ZenithaLMS Languages Table - Skip creation (already exists in 2024_01_20_000001_create_languages_and_translations_tables)
+        // Schema::create('languages', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->string('name');
+        //     $table->string('code')->unique(); // en, ar, fr, etc.
+        //     $table->string('native_name');
+        //     $table->string('flag_icon')->nullable();
+        //     $table->boolean('is_active')->default(true);
+        //     $table->boolean('is_default')->default(false);
+        //     $table->integer('sort_order')->default(0);
+        //     $table->json('language_settings')->nullable(); // ZenithaLMS language settings
+        //     $table->timestamps();
+        // });
 
-        // ZenithaLMS Translations Table
-        Schema::create('translations', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('language_id');
-            $table->string('key');
-            $table->text('value');
-            $table->string('group')->default('messages'); // messages, validation, etc.
-            $table->json('translation_data')->nullable(); // ZenithaLMS translation metadata
-            $table->timestamps();
-        });
+        // ZenithaLMS Translations Table - Skip creation (already exists in 2024_01_20_000001_create_languages_and_translations_tables)
+        // Schema::create('translations', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->foreignId('language_id');
+        //     $table->string('key');
+        //     $table->text('value');
+        //     $table->string('group')->default('messages'); // messages, validation, etc.
+        //     $table->text('context')->nullable();
+        //     $table->json('metadata')->nullable(); // ZenithaLMS translation metadata
+        //     $table->timestamps();
+        //     
+        //     $table->unique(['language_id', 'key', 'group']);
+        //     $table->index(['key', 'group']);
+        //     $table->foreign('language_id')->references('id')->on('languages')->onDelete('cascade');
+        // });   
 
         // ZenithaLMS Newsletters Table
         Schema::create('newsletters', function (Blueprint $table) {

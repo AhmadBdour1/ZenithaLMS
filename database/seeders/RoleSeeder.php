@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Role;
+use App\Models\Permission;
+use Illuminate\Support\Facades\DB;
 
 class RoleSeeder extends Seeder
 {
@@ -18,21 +20,8 @@ class RoleSeeder extends Seeder
                 'name' => 'admin',
                 'display_name' => 'Admin',
                 'description' => 'Full system access with all permissions',
-                'permissions' => [
-                    'system_management',
-                    'manage_all_organizations',
-                    'database_management',
-                    'security_settings',
-                    'backup_restore',
-                    'api_management',
-                    'view_all_revenue',
-                    'manage_subscriptions',
-                    'billing_management',
-                    'refund_management',
-                    'configure_ai_models',
-                    'monitor_ai_usage',
-                    'ai_cost_management'
-                ],
+                'slug' => 'admin',
+                'is_system' => true,
                 'level' => 0,
                 'is_active' => true,
             ],
@@ -40,24 +29,8 @@ class RoleSeeder extends Seeder
                 'name' => 'organization_admin',
                 'display_name' => 'Organization Admin',
                 'description' => 'Manage organization settings and users',
-                'permissions' => [
-                    'manage_organization_profile',
-                    'manage_branches',
-                    'manage_departments',
-                    'organization_settings',
-                    'branding_customization',
-                    'manage_all_users',
-                    'assign_roles',
-                    'manage_permissions',
-                    'user_analytics',
-                    'approve_courses',
-                    'manage_categories',
-                    'content_moderation',
-                    'quality_control',
-                    'view_organization_revenue',
-                    'manage_subscriptions',
-                    'pricing_control'
-                ],
+                'slug' => 'organization_admin',
+                'is_system' => true,
                 'level' => 1,
                 'is_active' => true,
             ],
@@ -65,16 +38,8 @@ class RoleSeeder extends Seeder
                 'name' => 'branch_manager',
                 'display_name' => 'Branch Manager',
                 'description' => 'Manage branch operations and local users',
-                'permissions' => [
-                    'manage_branch_users',
-                    'branch_analytics',
-                    'branch_schedule',
-                    'local_settings',
-                    'assign_instructors',
-                    'manage_class_schedule',
-                    'student_enrollment',
-                    'progress_tracking'
-                ],
+                'slug' => 'branch_manager',
+                'is_system' => true,
                 'level' => 2,
                 'is_active' => true,
             ],
@@ -82,75 +47,75 @@ class RoleSeeder extends Seeder
                 'name' => 'instructor',
                 'display_name' => 'Instructor',
                 'description' => 'Create and manage courses, teach students',
-                'permissions' => [
-                    'create_courses',
-                    'edit_own_courses',
-                    'manage_lessons',
-                    'create_assignments',
-                    'grade_students',
-                    'manage_quizzes',
-                    'communicate_with_students',
-                    'view_student_progress',
-                    'provide_feedback',
-                    'manage_discussions',
-                    'use_ai_content_generator',
-                    'ai_tutor_assistant',
-                    'ai_grading_helper'
-                ],
+                'slug' => 'instructor',
+                'is_system' => true,
                 'level' => 3,
-                'is_active' => true,
-            ],
-            [
-                'name' => 'teaching_assistant',
-                'display_name' => 'Teaching Assistant',
-                'description' => 'Assist instructors with course management',
-                'permissions' => [
-                    'help_with_grading',
-                    'manage_discussions',
-                    'answer_student_questions',
-                    'upload_materials'
-                ],
-                'level' => 4,
                 'is_active' => true,
             ],
             [
                 'name' => 'student',
                 'display_name' => 'Student',
                 'description' => 'Access courses and learning materials',
-                'permissions' => [
-                    'access_purchased_courses',
-                    'view_progress',
-                    'submit_assignments',
-                    'take_quizzes',
-                    'download_certificates',
-                    'communicate_with_instructors',
-                    'join_discussions',
-                    'study_groups',
-                    'peer_interaction',
-                    'ai_tutor_chat',
-                    'personalized_recommendations',
-                    'learning_assistant'
-                ],
+                'slug' => 'student',
+                'is_system' => true,
                 'level' => 5,
-                'is_active' => true,
-            ],
-            [
-                'name' => 'parent',
-                'display_name' => 'Parent',
-                'description' => 'Monitor child\'s learning progress',
-                'permissions' => [
-                    'view_child_progress',
-                    'attendance_tracking',
-                    'grade_reports',
-                    'communication_with_school'
-                ],
-                'level' => 6,
                 'is_active' => true,
             ],
         ];
 
-        foreach ($roles as $role) {
-            Role::create($role);
+        // Create roles
+        foreach ($roles as $roleData) {
+            Role::create($roleData);
         }
+
+        // Create basic permissions
+        $permissions = [
+            ['name' => 'Admin Access', 'display_name' => 'Admin Access', 'slug' => 'admin.access', 'group' => 'admin', 'type' => 'admin', 'entity' => 'admin_setting', 'action' => 'configure', 'is_system' => true],
+            ['name' => 'Manage Users', 'display_name' => 'Manage Users', 'slug' => 'users.manage', 'group' => 'users', 'type' => 'manage', 'entity' => 'user', 'action' => 'manage', 'is_system' => true],
+            ['name' => 'Create Courses', 'display_name' => 'Create Courses', 'slug' => 'courses.create', 'group' => 'courses', 'type' => 'create', 'entity' => 'course', 'action' => 'create', 'is_system' => true],
+            ['name' => 'View Courses', 'display_name' => 'View Courses', 'slug' => 'courses.view', 'group' => 'courses', 'type' => 'read', 'entity' => 'course', 'action' => 'view', 'is_system' => true],
+            ['name' => 'Edit Courses', 'display_name' => 'Edit Courses', 'slug' => 'courses.edit', 'group' => 'courses', 'type' => 'update', 'entity' => 'course', 'action' => 'edit', 'is_system' => true],
+            ['name' => 'Delete Courses', 'display_name' => 'Delete Courses', 'slug' => 'courses.delete', 'group' => 'courses', 'type' => 'delete', 'entity' => 'course', 'action' => 'delete', 'is_system' => true],
+        ];
+
+        foreach ($permissions as $permissionData) {
+            Permission::create($permissionData);
+        }
+
+        // Assign permissions to roles
+        $adminRole = Role::where('slug', 'admin')->first();
+        $instructorRole = Role::where('slug', 'instructor')->first();
+        $studentRole = Role::where('slug', 'student')->first();
+
+        // Admin gets all permissions
+        $allPermissions = Permission::all();
+        foreach ($allPermissions as $permission) {
+            DB::table('role_permissions')->insert([
+                'role_id' => $adminRole->id,
+                'permission_id' => $permission->id,
+                'is_active' => true,
+                'granted_at' => now(),
+            ]);
+        }
+
+        // Instructor gets course permissions
+        $coursePermissions = Permission::whereIn('slug', ['courses.create', 'courses.view', 'courses.edit'])->get();
+        foreach ($coursePermissions as $permission) {
+            DB::table('role_permissions')->insert([
+                'role_id' => $instructorRole->id,
+                'permission_id' => $permission->id,
+                'is_active' => true,
+                'granted_at' => now(),
+            ]);
+        }
+
+        // Student gets view permissions
+        $viewPermission = Permission::where('slug', 'courses.view')->first();
+        DB::table('role_permissions')->insert([
+            'role_id' => $studentRole->id,
+            'permission_id' => $viewPermission->id,
+            'is_active' => true,
+            'granted_at' => now(),
+        ]);
     }
 }

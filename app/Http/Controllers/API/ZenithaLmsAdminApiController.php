@@ -20,7 +20,7 @@ class ZenithaLmsAdminApiController extends Controller
     public function __construct()
     {
         $this->middleware('auth:sanctum');
-        $this->middleware('role:admin');
+        $this->middleware('permission:admin.access');
     }
 
     /**
@@ -142,7 +142,7 @@ class ZenithaLmsAdminApiController extends Controller
      */
     public function user($id)
     {
-        $user = User::with(['role', 'enrollments.course', 'certificates.course'])
+        $user = User::with(['roles', 'enrollments.course', 'certificates.course'])
             ->findOrFail($id);
         
         return response()->json([

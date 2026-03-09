@@ -41,7 +41,7 @@ class BlogPolicy
      */
     public function create(User $user): bool
     {
-        return $user->canCreateContent();
+        return $user->isAdmin() || $user->isInstructor();
     }
 
     /**

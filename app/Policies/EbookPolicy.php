@@ -21,7 +21,7 @@ class EbookPolicy
     public function view(User $user, Ebook $ebook): bool
     {
         // Published ebooks can be viewed by anyone
-        if ($ebook->is_published) {
+        if ($ebook->status === 'active' || $ebook->status === 'published') {
             return true;
         }
 

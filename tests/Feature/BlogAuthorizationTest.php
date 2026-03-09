@@ -89,6 +89,10 @@ class BlogAuthorizationTest extends TestCase
     {
         $user = User::factory()->instructor()->create();
         
+        // Debug: Check if user has the instructor role
+        \Log::info('User roles: ' . $user->roles()->pluck('slug')->implode(', '));
+        \Log::info('Is instructor: ' . ($user->isInstructor() ? 'true' : 'false'));
+        
         $blog = Blog::factory()->create([
             'user_id' => $user->id,
             'title' => 'Test Blog',

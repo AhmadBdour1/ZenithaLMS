@@ -471,9 +471,9 @@ setInterval(function() {
         const timeDiff = scheduledTime - now;
         
         if (timeDiff > 0) {
-            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+            const hours = Math.floor(timeDiff / (1000*60*60));
+            const minutes = Math.floor((timeDiff % (1000*60*60)) / (1000*60));
+            const seconds = Math.floor((timeDiff % (1000*60)) / 1000);
             
             let timeString = '';
             if (hours > 0) {

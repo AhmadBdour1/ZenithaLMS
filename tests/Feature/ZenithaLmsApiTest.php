@@ -27,6 +27,9 @@ class ZenithaLmsApiTest extends TestCase
         // Mark as installed for tests
         InstallState::markInstalled(['test' => 'zenithalms_api_test']);
         
+        // Run the test roles seeder to ensure all roles and permissions exist
+        $this->artisan('db:seed', ['--class' => 'Database\\Seeders\\TestRolesSeeder']);
+        
         // Create test data
         $this->createTestData();
     }
@@ -36,10 +39,10 @@ class ZenithaLmsApiTest extends TestCase
      */
     private function createTestData(): void
     {
-        // Create roles
-        $adminRole = \App\Models\Role::factory()->create(['name' => 'admin']);
-        $instructorRole = \App\Models\Role::factory()->create(['name' => 'instructor']);
-        $studentRole = \App\Models\Role::factory()->create(['name' => 'student']);
+        // Get existing roles from seeder
+        $adminRole = \App\Models\Role::where('name', 'admin')->first();
+        $instructorRole = \App\Models\Role::where('name', 'instructor')->first();
+        $studentRole = \App\Models\Role::where('name', 'student')->first();
         
         // Create categories
         \App\Models\Category::factory()->count(5)->create();
@@ -80,12 +83,11 @@ class ZenithaLmsApiTest extends TestCase
      */
     public function test_api_health_check()
     {
-        $response = $this->get('/api/health');
+        $response = $this->get('/api/v1/health');
         
         $response->assertStatus(200)
                  ->assertJson([
-                     'status' => 'healthy',
-                     'service' => 'ZenithaLMS API'
+                     'status' => 'ok'
                  ]);
     }
     

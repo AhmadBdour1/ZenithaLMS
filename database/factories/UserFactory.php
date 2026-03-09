@@ -31,8 +31,12 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'role_id' => Role::firstOrCreate(['name' => 'student'], [
+                'slug' => 'student',
                 'display_name' => 'Student',
                 'description' => 'Student role',
+                'is_system' => false,
+                'is_active' => true,
+                'level' => 1,
             ])->id,
         ];
     }
@@ -52,20 +56,17 @@ class UserFactory extends Factory
      */
     public function withRole(string $roleName): static
     {
-        return $this->state(function (array $attributes) use ($roleName) {
-            $role = Role::firstOrCreate(['name' => $roleName], [
+        return $this->afterCreating(function (\App\Models\User $user) use ($roleName) {
+            $role = \App\Models\Role::firstOrCreate(['name' => $roleName], [
+                'slug' => $roleName,
                 'display_name' => ucfirst($roleName),
                 'description' => "{$roleName} role",
-                'permissions' => [],
+                'is_system' => false,
                 'is_active' => true,
                 'level' => 1,
             ]);
-
-            return [
-                'role_id' => $role->id,
-                'is_active' => true,
-                'email_verified_at' => now(),
-            ];
+            
+            $user->roles()->attach($role->id);
         });
     }
 

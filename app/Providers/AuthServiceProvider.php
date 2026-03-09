@@ -46,14 +46,17 @@ class AuthServiceProvider extends ServiceProvider
 
         // Helper function for robust role resolution
         $getRoleName = function ($user) {
-            $user->loadMissing('role');
+            // Try to get role from many-to-many relationship first
+            $roleName = $user->roles()->first()?->name;
+            
+            // Fallback to old single role system if needed
+            if (!$roleName) {
+                $roleName = $user->role->name
+                    ?? Role::query()->whereKey($user->role_id)->value('name')
+                    ?? (string) ($user->role_name ?? '');
+            }
 
-            $name =
-                $user->role->name
-                ?? Role::query()->whereKey($user->role_id)->value('name')
-                ?? (string) ($user->role_name ?? '');
-
-            return strtolower(trim((string) $name));
+            return strtolower(trim((string) $roleName));
         };
 
         // Define gates for simple role-based access
@@ -76,6 +79,29 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('update_settings', function ($user) use ($getRoleName) {
             return $getRoleName($user) === 'admin';
+        });
+
+        // Define gates for virtual classes
+        Gate::define('manage_virtual_classes', function ($user) use ($getRoleName) {
+            return $getRoleName($user) === 'admin' || $getRoleName($user) === 'instructor';
+        });
+
+        Gate::define('view_virtual_classes', function ($user, $virtualClass) use ($getRoleName) {
+            $userRole = $getRoleName($user);
+            
+            // Admin and instructor can view all classes
+            if ($userRole === 'admin' || $userRole === 'instructor') {
+                return true;
+            }
+            
+            // Students can view classes they're enrolled in
+            if ($userRole === 'student') {
+                return $virtualClass->participants()
+                    ->where('user_id', $user->id)
+                    ->exists();
+            }
+            
+            return false;
         });
     }
 }

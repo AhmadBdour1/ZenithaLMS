@@ -25,12 +25,8 @@ class EbookAuthorizationTest extends TestCase
         // Create a category for ebook tests
         Category::factory()->create(['id' => 1]);
         
-        // Create roles for testing
-        Role::factory()->create(['name' => 'instructor']);
-        Role::factory()->create(['name' => 'admin']);
-        Role::factory()->create(['name' => 'organization_admin']);
-        Role::factory()->create(['name' => 'student']);
-        Role::factory()->create(['name' => 'content_manager']);
+        // Roles are already created by TestRolesSeeder in TestCase.php
+        // No need to create them again
     }
 
     protected function createInstructorUser(): User

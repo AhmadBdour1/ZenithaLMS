@@ -14,7 +14,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Super Admin
+        // Super Admin - no foreign keys
         User::create([
             'name' => 'John Anderson',
             'email' => 'admin@zenithalms.com',
@@ -38,8 +38,8 @@ class UserSeeder extends Seeder
             'password' => Hash::make('admin123'),
             'role_id' => 2, // Organization Admin
             'organization_id' => 1, // Tech Academy
-            'branch_id' => null,
-            'department_id' => null,
+            'branch_id' => 1, // Main Branch
+            'department_id' => 1, // Administration
             'phone' => '+1-555-0101',
             'avatar' => 'images/demo/avatars/sarah-mitchell.jpg',
             'bio' => 'Director of Tech Academy International with 15+ years in technology education.',

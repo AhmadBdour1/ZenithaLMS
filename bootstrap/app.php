@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\ZenithaLmsRoleMiddleware::class,
             'organization' => \App\Http\Middleware\ZenithaLmsOrganizationMiddleware::class,
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'sanitize' => \App\Http\Middleware\SanitizeInput::class,
             'security.headers' => \App\Http\Middleware\SecurityHeaders::class,
             'api.rate_limit' => \App\Http\Middleware\ApiRateLimiting::class,
@@ -47,9 +48,22 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \Illuminate\Auth\Middleware\Authenticate::class,
         ]);
         
-        // Apply caching to specific API routes (using route middleware)
+        // Apply feature check before authentication for API
+        $middleware->group('api', [
+            \App\Http\Middleware\EnsureFeatureEnabled::class,
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Auth\Middleware\Authenticate::class,
+            \Illuminate\Routing\Middleware\ThrottleRequests::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        ]);
+        
         // We'll apply caching selectively in the routes file
     })
     ->withExceptions(function (Exceptions $exceptions): void {

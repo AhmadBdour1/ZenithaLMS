@@ -94,10 +94,69 @@ Route::prefix('dashboard')->name('zenithalms.dashboard.')->middleware('auth')->g
     })->name('organization')->middleware('role:organization_admin');
 });
 
+// ZenithaLMS: Ebook Routes
+Route::prefix('ebooks')->name('zenithalms.ebooks.')->middleware('feature:ebooks')->group(function () {
+    Route::get('/', [ZenithaLmsEbookController::class, 'index'])->name('index');
+    Route::get('/create', [ZenithaLmsEbookController::class, 'create'])->name('create')->middleware('auth');
+    Route::post('/', [ZenithaLmsEbookController::class, 'store'])->name('store')->middleware('auth');
+    Route::get('/{slug}', [ZenithaLmsEbookController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [ZenithaLmsEbookController::class, 'edit'])->name('edit')->middleware('auth');
+    Route::put('/{id}', [ZenithaLmsEbookController::class, 'update'])->name('update')->middleware('auth');
+    Route::delete('/{id}', [ZenithaLmsEbookController::class, 'destroy'])->name('destroy')->middleware('auth');
+    
+    // Admin ebook routes
+    Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+        Route::get('/', [ZenithaLmsEbookController::class, 'adminIndex'])->name('index');
+        Route::get('/{id}', [ZenithaLmsEbookController::class, 'adminShow'])->name('show');
+        Route::get('/{id}/edit', [ZenithaLmsEbookController::class, 'adminEdit'])->name('edit');
+        Route::put('/{id}', [ZenithaLmsEbookController::class, 'adminUpdate'])->name('update');
+        Route::delete('/{id}', [ZenithaLmsEbookController::class, 'adminDestroy'])->name('destroy');
+    });
+});
+
+// ZenithaLMS: Admin Routes
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+    Route::get('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
+    Route::post('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+});
+
 // ZenithaLMS: AI Assistant Routes
 Route::get('/ai/assistant', function () {
     return view('zenithalms.ai.assistant');
 })->name('ai.assistant');
+
+// ZenithaLMS: Blog Routes
+Route::prefix('blog')->name('zenithalms.blog.')->group(function () {
+    Route::get('/', [ZenithaLmsBlogController::class, 'index'])->name('index');
+    Route::get('/my-blogs', [ZenithaLmsBlogController::class, 'myBlogs'])->name('my-blogs')->middleware('auth');
+    Route::get('/create', [ZenithaLmsBlogController::class, 'create'])->name('create')->middleware('auth');
+    Route::post('/', [ZenithaLmsBlogController::class, 'store'])->name('store')->middleware('auth');
+    Route::get('/{slug}', [ZenithaLmsBlogController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [ZenithaLmsBlogController::class, 'edit'])->name('edit')->middleware('auth');
+    Route::put('/{id}', [ZenithaLmsBlogController::class, 'update'])->name('update')->middleware('auth');
+    Route::delete('/{id}', [ZenithaLmsBlogController::class, 'destroy'])->name('destroy')->middleware('auth');
+    
+    // Blog search
+    Route::get('/search', [ZenithaLmsBlogController::class, 'search'])->name('search');
+    
+    // Blog recommendations
+    Route::get('/recommendations', [ZenithaLmsBlogController::class, 'recommendations'])->name('recommendations')->middleware('auth');
+    
+    // Admin blog routes
+    Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+        Route::get('/', [ZenithaLmsBlogController::class, 'adminIndex'])->name('index');
+        Route::get('/{id}', [ZenithaLmsBlogController::class, 'adminShow'])->name('show');
+        Route::get('/{id}/edit', [ZenithaLmsBlogController::class, 'adminEdit'])->name('edit');
+        Route::put('/{id}', [ZenithaLmsBlogController::class, 'adminUpdate'])->name('update');
+        Route::delete('/{id}', [ZenithaLmsBlogController::class, 'adminDestroy'])->name('destroy');
+    });
+});
+
+// ZenithaLMS: Virtual Class Routes
+Route::prefix('virtual-class')->name('zenithalms.virtual-class.')->group(function () {
+    Route::get('/', [App\Http\Controllers\Frontend\ZenithaLmsVirtualClassController::class, 'index'])->name('index');
+    Route::get('/{id}', [App\Http\Controllers\Frontend\ZenithaLmsVirtualClassController::class, 'show'])->name('show');
+});
 
 // ZenithaLMS: API Routes
 Route::prefix('api/v1')->name('zenithalms.api.')->group(function () {

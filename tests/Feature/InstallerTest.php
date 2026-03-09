@@ -43,6 +43,9 @@ class InstallerTest extends TestCase
 
     public function test_shows_installer_page(): void
     {
+        // Reset installation state to ensure we can access installer
+        InstallState::reset();
+        
         $response = $this->get('/install');
 
         $response->assertStatus(200)
@@ -76,6 +79,9 @@ class InstallerTest extends TestCase
 
     public function test_validates_installation_form(): void
     {
+        // Reset installation state to ensure we can access installer
+        InstallState::reset();
+        
         $response = $this->post('/install/run', [
             'admin_name' => '',
             'admin_email' => 'invalid-email',
@@ -93,6 +99,9 @@ class InstallerTest extends TestCase
 
     public function test_completes_installation_successfully(): void
     {
+        // Reset installation state to ensure we can access installer
+        InstallState::reset();
+        
         $response = $this->post('/install/run', [
             'admin_name' => 'Test Admin',
             'admin_email' => 'admin@test.com',
@@ -132,6 +141,9 @@ class InstallerTest extends TestCase
 
     public function test_blocks_installer_routes_after_installation(): void
     {
+        // Reset installation state to ensure we can access installer
+        InstallState::reset();
+        
         // Complete installation
         $this->post('/install/run', [
             'admin_name' => 'Test Admin',
@@ -152,6 +164,9 @@ class InstallerTest extends TestCase
 
     public function test_checks_database_connection(): void
     {
+        // Reset installation state to ensure we can access installer
+        InstallState::reset();
+        
         $response = $this->post('/install/check-db');
 
         $response->assertStatus(200)

@@ -67,14 +67,14 @@ class FeatureFlagsMiddlewareTest extends TestCase
 
     public function test_feature_middleware_respects_cache_invalidation(): void
     {
-        // Enable feature initially
+        // Enable the ebooks feature initially
         app(FeatureFlagService::class)->enable('ebooks');
         
         // First request should succeed
         $response1 = $this->get('/api/v1/ebooks');
         $this->assertNotEquals(404, $response1->getStatusCode());
         
-        // Disable feature
+        // Disable the ebooks feature
         app(FeatureFlagService::class)->disable('ebooks');
         
         // Second request should fail
@@ -95,7 +95,10 @@ class FeatureFlagsMiddlewareTest extends TestCase
         // Create a user for auth
         $user = \App\Models\User::factory()->create();
         
-        $response = $this->actingAs($user)->get('/api/v1/ebooks/1/download');
+        // Create an ebook first
+        $ebook = \App\Models\Ebook::factory()->create(['status' => 'active']);
+        
+        $response = $this->actingAs($user)->get("/api/v1/ebooks/{$ebook->id}/download");
         
         $response->assertStatus(404)
                  ->assertJson([

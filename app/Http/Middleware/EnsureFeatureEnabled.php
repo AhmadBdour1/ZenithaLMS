@@ -18,6 +18,7 @@ class EnsureFeatureEnabled
      */
     public function handle(Request $request, Closure $next, string $feature): Response
     {
+        // Check feature flag first, before any other middleware
         if (!$this->featureFlagService->isEnabled($feature)) {
             if ($request->expectsJson() || $request->is('api/*')) {
                 return response()->json([
@@ -27,7 +28,7 @@ class EnsureFeatureEnabled
                 ], 404);
             }
 
-            abort(404);
+            abort(404, 'Feature disabled');
         }
 
         return $next($request);

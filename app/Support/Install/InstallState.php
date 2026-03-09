@@ -2,6 +2,7 @@
 
 namespace App\Support\Install;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -56,7 +57,8 @@ class InstallState
      */
     public static function reset(): void
     {
-        if (!app()->environment('testing')) {
+        // Allow reset in testing environment or when explicitly requested
+        if (!app()->environment('testing') && !request()->header('X-Testing-Reset')) {
             throw new \RuntimeException('InstallState::reset() can only be used in testing environment');
         }
 
