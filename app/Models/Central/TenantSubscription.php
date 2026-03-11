@@ -4,7 +4,7 @@ namespace App\Models\Central;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Stancl\Tenancy\Database\Models\Tenant;
+use App\Models\Central\Tenant;
 
 class TenantSubscription extends Model
 {
