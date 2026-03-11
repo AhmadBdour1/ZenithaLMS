@@ -7,7 +7,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    return view('zenithalms.homepage.index');
+    // Redirect unauthenticated users to login, authenticated to dashboard
+    if (Auth::check()) {
+        return redirect('/dashboard');
+    }
+    return redirect('/login');
 });
 
 // Enhanced login page for development
