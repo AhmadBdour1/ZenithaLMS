@@ -32,7 +32,15 @@ Route::get('/dashboard', function () {
         return redirect()->route('login');
     }
     
-    return redirect()->route(DashboardRedirectService::getDashboardRouteForUser($user));
+    // Get dashboard route for user's role, with fallback
+    try {
+        $dashboardRoute = DashboardRedirectService::getDashboardRouteForUser($user);
+        return redirect()->route($dashboardRoute);
+    } catch (\Exception $e) {
+        // Fallback: if role not recognized, redirect to student dashboard
+        \Log::warning("Unknown role for user {$user->id}: {$user->role?->name}");
+        return redirect()->route('zenithalms.dashboard.student');
+    }
 })
     ->name('dashboard')
     ->middleware('auth');

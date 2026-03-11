@@ -22,9 +22,8 @@ use App\Http\Controllers\Frontend\ZenithaLmsPaymentController;
 // Authentication Routes - Laravel Breeze handles this
 // Auth::routes();
 
-// ZenithaLMS: Payment Routes - Temporarily commented out
-/*
-Route::prefix('payment')->name('zenithalms.payment.')->group(function () {
+// ZenithaLMS: Payment Routes
+Route::prefix('payment')->name('zenithalms.payment.')->middleware('auth')->group(function () {
     Route::get('/checkout', [ZenithaLmsPaymentController::class, 'checkout'])->name('checkout');
     Route::post('/process', [ZenithaLmsPaymentController::class, 'processPayment'])->name('process');
     Route::get('/success/{orderId}', [ZenithaLmsPaymentController::class, 'success'])->name('success');
@@ -34,7 +33,6 @@ Route::prefix('payment')->name('zenithalms.payment.')->group(function () {
     Route::post('/add-funds', [ZenithaLmsPaymentController::class, 'addFunds'])->name('add-funds');
     Route::post('/apply-coupon', [ZenithaLmsPaymentController::class, 'applyCoupon'])->name('apply-coupon');
 });
-*/
 
 // ZenithaLMS: Dashboard Routes
 Route::prefix('dashboard')->name('zenithalms.dashboard.')->middleware('auth')->group(function () {
