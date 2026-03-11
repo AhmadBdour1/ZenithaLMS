@@ -20,7 +20,7 @@ class MediaNormalizePathsCommandTest extends TestCase
         parent::setUp();
         
         // Create a category for testing
-        Category::factory()->create(['id' => 1]);
+        Category::factory()->create();
     }
 
     public function test_command_normalizes_course_thumbnail_path()

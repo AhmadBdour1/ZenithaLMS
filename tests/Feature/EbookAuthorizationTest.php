@@ -22,8 +22,8 @@ class EbookAuthorizationTest extends TestCase
         Storage::fake('private');
         Storage::fake('public');
         
-        // Create a category for ebook tests
-        Category::factory()->create(['id' => 1]);
+        // Create a category for ebook tests (let database auto-assign ID)
+        Category::factory()->create();
         
         // Roles are already created by TestRolesSeeder in TestCase.php
         // No need to create them again

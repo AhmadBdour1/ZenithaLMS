@@ -21,7 +21,7 @@ class UploadValidationSecurityTest extends TestCase
         Storage::fake('private');
         
         // Create a category for ebook tests
-        Category::factory()->create(['id' => 1]);
+        Category::factory()->create();
     }
 
     public function test_avatar_oversized_rejected()

@@ -13,6 +13,9 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
         
+        // Disable CSRF protection for all tests to prevent 419 errors
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        
         // Run the test roles seeder to ensure all roles exist with proper display_name
         $this->artisan('db:seed', ['--class' => 'Database\\Seeders\\TestRolesSeeder']);
     }

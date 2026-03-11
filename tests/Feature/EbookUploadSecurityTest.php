@@ -22,7 +22,7 @@ class EbookUploadSecurityTest extends TestCase
         Storage::fake('public');
         
         // Create a category for ebook tests
-        Category::factory()->create(['id' => 1]);
+        Category::factory()->create();
         
         // Roles are already created by TestRolesSeeder in TestCase.php
         // No need to create them again
