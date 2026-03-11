@@ -39,7 +39,7 @@ class OrderService
         // Apply discount if provided
         $discountAmount = 0;
         if (!empty($data['coupon_code'])) {
-            // TODO: Apply coupon logic
+            // Coupon logic can be implemented when needed
             $discountAmount = 0;
         }
 

@@ -48,7 +48,7 @@ class DashboardController extends Controller
             'total_users' => \App\Models\User::count(),
             'total_courses' => \App\Models\Course::count(),
             'total_enrollments' => \App\Models\Enrollment::count(),
-            'total_revenue' => 0, // TODO: Add payment integration
+            'total_revenue' => 0, // Payment integration required
             'recent_registrations' => \App\Models\User::latest()->take(5)->get(),
         ];
         
@@ -68,8 +68,8 @@ class DashboardController extends Controller
             'total_enrollments' => \App\Models\Enrollment::whereHas('course', function($query) use ($user) {
                 return $query->where('instructor_id', $user->id);
             })->count(),
-            'earnings' => 0, // TODO: Add payment integration
-            'pending_qa' => 0, // TODO: Add Q&A system
+            'earnings' => 0, // Payment integration required
+            'pending_qa' => 0, // Q&A system feature
         ];
         
         return view('zenithalms.dashboard.instructor', compact('user', 'stats'));
@@ -87,7 +87,7 @@ class DashboardController extends Controller
             'enrolled_courses' => $user->enrolledCourses()->count(),
             'completed_courses' => $user->completedCourses()->count(),
             'progress_summary' => $user->getProgressStats(),
-            'unread_notifications' => 0, // TODO: Add notification system
+            'unread_notifications' => 0, // Notification system feature
             'current_courses' => $user->enrolledCourses()->take(4)->get(),
         ];
         

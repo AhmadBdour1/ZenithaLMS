@@ -15,9 +15,16 @@ class EnsureFeatureEnabled
 
     /**
      * Handle an incoming request.
+     * 
+     * @param string|null $feature Optional feature flag name to check
      */
-    public function handle(Request $request, Closure $next, string $feature): Response
+    public function handle(Request $request, Closure $next, ?string $feature = null): Response
     {
+        // If no feature specified, just continue
+        if ($feature === null) {
+            return $next($request);
+        }
+        
         // Check feature flag first, before any other middleware
         if (!$this->featureFlagService->isEnabled($feature)) {
             if ($request->expectsJson() || $request->is('api/*')) {

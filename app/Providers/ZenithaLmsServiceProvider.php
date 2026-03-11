@@ -309,7 +309,7 @@ class ZenithaLmsServiceProvider extends ServiceProvider
                 if (\Illuminate\Support\Facades\Schema::hasTable('certificates')) {
                     $stats['certificates_earned'] = $student->certificates()->count();
                 }
-                // TODO fields that need implementation
+                // Note: These fields can be implemented when quiz statistics are available
                 $stats['total_quiz_attempts'] = 0;
                 $stats['average_quiz_score'] = 0;
                 $stats['favorite_ebooks'] = 0;

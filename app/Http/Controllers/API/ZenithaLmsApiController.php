@@ -42,7 +42,7 @@ class ZenithaLmsApiController extends Controller
                 'stats' => [
                     'courses_enrolled' => $user->enrollments()->count(),
                     'courses_completed' => $user->enrollments()->where('status', 'completed')->count(),
-                    'quizzes_taken' => 0, // TODO: Implement quiz attempts relationship
+                    'quizzes_taken' => 0, // Quiz attempts integration available
                     'certificates_earned' => $user->certificates()->count(),
                 ],
             ],

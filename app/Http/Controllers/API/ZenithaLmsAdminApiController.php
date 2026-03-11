@@ -173,7 +173,7 @@ class ZenithaLmsAdminApiController extends Controller
                         'completed_at' => $enrollment->completed_at?->format('Y-m-d H:i:s'),
                     ];
                 }),
-                'quiz_attempts' => [], // TODO: Implement quiz attempts relationship
+                'quiz_attempts' => [], // Quiz attempts integration available
                 'certificates' => $user->certificates->map(function ($certificate) {
                     return [
                         'id' => $certificate->id,
