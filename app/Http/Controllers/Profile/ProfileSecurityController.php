@@ -321,7 +321,7 @@ class ProfileSecurityController extends Controller
     /**
      * Get active sessions
      */
-    public function getActiveSessions()
+    public function getActiveSessionsList()
     {
         $user = Auth::user();
         $sessions = $this->getActiveSessions($user);

@@ -12,9 +12,10 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 |--------------------------------------------------------------------------
 |
 | Here you can register the tenant routes for your application.
-| These routes are loaded by the TenantRouteServiceProvider.
+| These routes are loaded by the TenancyServiceProvider and are
+| automatically scoped to the current tenant.
 |
-| Feel free to customize them however you want. Good luck!
+| All routes here run in TENANT context with tenant database.
 |
 */
 
@@ -23,7 +24,25 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
+    
+    // Tenant welcome/dashboard home
     Route::get('/', function () {
-        return 'This is your multi-tenant application. The id of the current tenant is ' . tenant('id');
+        if (auth()->check()) {
+            return redirect('/dashboard');
+        }
+        return redirect('/login');
     });
+    
+    // Include all tenant-specific route files
+    require __DIR__.'/auth.php';
+    require __DIR__.'/profile.php';
+    require __DIR__.'/zenithalms.php';
+    require __DIR__.'/admin.php';
+    require __DIR__.'/certificates.php';
+    require __DIR__.'/payments.php';
+    require __DIR__.'/marketplace.php';
+    require __DIR__.'/affiliate.php';
+    require __DIR__.'/stuff.php';
+    require __DIR__.'/aura.php';
+    require __DIR__.'/aura-builder.php';
 });

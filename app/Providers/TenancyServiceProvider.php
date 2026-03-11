@@ -120,12 +120,13 @@ class TenancyServiceProvider extends ServiceProvider
 
     protected function mapRoutes()
     {
-        $this->app->booted(function () {
-            if (file_exists(base_path('routes/tenant.php'))) {
-                Route::namespace(static::$controllerNamespace)
-                    ->group(base_path('routes/tenant.php'));
-            }
-        });
+        // IMPORTANT: Tenant routes should NOT override central routes
+        // They are loaded AFTER central routes in the boot process
+        // Tenancy middleware will handle domain-based routing
+        if (file_exists(base_path('routes/tenant.php'))) {
+            Route::namespace(static::$controllerNamespace)
+                ->group(base_path('routes/tenant.php'));
+        }
     }
 
     protected function makeTenancyMiddlewareHighestPriority()
