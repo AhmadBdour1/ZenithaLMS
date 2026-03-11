@@ -36,4 +36,7 @@ pasted-text-*.txt
 /storage/run-tests.txt
 /storage/missing-tests.txt
 
-storage/app/installed.json
+storage/app/installed.json-e 
+# Environment files
+*.env
+*.env.*

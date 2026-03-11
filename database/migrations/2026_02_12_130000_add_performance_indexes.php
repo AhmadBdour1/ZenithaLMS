@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Get current connection driver
+        $driver = Schema::getConnection()->getDriverName();
+        
         // Courses table indexes
-        Schema::table('courses', function (Blueprint $table) {
+        Schema::table('courses', function (Blueprint $table) use ($driver) {
             // Check if index exists before creating
             if (!Schema::hasIndex('courses', 'courses_category_id_is_active_index')) {
                 $table->index(['category_id', 'is_active']);
@@ -27,7 +30,7 @@ return new class extends Migration
                 $table->index(['slug']);
             }
             // Skip fulltext for SQLite
-            if (config('database.default') !== 'sqlite') {
+            if ($driver !== 'sqlite') {
                 $table->fullText(['title', 'description']);
             }
         });
@@ -62,12 +65,12 @@ return new class extends Migration
         });
 
         // Forums table indexes
-        Schema::table('forums', function (Blueprint $table) {
+        Schema::table('forums', function (Blueprint $table) use ($driver) {
             $table->index(['category', 'is_active']);
             $table->index(['user_id', 'created_at']);
             $table->index(['course_id']);
             // Skip fulltext for SQLite
-            if (config('database.default') !== 'sqlite') {
+            if ($driver !== 'sqlite') {
                 $table->fullText(['title', 'content']);
             }
         });
@@ -102,14 +105,17 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Get current connection driver
+        $driver = Schema::getConnection()->getDriverName();
+        
         // Drop indexes (simplified - in production, you'd want to be more specific)
-        Schema::table('courses', function (Blueprint $table) {
+        Schema::table('courses', function (Blueprint $table) use ($driver) {
             $table->dropIndex(['category_id', 'is_active']);
             $table->dropIndex(['instructor_id', 'created_at']);
             $table->dropIndex(['price', 'is_active']);
             $table->dropIndex(['slug']);
             // Skip fulltext for SQLite
-            if (config('database.default') !== 'sqlite') {
+            if ($driver !== 'sqlite') {
                 $table->dropFullText(['title', 'description']);
             }
         });
@@ -127,12 +133,12 @@ return new class extends Migration
             $table->dropIndex(['created_at']);
         });
 
-        Schema::table('forums', function (Blueprint $table) {
+        Schema::table('forums', function (Blueprint $table) use ($driver) {
             $table->dropIndex(['category', 'is_active']);
             $table->dropIndex(['user_id', 'created_at']);
             $table->dropIndex(['course_id']);
             // Skip fulltext for SQLite
-            if (config('database.default') !== 'sqlite') {
+            if ($driver !== 'sqlite') {
                 $table->dropFullText(['title', 'content']);
             }
         });
