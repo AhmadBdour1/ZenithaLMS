@@ -26,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust all proxies for proper HTTPS detection
+        $middleware->trustProxies(at: '*');
+        
         $middleware->alias([
             'role' => \App\Http\Middleware\ZenithaLmsRoleMiddleware::class,
             'organization' => \App\Http\Middleware\ZenithaLmsOrganizationMiddleware::class,
