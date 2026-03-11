@@ -29,7 +29,8 @@ return new class extends Migration
         });
 
         // Update existing permissions to have slugs based on entity.action
-        \DB::statement("UPDATE permissions SET slug = CONCAT(entity, '.', action) WHERE slug IS NULL AND entity IS NOT NULL AND action IS NOT NULL");
+        // SQLite compatible version
+        \DB::statement("UPDATE permissions SET slug = entity || '.' || action WHERE slug IS NULL AND entity IS NOT NULL AND action IS NOT NULL");
         
         // Make slug not null for records that have it
         Schema::table('permissions', function (Blueprint $table) {
