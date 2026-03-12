@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -51,17 +52,30 @@ class InstallerController extends Controller
      */
     public function checkDatabase(Request $request)
     {
+        Log::info('Installer: Checking database connection');
+        
         try {
             DB::connection()->getPdo();
+            Log::info('Installer: Database connection successful');
             
             return response()->json([
                 'success' => true,
                 'message' => 'Database connection successful'
             ]);
         } catch (\Exception $e) {
+            Log::error('Installer: Database connection failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Database connection failed: ' . $e->getMessage()
+                'message' => 'Database connection failed: ' . $e->getMessage(),
+                'exception_message' => $e->getMessage(),
+                'exception_file' => $e->getFile(),
+                'exception_line' => $e->getLine()
             ], 422);
         }
     }
@@ -71,8 +85,11 @@ class InstallerController extends Controller
      */
     public function run(Request $request)
     {
+        Log::info('Installer: Starting installation process');
+        
         // Prevent re-installation
         if (InstallState::isInstalled()) {
+            Log::warning('Installer: Application already installed');
             return response()->json([
                 'success' => false,
                 'message' => 'Application is already installed'
@@ -80,6 +97,7 @@ class InstallerController extends Controller
         }
 
         // Validate input
+        Log::info('Installer: Validating input data');
         $validator = Validator::make($request->all(), [
             'admin_name' => 'required|string|max:255',
             'admin_email' => 'required|email|max:255|unique:users,email',
@@ -88,6 +106,9 @@ class InstallerController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::error('Installer: Validation failed', [
+                'errors' => $validator->errors()->toArray()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
@@ -97,54 +118,82 @@ class InstallerController extends Controller
 
         try {
             // Check database connection
+            Log::info('Installer: Checking database connection before migration');
             DB::connection()->getPdo();
+            Log::info('Installer: Database connection OK');
 
             // Auto-run migrations if database is empty
+            Log::info('Installer: Auto-running migrations if needed');
             $this->autoRunMigrationsIfNeeded();
 
             // Run migrations (will be no-op if already run)
+            Log::info('Installer: Running migrations');
             Artisan::call('migrate', ['--force' => true]);
+            Log::info('Installer: Migrations completed');
+
+            // Verify critical tables exist before proceeding
+            Log::info('Installer: Verifying critical tables exist');
+            $this->verifyCriticalTables();
 
             // Run seeders
+            Log::info('Installer: Running database seeders');
             Artisan::call('db:seed', ['--class' => 'RoleSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'OrganizationSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'CategorySeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'SkillSeeder', '--force' => true]);
+            Log::info('Installer: Database seeders completed');
 
             // Create admin user
+            Log::info('Installer: Creating admin user', [
+                'email' => $request->admin_email,
+                'name' => $request->admin_name
+            ]);
             $admin = \App\Models\User::create([
                 'name' => $request->admin_name,
                 'email' => $request->admin_email,
                 'password' => Hash::make($request->admin_password),
                 'email_verified_at' => now(),
             ]);
+            Log::info('Installer: Admin user created', ['user_id' => $admin->id]);
 
-            // Assign admin role to user
+            // Ensure admin role exists
+            Log::info('Installer: Ensuring admin role exists');
             $adminRole = \App\Models\Role::where('name', 'admin')->first();
-            if ($adminRole) {
-                $admin->roles()->attach($adminRole->id);
+            if (!$adminRole) {
+                Log::error('Installer: Admin role not found after seeding');
+                throw new \Exception('Admin role was not created during seeding');
             }
 
+            // Assign admin role to user
+            Log::info('Installer: Assigning admin role to user');
+            $admin->roles()->attach($adminRole->id);
+            Log::info('Installer: Admin role assigned successfully');
+
             // Update app name
+            Log::info('Installer: Updating APP_NAME');
             $this->updateEnvironmentFile('APP_NAME', $request->site_name);
 
             // Create storage link if not exists
             if (!File::exists(public_path('storage'))) {
+                Log::info('Installer: Creating storage link');
                 Artisan::call('storage:link');
             }
 
             // Clear caches
+            Log::info('Installer: Clearing caches');
             Artisan::call('config:clear');
             Artisan::call('cache:clear');
             Artisan::call('view:clear');
 
             // Mark as installed
+            Log::info('Installer: Marking application as installed');
             InstallState::markInstalled([
                 'admin_user_id' => $admin->id,
                 'site_name' => $request->site_name,
                 'admin_email' => $request->admin_email,
             ]);
 
+            Log::info('Installer: Installation completed successfully');
             return response()->json([
                 'success' => true,
                 'message' => 'Installation completed successfully',
@@ -152,10 +201,36 @@ class InstallerController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Installer: Installation failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Installation failed: ' . $e->getMessage()
+                'message' => 'Installation failed',
+                'exception_message' => $e->getMessage(),
+                'exception_file' => $e->getFile(),
+                'exception_line' => $e->getLine()
             ], 500);
+        }
+    }
+
+    /**
+     * Verify critical tables exist before proceeding
+     */
+    private function verifyCriticalTables(): void
+    {
+        $criticalTables = ['users', 'roles', 'role_user'];
+        
+        foreach ($criticalTables as $table) {
+            if (!DB::getSchemaBuilder()->hasTable($table)) {
+                Log::error("Installer: Critical table '{$table}' does not exist after migrations");
+                throw new \Exception("Critical table '{$table}' was not created during migration");
+            }
+            Log::info("Installer: Verified table '{$table}' exists");
         }
     }
 
@@ -167,13 +242,23 @@ class InstallerController extends Controller
         try {
             // Check if migrations table exists
             $hasMigrations = DB::getSchemaBuilder()->hasTable('migrations');
+            Log::info('Installer: Checking migrations table', ['exists' => $hasMigrations]);
             
             if (!$hasMigrations) {
                 // Database is empty, run migrations
+                Log::info('Installer: Database is empty, running migrations');
                 Artisan::call('migrate', ['--force' => true]);
+            } else {
+                Log::info('Installer: Migrations table exists, skipping auto-migration');
             }
         } catch (\Exception $e) {
+            Log::error('Installer: Auto-migration check failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
             // If we can't check migrations, assume we need to run them
+            Log::info('Installer: Falling back to running migrations due to error');
             Artisan::call('migrate', ['--force' => true]);
         }
     }
@@ -269,31 +354,44 @@ class InstallerController extends Controller
     {
         try {
             $dbConnection = config('database.default', 'mysql');
+            Log::info('Installer: Checking database connection', ['connection' => $dbConnection]);
             
             // Auto-create SQLite database file if needed
             if ($dbConnection === 'sqlite') {
                 $databasePath = config('database.connections.sqlite.database');
+                Log::info('Installer: SQLite database path', ['path' => $databasePath]);
                 
                 // Ensure database directory exists
                 $databaseDir = dirname($databasePath);
                 if (!is_dir($databaseDir)) {
+                    Log::info('Installer: Creating database directory', ['dir' => $databaseDir]);
                     mkdir($databaseDir, 0755, true);
                 }
                 
                 // Create empty SQLite file if it doesn't exist
                 if (!file_exists($databasePath)) {
+                    Log::info('Installer: Creating SQLite database file', ['file' => $databasePath]);
                     touch($databasePath);
                     chmod($databasePath, 0644);
+                } else {
+                    Log::info('Installer: SQLite database file already exists', ['file' => $databasePath]);
                 }
             }
             
             DB::connection()->getPdo();
+            Log::info('Installer: Database connection successful');
             return [
                 'required' => 'Connected',
                 'current' => 'Connected',
                 'status' => 'ok',
             ];
         } catch (\Exception $e) {
+            Log::error('Installer: Database connection failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return [
                 'required' => 'Connected',
                 'current' => 'Not connected: ' . $e->getMessage(),
