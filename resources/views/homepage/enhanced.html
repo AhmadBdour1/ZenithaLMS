@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>ZenithaLMS - Reach Your Learning Peak</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#6366f1",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0f172a",
+                        accent: {
+                            purple: "#a855f7",
+                            blue: "#3b82f6",
+                        }
+                    },
+                    fontFamily: {
+                        display: ["Plus Jakarta Sans", "sans-serif"],
+                        sans: ["Plus Jakarta Sans", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                        'xl': "1.5rem",
+                        '2xl': "2rem",
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                },
+            },
+        };
+    </script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .gradient-bg {
+            background: radial-gradient(circle at top right, #3b82f6, transparent),
+                        radial-gradient(circle at bottom left, #a855f7, transparent);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+    <style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-sans text-slate-900 dark:text-slate-100 min-h-screen">
+    <div class="h-12 w-full"></div>
+    <nav class="sticky top-0 z-50 px-6 py-4 flex justify-between items-center glass border-b border-white/10">
+        <div class="flex items-center gap-2">
+            <img alt="ZenithaLMS Logo" class="w-8 h-8 rounded-lg shadow-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAauYuolkByfokEW8WCgevQDpyY-vEEM8Cy_IpTCe_MfWxSR_ftesigOvoqobEZAdaBJ_hvqFmvGcmBsWsX0USjzHXBGkCht94YmZWQS0QNhOzYGyTK-mLR6_tfJcQpXkCg_L90p4Dnph1Rmb1T0HlLLkpJbPQCfzTDWQCJNbYaG-a4ke-fY0PEyPcyLxo92GW3lj0S92FTeaS0z3evOop2uI-zOItIUKdSTllaMKropsSabR73ph7eAcM-CC9Hdz3I7DIL1eOUZ3Ph"/>
+            <span class="font-extrabold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">ZenithaLMS</span>
+        </div>
+        <button class="p-2 rounded-full hover:bg-white/10 transition-colors">
+            <span class="material-icons-round text-2xl">menu</span>
+        </button>
+    </nav>
+
+    <main class="pb-24">
+        <!-- Hero Section -->
+        <section class="relative px-6 pt-12 pb-16 overflow-hidden">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-accent-blue/20 blur-[100px] -z-10 floating"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-accent-purple/20 blur-[100px] -z-10 floating" style="animation-delay: 3s;"></div>
+            <div class="text-center space-y-6">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold uppercase tracking-wider animate-pulse-slow">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                    </span>
+                    AI-Powered Education
+                </div>
+                <h1 class="text-4xl md:text-5xl font-extrabold leading-tight tracking-tight">
+                    Reach Your <br/>
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 dark:from-blue-400 dark:via-purple-400 dark:to-indigo-400">Learning Peak</span> <br/>
+                    with AI
+                </h1>
+                <p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed max-w-sm mx-auto">
+                    Personalized paths designed to evolve with your progress. Master new skills faster than ever.
+                </p>
+                <div class="flex flex-col gap-4 pt-4">
+                    <button class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 px-8 rounded-2xl shadow-xl shadow-primary/25 transition-all active:scale-95 flex items-center justify-center gap-2 card-hover">
+                        Start Learning
+                        <span class="material-icons-round text-lg">arrow_forward</span>
+                    </button>
+                    <button class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-semibold py-4 px-8 rounded-2xl shadow-sm transition-all active:scale-95">
+                        Explore Courses
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Statistics Section -->
+        <section class="px-6 py-12 glass rounded-3xl mx-6">
+            <h2 class="text-2xl font-bold mb-8 text-center">Impact at a Glance</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary" data-count="50000">0</div>
+                    <div class="text-sm text-slate-500">Active Students</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary" data-count="1200">0</div>
+                    <div class="text-sm text-slate-500">Expert Instructors</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary" data-count="98">0</div>
+                    <div class="text-sm text-slate-500">Success Rate %</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-primary" data-count="50">0</div>
+                    <div class="text-sm text-slate-500">Countries</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why ZenithaLMS -->
+        <section class="px-6 py-8">
+            <h2 class="text-2xl font-bold mb-8 flex items-center gap-2">
+                Why ZenithaLMS
+                <div class="h-1 w-12 bg-primary rounded-full"></div>
+            </h2>
+            <div class="grid gap-4">
+                <div class="glass p-6 rounded-2xl border border-white/10 dark:border-white/5 relative overflow-hidden group card-hover">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-colors"></div>
+                    <div class="bg-blue-100 dark:bg-blue-900/40 p-3 rounded-xl w-fit mb-4">
+                        <span class="material-icons-round text-blue-600 dark:text-blue-400">auto_awesome</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">AI Learning Paths</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Algorithms that adapt to your pace and interests in real-time.</p>
+                </div>
+                <div class="glass p-6 rounded-2xl border border-white/10 dark:border-white/5 relative overflow-hidden group card-hover">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-colors"></div>
+                    <div class="bg-purple-100 dark:bg-purple-900/40 p-3 rounded-xl w-fit mb-4">
+                        <span class="material-icons-round text-purple-600 dark:text-purple-400">insights</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Smart Tracking</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Visualize your progress with data-driven insights and milestones.</p>
+                </div>
+                <div class="glass p-6 rounded-2xl border border-white/10 dark:border-white/5 relative overflow-hidden group card-hover">
+                    <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-colors"></div>
+                    <div class="bg-indigo-100 dark:bg-indigo-900/40 p-3 rounded-xl w-fit mb-4">
+                        <span class="material-icons-round text-indigo-600 dark:text-indigo-400">forum</span>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">Interactive Community</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">Collaborate with peers and mentors in our integrated forums.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Organizations Showcase -->
+        <section class="px-6 py-8">
+            <h2 class="text-2xl font-bold mb-8 flex items-center gap-2">
+                Trusted Organizations
+                <div class="h-1 w-12 bg-primary rounded-full"></div>
+            </h2>
+            <div class="grid gap-4">
+                <div class="glass p-6 rounded-2xl border border-white/10 dark:border-white/5 card-hover">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <span class="material-icons-round text-white text-2xl">school</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Tech Academy International</h3>
+                            <p class="text-sm text-slate-500">Enterprise-tier • 5000+ Students</p>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-full text-xs font-bold">ACTIVE</span>
+                    </div>
+                </div>
+                <div class="glass p-6 rounded-2xl border border-white/10 dark:border-white/5 card-hover">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center">
+                            <span class="material-icons-round text-white text-2xl">business</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Business School Global</h3>
+                            <p class="text-sm text-slate-500">Professional-tier • 3000+ Students</p>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-full text-xs font-bold">ACTIVE</span>
+                    </div>
+                </div>
+                <div class="glass p-6 rounded-2xl border border-white/10 dark:border-white/5 card-hover">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center">
+                            <span class="material-icons-round text-white text-2xl">palette</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">Creative Arts Institute</h3>
+                            <p class="text-sm text-slate-500">Starter-tier • 1500+ Students</p>
+                        </div>
+                        <span class="px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-full text-xs font-bold">ACTIVE</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Tracks -->
+        <section class="py-8">
+            <div class="px-6 mb-6 flex justify-between items-end">
+                <div>
+                    <h2 class="text-2xl font-bold">Featured Tracks</h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">Curated for future experts</p>
+                </div>
+                <button class="text-primary text-sm font-semibold">See all</button>
+            </div>
+            <div class="flex overflow-x-auto gap-6 px-6 pb-4 hide-scrollbar">
+                <div class="flex-none w-72 card-hover">
+                    <div class="relative rounded-2xl overflow-hidden aspect-video mb-3 shadow-lg">
+                        <img alt="Web Development" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3s4K0lzdbHPZUHNmIsWiCXssRnvB71DOSJd7rMVWUxtI3AQZ_wxYxyjIvIJ6d1c3uu7XvcDqieGta9Qe9Yb8wRhcrbnDZY7q_rCPrcWxHVF7F0otGvqKgqegily-mQ_YjVEwNJnWC5_POFi6ll0VR4lBZ_Hh4xS6GR4KdXkem2wVuzBHd_xc56NQth3YRw2vdQK_Ix46K-HR1dyJqONBmXV7KzlMC87PZ4pq3rA6oAvDQGJ6b84VcF11w32iI-U6L-GuTmlu9qsQq"/>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 flex items-center gap-2">
+                            <span class="px-2 py-1 rounded bg-white/20 backdrop-blur-md text-[10px] text-white font-bold uppercase tracking-widest">Tech</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg">Web Development</h4>
+                    <div class="flex items-center gap-3 mt-1 text-slate-500 dark:text-slate-400 text-sm">
+                        <span class="flex items-center gap-1"><span class="material-icons-round text-sm">schedule</span> 12 Weeks</span>
+                        <span class="flex items-center gap-1"><span class="material-icons-round text-sm">star</span> 4.9</span>
+                    </div>
+                </div>
+                <div class="flex-none w-72 card-hover">
+                    <div class="relative rounded-2xl overflow-hidden aspect-video mb-3 shadow-lg">
+                        <img alt="Data Science" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIwHeeijjGuOuKAYj5k858na18Zkc8yRDCB6bE2-TPtWnVz9xs88e7Ff2u1cHceNTV9qeXjxsp0jyd0VXsfWpyCnLzhYwB6YJ73buhuuxWdbTsFJgwatvBjEEACaz6Mo4FIa_rBuqhJQtEeX461vimYiPk6PQygJDLJ795L_dWDoe6Sz3bdHRS3-3wtJOmRQSpcBzn6GK8meUrKRWn44qPlUd_crQDKremfNGtL9e61XLzRF1EaJl9M4xRdmitciuBctP2zKTIxc5h"/>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 flex items-center gap-2">
+                            <span class="px-2 py-1 rounded bg-white/20 backdrop-blur-md text-[10px] text-white font-bold uppercase tracking-widest">AI & Data</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg">Data Science</h4>
+                    <div class="flex items-center gap-3 mt-1 text-slate-500 dark:text-slate-400 text-sm">
+                        <span class="flex items-center gap-1"><span class="material-icons-round text-sm">schedule</span> 16 Weeks</span>
+                        <span class="flex items-center gap-1"><span class="material-icons-round text-sm">star</span> 4.8</span>
+                    </div>
+                </div>
+                <div class="flex-none w-72 card-hover">
+                    <div class="relative rounded-2xl overflow-hidden aspect-video mb-3 shadow-lg">
+                        <img alt="Business" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgKwtDaOXf1jjYjjrBh0QRSp5unywNk51P8q0IsJU8NleWS0hGM0045Qw1a7pRdVnAAuxesQZfdb6a12SEXMy2KeUXg2C87K3KnZiKy-BvDHHIy0wXQj-p7zWy4e1ZiU77Bzb47dTrT8RcIC-1BOr_3ERTBvLqdq_COVo9I3gMULgRDNZfzv3nZge-YbL_fQjpLYnF_Ji-WS1NKF80THaaVnlOfAOgRGa58y0jICuMtckTDINRjw7szyPJ5r_ZQGGz_soIh6Z7UV4"/>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+                        <div class="absolute bottom-3 left-3 flex items-center gap-2">
+                            <span class="px-2 py-1 rounded bg-white/20 backdrop-blur-md text-[10px] text-white font-bold uppercase tracking-widest">Business</span>
+                        </div>
+                    </div>
+                    <h4 class="font-bold text-lg">Business Analytics</h4>
+                    <div class="flex items-center gap-3 mt-1 text-slate-500 dark:text-slate-400 text-sm">
+                        <span class="flex items-center gap-1"><span class="material-icons-round text-sm">schedule</span> 8 Weeks</span>
+                        <span class="flex items-center gap-1"><span class="material-icons-round text-sm">star</span> 4.7</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section class="px-6 py-12">
+            <h2 class="text-2xl font-bold mb-8 text-center">What Our Students Say</h2>
+            <div class="relative overflow-hidden">
+                <div class="flex gap-6 transition-transform duration-500" id="testimonials">
+                    <div class="flex-none w-80 glass p-6 rounded-2xl card-hover">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                <span class="material-icons-round text-white">person</span>
+                            </div>
+                            <div>
+                                <div class="font-bold">Sarah Johnson</div>
+                                <div class="text-sm text-slate-500">Web Developer</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-1 mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-sm">"ZenithaLMS transformed my career. The AI-powered learning path helped me master web development in just 3 months!"</p>
+                    </div>
+                    <div class="flex-none w-80 glass p-6 rounded-2xl card-hover">
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center">
+                                <span class="material-icons-round text-white">person</span>
+                            </div>
+                            <div>
+                                <div class="font-bold">Michael Chen</div>
+                                <div class="text-sm text-slate-500">Data Scientist</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-1 mb-3">
+                            <span class="text-yellow-400">⭐⭐⭐⭐⭐</span>
+                        </div>
+                        <p class="text-sm">"The adaptive learning technology is incredible. It adjusted to my learning style and helped me overcome difficult concepts."</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 glass border-t border-white/10 px-8 py-4 flex justify-between items-center z-50 rounded-t-3xl">
+        <button class="flex flex-col items-center gap-1 text-primary">
+            <span class="material-icons-round">home</span>
+            <span class="text-[10px] font-bold">Home</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-icons-round">search</span>
+            <span class="text-[10px] font-medium">Explore</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-icons-round">book</span>
+            <span class="text-[10px] font-medium">Library</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-slate-400">
+            <span class="material-icons-round">person</span>
+            <span class="text-[10px] font-medium">Profile</span>
+        </button>
+    </nav>
+
+    <!-- AI Assistant Button -->
+    <div class="fixed bottom-24 right-6">
+        <button class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500 shadow-xl shadow-indigo-500/40 flex items-center justify-center text-white ring-4 ring-white/10 floating">
+            <span class="material-icons-round">auto_awesome</span>
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animated Counter
+            const counters = document.querySelectorAll('[data-count]');
+            const speed = 200;
+            
+            const animateCounter = (counter) => {
+                const value = +counter.getAttribute('data-count');
+                const data = +counter.innerText;
+                const time = value / speed;
+                
+                if (data < value) {
+                    counter.innerText = Math.ceil(data + time);
+                    setTimeout(() => animateCounter(counter), 1);
+                } else {
+                    counter.innerText = value.toLocaleString();
+                }
+            };
+            
+            // Intersection Observer for counters
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCounter(entry.target);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            });
+            
+            counters.forEach(counter => {
+                observer.observe(counter);
+            });
+            
+            // Smooth Scroll
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+            
+            // Parallax Effect
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const floatingElements = document.querySelectorAll('.floating');
+                floatingElements.forEach((element, index) => {
+                    const speed = 0.5 + (index * 0.1);
+                    element.style.transform = `translateY(${scrolled * speed}px)`;
+                });
+            });
+            
+            // Testimonials Auto-scroll
+            const testimonials = document.getElementById('testimonials');
+            if (testimonials) {
+                let scrollAmount = 0;
+                const scrollStep = 1;
+                const scrollSpeed = 30;
+                
+                const autoScroll = () => {
+                    scrollAmount += scrollStep;
+                    if (scrollAmount >= testimonials.scrollWidth - testimonials.clientWidth) {
+                        scrollAmount = 0;
+                    }
+                    testimonials.style.transform = `translateX(-${scrollAmount}px)`;
+                };
+                
+                setInterval(autoScroll, scrollSpeed);
+            }
+        });
+    </script>
+</body>
+</html>

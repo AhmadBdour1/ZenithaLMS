@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use App\Services\FeatureFlagService;
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class EnsureFeatureEnabled
+{
+    public function __construct(
+        private FeatureFlagService $featureFlagService
+    ) {}
+
+    /**
+     * Handle an incoming request.
+     * 
+     * @param string|null $feature Optional feature flag name to check
+     */
+    public function handle(Request $request, Closure $next, ?string $feature = null): Response
+    {
+        // If no feature specified, just continue
+        if ($feature === null) {
+            return $next($request);
+        }
+        
+        // Check feature flag first, before any other middleware
+        if (!$this->featureFlagService->isEnabled($feature)) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Feature disabled',
+                    'feature' => $feature,
+                ], 404);
+            }
+
+            abort(404, 'Feature disabled');
+        }
+
+        return $next($request);
+    }
+}

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant - ZenithaLMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#EEF2FF',
+                            100: '#E0E7FF',
+                            200: '#C7D2FE',
+                            300: '#A5B4FC',
+                            400: '#818CF8',
+                            500: '#6366F1',
+                            600: '#4F46E5',
+                            700: '#4338CA',
+                            800: '#3730A3',
+                            900: '#312E81',
+                        },
+                        accent: {
+                            purple: '#A855F7',
+                            blue: '#3B82F6',
+                            pink: '#EC4899',
+                            green: '#10B981',
+                            yellow: '#F59E0B',
+                            red: '#EF4444',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'xl': '0.75rem',
+                        '2xl': '1rem',
+                        '3xl': '1.5rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .chat-bubble {
+            animation: slideInUp 0.3s ease-out;
+        }
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6366F1;
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.8); }
+        }
+        .suggestion-chip {
+            transition: all 0.2s ease;
+        }
+        .suggestion-chip:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        }
+        .voice-wave {
+            animation: voiceWave 1.5s ease-in-out infinite;
+        }
+        @keyframes voiceWave {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .code-block {
+            background: #1e293b;
+            color: #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+        .code-block .keyword { color: #f472b6; }
+        .code-block .string { color: #86efac; }
+        .code-block .comment { color: #64748b; }
+        .code-block .function { color: #60a5fa; }
+    </style>
+</head>
+<body class="bg-neutral-50 font-sans">
+    <div class="flex h-screen">
+        <!-- Chat Sidebar -->
+        <aside class="w-80 bg-white border-r border-neutral-200 flex flex-col">
+            <!-- Header -->
+            <div class="p-6 border-b border-neutral-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center pulse-glow">
+                        <span class="material-icons-round text-white">auto_awesome</span>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg">AI Assistant</h1>
+                        <p class="text-sm text-neutral-500">Your personal learning tutor</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Context Info -->
+            <div class="p-4 border-b border-neutral-200">
+                <div class="bg-primary-50 p-3 rounded-xl">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-icons-round text-primary-600 text-sm">book</span>
+                        <span class="font-semibold text-sm">Current Context</span>
+                    </div>
+                    <div class="text-sm text-neutral-600">
+                        <div class="font-medium">Web Development Bootcamp</div>
+                        <div class="text-xs">Lesson 9: JavaScript ES6+ Features</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat History -->
+            <div class="flex-1 overflow-y-auto p-4">
+                <div class="space-y-3">
+                    <div class="p-3 rounded-xl bg-neutral-50 hover:bg-neutral-100 cursor-pointer transition-colors">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-semibold text-sm">React Hooks Discussion</span>
+                            <span class="text-xs text-neutral-500">2h ago</span>
+                        </div>
+                        <div class="text-sm text-neutral-600 truncate">How do useEffect dependencies work?</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-neutral-50 hover:bg-neutral-100 cursor-pointer transition-colors">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-semibold text-sm">CSS Grid Help</span>
+                            <span class="text-xs text-neutral-500">5h ago</span>
+                        </div>
+                        <div class="text-sm text-neutral-600 truncate">Can you explain grid-template-areas?</div>
+                    </div>
+                    <div class="p-3 rounded-xl bg-neutral-50 hover:bg-neutral-100 cursor-pointer transition-colors">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="font-semibold text-sm">JavaScript Promises</span>
+                            <span class="text-xs text-neutral-500">Yesterday</span>
+                        </div>
+                        <div class="text-sm text-neutral-600 truncate">What's the difference between Promise.all and...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="p-4 border-t border-neutral-200">
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="p-2 bg-primary-50 text-primary-600 rounded-lg text-sm font-semibold hover:bg-primary-100 transition-colors">
+                        <span class="material-icons-round text-sm">summarize</span>
+                        Summarize
+                    </button>
+                    <button class="p-2 bg-accent-purple/10 text-accent-purple rounded-lg text-sm font-semibold hover:bg-accent-purple/20 transition-colors">
+                        <span class="material-icons-round text-sm">translate</span>
+                        Translate
+                    </button>
+                    <button class="p-2 bg-accent-green/10 text-accent-green rounded-lg text-sm font-semibold hover:bg-accent-green/20 transition-colors">
+                        <span class="material-icons-round text-sm">code</span>
+                        Code Help
+                    </button>
+                    <button class="p-2 bg-accent-yellow/10 text-accent-yellow rounded-lg text-sm font-semibold hover:bg-accent-yellow/20 transition-colors">
+                        <span class="material-icons-round text-sm">quiz</span>
+                        Quiz Me
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="flex-1 flex flex-col">
+            <!-- Chat Header -->
+            <header class="bg-white border-b border-neutral-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <button class="p-2 text-neutral-600 hover:text-neutral-900">
+                            <span class="material-icons-round">arrow_back</span>
+                        </button>
+                        <div>
+                            <h2 class="font-bold text-lg">AI Learning Assistant</h2>
+                            <p class="text-sm text-neutral-500">Always here to help you learn</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-2 px-3 py-1 bg-accent-green/10 rounded-full">
+                            <div class="w-2 h-2 bg-accent-green rounded-full"></div>
+                            <span class="text-sm text-accent-green font-semibold">Online</span>
+                        </div>
+                        <button class="p-2 text-neutral-600 hover:text-neutral-900">
+                            <span class="material-icons-round">settings</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Messages Area -->
+            <div class="flex-1 overflow-y-auto p-6 bg-neutral-50">
+                <div class="max-w-4xl mx-auto space-y-6">
+                    <!-- Welcome Message -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span class="material-icons-round text-white">auto_awesome</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="bg-white p-4 rounded-2xl shadow-sm chat-bubble">
+                                <p class="text-neutral-800 mb-3">Hello! I'm your AI learning assistant. I'm here to help you with your Web Development Bootcamp course.</p>
+                                <p class="text-neutral-800 mb-3">I can help you with:</p>
+                                <ul class="list-disc list-inside text-neutral-600 space-y-1">
+                                    <li>Explaining difficult concepts</li>
+                                    <li>Providing code examples and solutions</li>
+                                    <li>Answering questions about your coursework</li>
+                                    <li>Creating practice exercises</li>
+                                    <li>Reviewing your code and giving feedback</li>
+                                </ul>
+                                <p class="text-neutral-800 mt-3">What would you like to learn about today?</p>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2">
+                                <button class="text-xs text-neutral-500 hover:text-neutral-700">👍 Helpful</button>
+                                <button class="text-xs text-neutral-500 hover:text-neutral-700">👎 Not Helpful</button>
+                                <button class="text-xs text-neutral-500 hover:text-neutral-700">🔄 Regenerate</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Message -->
+                    <div class="flex items-start gap-4 justify-end">
+                        <div class="flex-1 max-w-lg">
+                            <div class="bg-primary-500 text-white p-4 rounded-2xl chat-bubble">
+                                <p>Can you explain JavaScript async/await and how it's different from Promises?</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Response with Code -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span class="material-icons-round text-white">auto_awesome</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="bg-white p-4 rounded-2xl shadow-sm chat-bubble">
+                                <p class="text-neutral-800 mb-4">Great question! Async/await is syntactic sugar built on top of Promises that makes asynchronous code look and behave more like synchronous code.</p>
+                                
+                                <div class="mb-4">
+                                    <h4 class="font-semibold mb-2">Key Differences:</h4>
+                                    <ul class="list-disc list-inside text-neutral-600 space-y-1">
+                                        <li><strong>Readability:</strong> Async/await is easier to read and understand</li>
+                                        <li><strong>Error Handling:</strong> Try/catch works with async/await</li>
+                                        <li><strong>Debugging:</strong> Easier to debug async/await code</li>
+                                    </ul>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h4 class="font-semibold mb-2">Example Comparison:</h4>
+                                    
+                                    <div class="mb-3">
+                                        <p class="text-sm font-semibold text-neutral-600 mb-2">Using Promises:</p>
+                                        <div class="code-block">
+<span class="function">function</span> <span class="function">fetchUserData</span>(userId) {
+    <span class="keyword">return</span> <span class="function">fetch</span>(<span class="string">`/api/users/${userId}`</span>)
+        .<span class="function">then</span>(response => response.json())
+        .<span class="function">then</span>(user => {
+            <span class="keyword">return</span> <span class="function">fetch</span>(<span class="string">`/api/posts/${user.id}`</span>)
+        })
+        .<span class="function">then</span>(response => response.json())
+        .<span class="function">catch</span>(error => console.error(error));
+}</div>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-sm font-semibold text-neutral-600 mb-2">Using Async/Await:</p>
+                                        <div class="code-block">
+<span class="keyword">async function</span> <span class="function">fetchUserData</span>(userId) {
+    <span class="keyword">try</span> {
+        <span class="keyword">const</span> userResponse = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`/api/users/${userId}`</span>);
+        <span class="keyword">const</span> user = <span class="keyword">await</span> userResponse.json();
+        
+        <span class="keyword">const</span> postsResponse = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`/api/posts/${user.id}`</span>);
+        <span class="keyword">const</span> posts = <span class="keyword">await</span> postsResponse.json();
+        
+        <span class="keyword">return</span> posts;
+    } <span class="keyword">catch</span> (error) {
+        console.error(error);
+    }
+}</div>
+                                    </div>
+                                </div>
+
+                                <p class="text-neutral-800">Would you like me to explain any specific part in more detail or create a practice exercise for you?</p>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2">
+                                <button class="text-xs text-neutral-500 hover:text-neutral-700">👍 Helpful</button>
+                                <button class="text-xs text-neutral-500 hover:text-neutral-700">👎 Not Helpful</button>
+                                <button class="text-xs text-neutral-500 hover:text-neutral-700">🔄 Regenerate</button>
+                                <button class="text-xs text-neutral-500 hover:text-neutral-700">📋 Copy Code</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Typing Indicator -->
+                    <div class="flex items-start gap-4" id="typingIndicator" style="display: none;">
+                        <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center flex-shrink-0">
+                            <span class="material-icons-round text-white">auto_awesome</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-sm">
+                            <div class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suggestions -->
+            <div class="px-6 py-4 bg-white border-t border-neutral-200">
+                <div class="max-w-4xl mx-auto">
+                    <p class="text-sm text-neutral-500 mb-3">Suggested questions:</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="suggestion-chip px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm font-semibold">
+                            How do I handle errors in async/await?
+                        </button>
+                        <button class="suggestion-chip px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm font-semibold">
+                            Can you show me Promise.all() example?
+                        </button>
+                        <button class="suggestion-chip px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm font-semibold">
+                            What's the difference between async functions and regular functions?
+                        </button>
+                        <button class="suggestion-chip px-3 py-1 bg-primary-50 text-primary-600 rounded-full text-sm font-semibold">
+                            Create a practice exercise for async/await
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="bg-white border-t border-neutral-200 p-4">
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex items-end gap-3">
+                        <button class="p-3 text-neutral-600 hover:text-neutral-900">
+                            <span class="material-icons-round">attach_file</span>
+                        </button>
+                        <div class="flex-1 relative">
+                            <textarea 
+                                id="messageInput"
+                                placeholder="Ask me anything about your course..."
+                                class="w-full px-4 py-3 bg-neutral-100 rounded-2xl resize-none focus:outline-none focus:bg-white focus:border-primary-500 border border-transparent transition-all"
+                                rows="1"></textarea>
+                            <button class="absolute right-2 bottom-2 p-1 text-neutral-400 hover:text-neutral-600">
+                                <span class="material-icons-round text-sm">emoji_emotions</span>
+                            </button>
+                        </div>
+                        <button id="voiceButton" class="p-3 text-neutral-600 hover:text-neutral-900">
+                            <span class="material-icons-round">mic</span>
+                        </button>
+                        <button id="sendButton" class="p-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors">
+                            <span class="material-icons-round">send</span>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between mt-2">
+                        <p class="text-xs text-neutral-500">AI can make mistakes. Always verify important information.</p>
+                        <div class="flex items-center gap-2">
+                            <button class="text-xs text-neutral-500 hover:text-neutral-700">Clear Chat</button>
+                            <button class="text-xs text-neutral-500 hover:text-neutral-700">Export</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Chat functionality
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const voiceButton = document.getElementById('voiceButton');
+        const typingIndicator = document.getElementById('typingIndicator');
+
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        });
+
+        // Send message
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Add user message to chat (in real app, this would update the DOM)
+            console.log('User message:', message);
+            
+            // Clear input
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            
+            // Show typing indicator
+            typingIndicator.style.display = 'flex';
+            
+            // Simulate AI response
+            setTimeout(() => {
+                typingIndicator.style.display = 'none';
+                // Add AI response to chat (in real app, this would update the DOM)
+                console.log('AI response generated');
+            }, 2000);
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Voice input
+        let isRecording = false;
+        voiceButton.addEventListener('click', function() {
+            if (!isRecording) {
+                // Start recording
+                this.classList.add('text-red-500', 'voice-wave');
+                this.querySelector('.material-icons-round').textContent = 'stop';
+                isRecording = true;
+                console.log('Voice recording started');
+            } else {
+                // Stop recording
+                this.classList.remove('text-red-500', 'voice-wave');
+                this.querySelector('.material-icons-round').textContent = 'mic';
+                isRecording = false;
+                console.log('Voice recording stopped');
+            }
+        });
+
+        // Suggestion chips
+        document.querySelectorAll('.suggestion-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                messageInput.value = this.textContent;
+                messageInput.focus();
+            });
+        });
+
+        // Feedback buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.textContent === '👍 Helpful') {
+                console.log('Positive feedback given');
+                e.target.classList.add('text-accent-green');
+            } else if (e.target.textContent === '👎 Not Helpful') {
+                console.log('Negative feedback given');
+                e.target.classList.add('text-accent-red');
+            } else if (e.target.textContent === '🔄 Regenerate') {
+                console.log('Regenerating response');
+                typingIndicator.style.display = 'flex';
+                setTimeout(() => {
+                    typingIndicator.style.display = 'none';
+                }, 1500);
+            } else if (e.target.textContent === '📋 Copy Code') {
+                console.log('Code copied to clipboard');
+                // In real app, this would copy the code block
+            }
+        });
+
+        // Quick action buttons
+        document.querySelectorAll('.grid button').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.textContent.trim();
+                console.log('Quick action:', action);
+                
+                // Set context-specific message
+                switch(action) {
+                    case 'Summarize':
+                        messageInput.value = 'Can you summarize the key points from the current lesson?';
+                        break;
+                    case 'Translate':
+                        messageInput.value = 'Can you translate this concept into simpler terms?';
+                        break;
+                    case 'Code Help':
+                        messageInput.value = 'I need help with the coding exercise in this lesson.';
+                        break;
+                    case 'Quiz Me':
+                        messageInput.value = 'Can you create a quick quiz to test my understanding of this topic?';
+                        break;
+                }
+                messageInput.focus();
+            });
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            // Update online status
+            const statusDot = document.querySelector('.bg-accent-green.rounded-full');
+            if (statusDot) {
+                statusDot.style.opacity = Math.random() > 0.1 ? '1' : '0.5';
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

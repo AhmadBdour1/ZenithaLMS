@@ -1,0 +1,46 @@
+# Files and directories to exclude from marketplace package
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Database files
+database/database.sqlite
+database/*.sqlite
+
+# Installation bypass files
+storage/app/installed.json
+
+# Logs and cache
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Test artifacts
+tests/coverage/
+tests/reports/
+.phpunit.result.cache
+
+# Development dependencies
+node_modules/
+vendor/
+
+# Build artifacts
+public/hot
+public/storage
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp

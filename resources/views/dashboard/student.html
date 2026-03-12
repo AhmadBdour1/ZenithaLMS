@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - ZenithaLMS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#EEF2FF',
+                            100: '#E0E7FF',
+                            200: '#C7D2FE',
+                            300: '#A5B4FC',
+                            400: '#818CF8',
+                            500: '#6366F1',
+                            600: '#4F46E5',
+                            700: '#4338CA',
+                            800: '#3730A3',
+                            900: '#312E81',
+                        },
+                        accent: {
+                            purple: '#A855F7',
+                            blue: '#3B82F6',
+                            pink: '#EC4899',
+                            green: '#10B981',
+                            yellow: '#F59E0B',
+                            red: '#EF4444',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'xl': '0.75rem',
+                        '2xl': '1rem',
+                        '3xl': '1.5rem',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .pulse-glow {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(99, 102, 241, 0.8); }
+        }
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        .learning-path {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .learning-path::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        .achievement-badge {
+            transition: all 0.3s ease;
+        }
+        .achievement-badge:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+        .streak-fire {
+            animation: fire 1.5s ease-in-out infinite;
+        }
+        @keyframes fire {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            75% { transform: scale(1.1) rotate(5deg); }
+        }
+    </style>
+</head>
+<body class="bg-neutral-50 font-sans">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-neutral-200 flex flex-col">
+            <!-- Logo -->
+            <div class="p-6 border-b border-neutral-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center">
+                        <span class="material-icons-round text-white">school</span>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg">ZenithaLMS</h1>
+                        <p class="text-xs text-neutral-500">Student Portal</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 p-4">
+                <div class="space-y-1">
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary-50 text-primary-600 border-l-3 border-primary-600">
+                        <span class="material-icons-round">dashboard</span>
+                        <span class="font-medium">Dashboard</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 hover:bg-neutral-50">
+                        <span class="material-icons-round">book</span>
+                        <span class="font-medium">My Courses</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 hover:bg-neutral-50">
+                        <span class="material-icons-round">timeline</span>
+                        <span class="font-medium">Learning Path</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 hover:bg-neutral-50">
+                        <span class="material-icons-round">emoji_events</span>
+                        <span class="font-medium">Achievements</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 hover:bg-neutral-50">
+                        <span class="material-icons-round">forum</span>
+                        <span class="font-medium">Discussions</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 hover:bg-neutral-50">
+                        <span class="material-icons-round">calendar_today</span>
+                        <span class="font-medium">Schedule</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl text-neutral-600 hover:bg-neutral-50">
+                        <span class="material-icons-round">auto_awesome</span>
+                        <span class="font-medium">AI Assistant</span>
+                    </a>
+                </div>
+            </nav>
+
+            <!-- Profile -->
+            <div class="p-4 border-t border-neutral-200">
+                <div class="flex items-center gap-3 p-3 rounded-xl bg-neutral-50">
+                    <div class="w-10 h-10 bg-gradient-to-br from-accent-blue to-accent-purple rounded-full flex items-center justify-center">
+                        <span class="material-icons-round text-white">person</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="font-semibold text-sm">David Brown</div>
+                        <div class="text-xs text-neutral-500">Level 12 Student</div>
+                    </div>
+                    <button class="text-neutral-400 hover:text-neutral-600">
+                        <span class="material-icons-round">settings</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-auto">
+            <!-- Header -->
+            <header class="bg-white border-b border-neutral-200 px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-neutral-900">Welcome back, David! 👋</h1>
+                        <p class="text-neutral-500">Ready to continue your learning journey?</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2 px-3 py-2 bg-accent-yellow/10 rounded-xl">
+                            <span class="material-icons-round text-accent-yellow streak-fire">local_fire_department</span>
+                            <span class="font-semibold text-accent-yellow">15 Day Streak!</span>
+                        </div>
+                        <button class="relative p-2 text-neutral-600 hover:text-neutral-900">
+                            <span class="material-icons-round">notifications</span>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-accent-red rounded-full"></span>
+                        </button>
+                        <button class="p-2 text-neutral-600 hover:text-neutral-900">
+                            <span class="material-icons-round">search</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="p-8">
+                <!-- Learning Progress Overview -->
+                <div class="learning-path p-6 rounded-2xl text-white mb-8">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-2xl font-bold mb-2">Your Learning Journey</h2>
+                            <p class="text-primary-100 mb-4">You're making amazing progress! Keep it up!</p>
+                            <div class="flex items-center gap-6">
+                                <div>
+                                    <div class="text-3xl font-bold">Level 12</div>
+                                    <div class="text-sm text-primary-200">Current Level</div>
+                                </div>
+                                <div>
+                                    <div class="text-3xl font-bold">2,450</div>
+                                    <div class="text-sm text-primary-200">XP Points</div>
+                                </div>
+                                <div>
+                                    <div class="text-3xl font-bold">87%</div>
+                                    <div class="text-sm text-primary-200">Avg. Score</div>
+                                </div>
+                                <div>
+                                    <div class="text-3xl font-bold">156</div>
+                                    <div class="text-sm text-primary-200">Study Hours</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <svg class="w-32 h-32 progress-ring">
+                                <circle cx="64" cy="64" r="56" stroke="rgba(255,255,255,0.2)" stroke-width="8" fill="none"></circle>
+                                <circle cx="64" cy="64" r="56" stroke="white" stroke-width="8" fill="none" 
+                                        stroke-dasharray="351.86" stroke-dashoffset="70.37" stroke-linecap="round"></circle>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="text-2xl font-bold">80%</div>
+                                    <div class="text-xs">Complete</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Courses -->
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold text-neutral-900">Continue Learning</h2>
+                        <button class="text-primary-600 font-semibold">View All Courses</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-neutral-200 card-hover">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center">
+                                    <span class="material-icons-round text-primary-600">code</span>
+                                </div>
+                                <span class="px-2 py-1 bg-accent-green/10 text-accent-green rounded-full text-xs font-semibold">In Progress</span>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">Web Development Bootcamp</h3>
+                            <p class="text-neutral-600 text-sm mb-4">Master modern web development from scratch</p>
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Progress</span>
+                                    <span class="font-semibold">65%</span>
+                                </div>
+                                <div class="w-full bg-neutral-200 rounded-full h-2">
+                                    <div class="bg-primary-500 h-2 rounded-full" style="width: 65%"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4 text-sm text-neutral-500">
+                                    <span class="flex items-center gap-1">
+                                        <span class="material-icons-round text-sm">schedule</span>
+                                        12h left
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <span class="material-icons-round text-sm">assignment</span>
+                                        8/20 lessons
+                                    </span>
+                                </div>
+                                <button class="px-4 py-2 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition-colors">
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl border border-neutral-200 card-hover">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-accent-purple/10 rounded-xl flex items-center justify-center">
+                                    <span class="material-icons-round text-accent-purple">react</span>
+                                </div>
+                                <span class="px-2 py-1 bg-accent-yellow/10 text-accent-yellow rounded-full text-xs font-semibold">New</span>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">Advanced React.js</h3>
+                            <p class="text-neutral-600 text-sm mb-4">Master React with hooks, context, and advanced patterns</p>
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Progress</span>
+                                    <span class="font-semibold">15%</span>
+                                </div>
+                                <div class="w-full bg-neutral-200 rounded-full h-2">
+                                    <div class="bg-accent-purple h-2 rounded-full" style="width: 15%"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4 text-sm text-neutral-500">
+                                    <span class="flex items-center gap-1">
+                                        <span class="material-icons-round text-sm">schedule</span>
+                                        25h left
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <span class="material-icons-round text-sm">assignment</span>
+                                        3/20 lessons
+                                    </span>
+                                </div>
+                                <button class="px-4 py-2 bg-accent-purple text-white rounded-xl font-semibold hover:bg-purple-600 transition-colors">
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl border border-neutral-200 card-hover">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-accent-green/10 rounded-xl flex items-center justify-center">
+                                    <span class="material-icons-round text-accent-green">psychology</span>
+                                </div>
+                                <span class="px-2 py-1 bg-accent-blue/10 text-accent-blue rounded-full text-xs font-semibold">AI Recommended</span>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">Machine Learning Basics</h3>
+                            <p class="text-neutral-600 text-sm mb-4">Introduction to ML and AI concepts</p>
+                            <div class="mb-4">
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Progress</span>
+                                    <span class="font-semibold">0%</span>
+                                </div>
+                                <div class="w-full bg-neutral-200 rounded-full h-2">
+                                    <div class="bg-accent-green h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-4 text-sm text-neutral-500">
+                                    <span class="flex items-center gap-1">
+                                        <span class="material-icons-round text-sm">schedule</span>
+                                        30h total
+                                    </span>
+                                    <span class="flex items-center gap-1">
+                                        <span class="material-icons-round text-sm">assignment</span>
+                                        0/25 lessons
+                                    </span>
+                                </div>
+                                <button class="px-4 py-2 bg-accent-green text-white rounded-xl font-semibold hover:bg-green-600 transition-colors">
+                                    Start
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Recommendations & Achievements -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <!-- AI Recommendations -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-neutral-200">
+                        <div class="flex items-center gap-2 mb-6">
+                            <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center pulse-glow">
+                                <span class="material-icons-round text-white text-sm">auto_awesome</span>
+                            </div>
+                            <h2 class="text-lg font-bold text-neutral-900">AI Personalized Recommendations</h2>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="p-4 rounded-xl bg-primary-50 border border-primary-200">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span class="material-icons-round text-primary-600 text-sm">lightbulb</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-sm mb-1">Optimal Study Time</h3>
+                                        <p class="text-sm text-neutral-600">Based on your learning patterns, you're most focused between 2-4 PM. Schedule important lessons during this time.</p>
+                                        <button class="text-primary-600 text-sm font-semibold mt-2">Set Reminder →</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 rounded-xl bg-accent-purple/5 border border-accent-purple/20">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-8 h-8 bg-accent-purple/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span class="material-icons-round text-accent-purple text-sm">trending_up</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-sm mb-1">Learning Style Detected</h3>
+                                        <p class="text-sm text-neutral-600">You learn best with visual content! We've recommended more video lessons and diagrams for your current course.</p>
+                                        <button class="text-accent-purple text-sm font-semibold mt-2">View Recommendations →</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 rounded-xl bg-accent-yellow/5 border border-accent-yellow/20">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-8 h-8 bg-accent-yellow/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <span class="material-icons-round text-accent-yellow text-sm">warning</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-semibold text-sm mb-1">Knowledge Gap Detected</h3>
+                                        <p class="text-sm text-neutral-600">You might need extra practice with JavaScript async/await concepts. We've prepared targeted exercises.</p>
+                                        <button class="text-accent-yellow text-sm font-semibold mt-2">Practice Now →</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Achievements -->
+                    <div class="bg-white p-6 rounded-2xl border border-neutral-200">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-lg font-bold text-neutral-900">Recent Achievements</h2>
+                            <button class="text-primary-600 text-sm font-semibold">View All</button>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-accent-yellow to-accent-orange rounded-xl flex items-center justify-center achievement-badge">
+                                    <span class="material-icons-round text-white">emoji_events</span>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-sm">Fast Learner</div>
+                                    <div class="text-xs text-neutral-500">Complete 5 lessons in one day</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-accent-purple to-accent-pink rounded-xl flex items-center justify-center achievement-badge">
+                                    <span class="material-icons-round text-white">psychology</span>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-sm">AI Explorer</div>
+                                    <div class="text-xs text-neutral-500">Use AI Assistant 10 times</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-accent-green to-accent-blue rounded-xl flex items-center justify-center achievement-badge">
+                                    <span class="material-icons-round text-white">local_fire_department</span>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-sm">On Fire</div>
+                                    <div class="text-xs text-neutral-500">15 day learning streak</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center achievement-badge">
+                                    <span class="material-icons-round text-white">star</span>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-sm">Perfect Score</div>
+                                    <div class="text-xs text-neutral-500">100% on React assessment</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Study Schedule & Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Study Schedule -->
+                    <div class="bg-white p-6 rounded-2xl border border-neutral-200">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-lg font-bold text-neutral-900">Today's Schedule</h2>
+                            <button class="text-primary-600 text-sm font-semibold">Edit</button>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-4 p-3 rounded-xl bg-primary-50 border-l-4 border-primary-500">
+                                <div class="text-center">
+                                    <div class="text-xs text-neutral-500">2:00 PM</div>
+                                    <div class="text-xs text-neutral-500">3:30 PM</div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Web Development - Lesson 9</div>
+                                    <div class="text-xs text-neutral-500">JavaScript ES6+ Features</div>
+                                </div>
+                                <button class="px-3 py-1 bg-primary-500 text-white rounded-lg text-xs font-semibold">
+                                    Join
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-4 p-3 rounded-xl bg-neutral-50">
+                                <div class="text-center">
+                                    <div class="text-xs text-neutral-500">4:00 PM</div>
+                                    <div class="text-xs text-neutral-500">5:00 PM</div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Practice Session</div>
+                                    <div class="text-xs text-neutral-500">React Components Workshop</div>
+                                </div>
+                                <button class="px-3 py-1 bg-neutral-200 text-neutral-700 rounded-lg text-xs font-semibold">
+                                    Reminder
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-4 p-3 rounded-xl bg-neutral-50">
+                                <div class="text-center">
+                                    <div class="text-xs text-neutral-500">7:00 PM</div>
+                                    <div class="text-xs text-neutral-500">8:00 PM</div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Study Group</div>
+                                    <div class="text-xs text-neutral-500">JavaScript Discussion Forum</div>
+                                </div>
+                                <button class="px-3 py-1 bg-neutral-200 text-neutral-700 rounded-lg text-xs font-semibold">
+                                    Optional
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="bg-white p-6 rounded-2xl border border-neutral-200">
+                        <div class="flex items-center justify-between mb-6">
+                            <h2 class="text-lg font-bold text-neutral-900">Recent Activity</h2>
+                            <button class="text-primary-600 text-sm font-semibold">View All</button>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-accent-green/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons-round text-accent-green text-sm">check_circle</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Lesson Completed</div>
+                                    <div class="text-sm text-neutral-600">Finished "JavaScript Promises" with 92% score</div>
+                                    <div class="text-xs text-neutral-500">2 hours ago</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-accent-purple/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons-round text-accent-purple text-sm">auto_awesome</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">AI Assistant Session</div>
+                                    <div class="text-sm text-neutral-600">Asked about React hooks best practices</div>
+                                    <div class="text-xs text-neutral-500">3 hours ago</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-accent-blue/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons-round text-accent-blue text-sm">forum</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Discussion Post</div>
+                                    <div class="text-sm text-neutral-600">Replied to "CSS Grid vs Flexbox" thread</div>
+                                    <div class="text-xs text-neutral-500">5 hours ago</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 bg-accent-yellow/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="material-icons-round text-accent-yellow text-sm">emoji_events</span>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Achievement Unlocked</div>
+                                    <div class="text-sm text-neutral-600">Earned "Fast Learner" badge</div>
+                                    <div class="text-xs text-neutral-500">Yesterday</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Simulate real-time updates
+        setInterval(() => {
+            // Update notification badge
+            const notifications = document.querySelector('.text-accent-red');
+            if (notifications) {
+                notifications.style.display = Math.random() > 0.7 ? 'block' : 'none';
+            }
+            
+            // Animate achievement badges randomly
+            const badges = document.querySelectorAll('.achievement-badge');
+            if (Math.random() > 0.8) {
+                const randomBadge = badges[Math.floor(Math.random() * badges.length)];
+                randomBadge.style.transform = 'scale(1.2) rotate(10deg)';
+                setTimeout(() => {
+                    randomBadge.style.transform = 'scale(1) rotate(0deg)';
+                }, 300);
+            }
+        }, 3000);
+
+        // Add smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
