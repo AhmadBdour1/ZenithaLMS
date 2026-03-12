@@ -71,5 +71,7 @@ Route::get('/admin', function () {
 
 require __DIR__.'/auth.php';
 
-// ZenithaLMS: Main LMS routes are loaded from routes/zenithalms.php via bootstrap/app.php
-// This keeps web.php clean for basic auth and core routes only
+// ZenithaLMS routes are now properly organized:
+// - Central routes: routes/zenithalms-central.php (public catalog)
+// - Tenant routes: routes/tenant.php → zenithalms-tenant.php (tenant-specific)
+// - API routes: routes/api.php (API endpoints)

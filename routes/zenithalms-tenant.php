@@ -16,7 +16,7 @@ use App\Http\Controllers\Frontend\ZenithaLmsPaymentController;
 */
 
 // ZenithaLMS: Dashboard Routes (Tenant-Specific)
-Route::prefix('dashboard')->name('zenithalms.dashboard.')->middleware('auth')->group(function () {
+Route::prefix('dashboard')->name('zenithalms.tenant.dashboard.')->middleware('auth')->group(function () {
     Route::get('/student', function () {
         $user = auth()->user();
         $stats = [
@@ -58,7 +58,7 @@ Route::prefix('dashboard')->name('zenithalms.dashboard.')->middleware('auth')->g
 });
 
 // ZenithaLMS: Payment Routes (Tenant-Specific)
-Route::prefix('payment')->name('zenithalms.payment.')->middleware('auth')->group(function () {
+Route::prefix('payment')->name('zenithalms.tenant.payment.')->middleware('auth')->group(function () {
     Route::get('/checkout', [ZenithaLmsPaymentController::class, 'checkout'])->name('checkout');
     Route::post('/process', [ZenithaLmsPaymentController::class, 'processPayment'])->name('process');
     Route::get('/success/{orderId}', [ZenithaLmsPaymentController::class, 'success'])->name('success');
@@ -70,12 +70,11 @@ Route::prefix('payment')->name('zenithalms.payment.')->middleware('auth')->group
 });
 
 // ZenithaLMS: Ebook Management (Tenant-Specific)
-Route::prefix('ebooks')->name('zenithalms.ebooks.')->middleware('feature:ebooks')->group(function () {
+Route::prefix('ebooks')->name('zenithalms.tenant.ebooks.')->middleware('feature:ebooks')->group(function () {
     // User ebook management
     Route::get('/my-ebooks', [ZenithaLmsEbookController::class, 'myEbooks'])->name('my-ebooks')->middleware('auth');
     Route::get('/create', [ZenithaLmsEbookController::class, 'create'])->name('create')->middleware('auth');
     Route::post('/', [ZenithaLmsEbookController::class, 'store'])->name('store')->middleware('auth');
-    Route::get('/{id}/edit', [ZenithaLmsEbookController::class, 'edit'])->name('edit')->middleware('auth');
     Route::put('/{id}', [ZenithaLmsEbookController::class, 'update'])->name('update')->middleware('auth');
     Route::delete('/{id}', [ZenithaLmsEbookController::class, 'destroy'])->name('destroy')->middleware('auth');
     
@@ -87,32 +86,28 @@ Route::prefix('ebooks')->name('zenithalms.ebooks.')->middleware('feature:ebooks'
     
     // Admin ebook routes
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
-        Route::get('/', [ZenithaLmsEbookController::class, 'adminIndex'])->name('index');
-        Route::get('/{id}', [ZenithaLmsEbookController::class, 'adminShow'])->name('show');
-        Route::get('/{id}/edit', [ZenithaLmsEbookController::class, 'adminEdit'])->name('edit');
-        Route::put('/{id}', [ZenithaLmsEbookController::class, 'adminUpdate'])->name('update');
-        Route::delete('/{id}', [ZenithaLmsEbookController::class, 'adminDestroy'])->name('destroy');
+        Route::get('/{id}', [ZenithaLmsEbookController::class, 'adminShow'])->name('show')->middleware('auth');
+        Route::get('/{id}/edit', [ZenithaLmsEbookController::class, 'adminEdit'])->name('edit')->middleware('auth');
+        Route::put('/{id}', [ZenithaLmsEbookController::class, 'adminUpdate'])->name('admin.update')->middleware('auth');
+        Route::delete('/{id}', [ZenithaLmsEbookController::class, 'adminDestroy'])->name('admin.destroy')->middleware('auth');
         Route::post('/{id}/toggle-featured', [ZenithaLmsEbookController::class, 'toggleFeatured'])->name('toggle-featured');
     });
 });
 
 // ZenithaLMS: Blog Management (Tenant-Specific)
-Route::prefix('blog')->name('zenithalms.blog.')->group(function () {
+Route::prefix('blog')->name('zenithalms.tenant.blog.')->group(function () {
     // User blog management
     Route::get('/my-blogs', [ZenithaLmsBlogController::class, 'myBlogs'])->name('my-blogs')->middleware('auth');
-    Route::get('/create', [ZenithaLmsBlogController::class, 'create'])->name('create')->middleware('auth');
-    Route::post('/', [ZenithaLmsBlogController::class, 'store'])->name('store')->middleware('auth');
     Route::get('/{id}/edit', [ZenithaLmsBlogController::class, 'edit'])->name('edit')->middleware('auth');
     Route::put('/{id}', [ZenithaLmsBlogController::class, 'update'])->name('update')->middleware('auth');
     Route::delete('/{id}', [ZenithaLmsBlogController::class, 'destroy'])->name('destroy')->middleware('auth');
     
     // Admin blog routes
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
-        Route::get('/', [ZenithaLmsBlogController::class, 'adminIndex'])->name('index');
-        Route::get('/{id}', [ZenithaLmsBlogController::class, 'adminShow'])->name('show');
-        Route::get('/{id}/edit', [ZenithaLmsBlogController::class, 'adminEdit'])->name('edit');
-        Route::put('/{id}', [ZenithaLmsBlogController::class, 'adminUpdate'])->name('update');
-        Route::delete('/{id}', [ZenithaLmsBlogController::class, 'adminDestroy'])->name('destroy');
+        Route::get('/{id}', [ZenithaLmsBlogController::class, 'adminShow'])->name('show')->middleware('auth');
+        Route::get('/{id}/edit', [ZenithaLmsBlogController::class, 'adminEdit'])->name('edit')->middleware('auth');
+        Route::put('/{id}', [ZenithaLmsBlogController::class, 'adminUpdate'])->name('admin.update')->middleware('auth');
+        Route::delete('/{id}', [ZenithaLmsBlogController::class, 'adminDestroy'])->name('admin.destroy')->middleware('auth');
     });
 });
 
@@ -120,7 +115,7 @@ Route::prefix('blog')->name('zenithalms.blog.')->group(function () {
 Route::get('/search', [App\Http\Controllers\Frontend\ZenithaLmsSearchController::class, 'search'])->name('search');
 
 // ZenithaLMS: Notifications (Tenant-Specific)
-Route::prefix('notifications')->name('zenithalms.notifications.')->middleware('auth')->group(function () {
+Route::prefix('notifications')->name('zenithalms.tenant.notifications.')->middleware('auth')->group(function () {
     Route::get('/', [App\Http\Controllers\Frontend\ZenithaLmsNotificationController::class, 'index'])->name('index');
     Route::post('/{id}/read', [App\Http\Controllers\Frontend\ZenithaLmsNotificationController::class, 'markAsRead'])->name('read');
     Route::post('/read-all', [App\Http\Controllers\Frontend\ZenithaLmsNotificationController::class, 'markAllAsRead'])->name('read-all');

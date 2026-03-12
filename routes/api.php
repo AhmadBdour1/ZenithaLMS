@@ -134,7 +134,7 @@ Route::middleware('installed')->group(function () {
             Route::post('/', [EbookAPIController::class, 'store'])->name('store')->middleware('feature:ebooks');
             Route::put('/{id}', [EbookAPIController::class, 'update'])->name('update')->middleware('feature:ebooks');
             Route::delete('/{id}', [EbookAPIController::class, 'destroy'])->name('destroy')->middleware('feature:ebooks');
-            Route::get('/{id}/download', [EbookDownloadController::class, 'download'])->name('download')->middleware('feature:ebooks');
+            Route::get('/{id}/download', [EbookDownloadController::class, 'download'])->name('download.api')->middleware('feature:ebooks');
         });
         
         // Quiz API routes
