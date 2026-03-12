@@ -28,6 +28,8 @@
                                 <span class="text-sm text-gray-500">{{ $requirement['current'] }}</span>
                                 @if($requirement['status'] === 'ok')
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">✓</span>
+                                @elseif($requirement['status'] === 'warning')
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">⚠</span>
                                 @else
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">✗</span>
                                 @endif
@@ -131,6 +133,13 @@
     </div>
 
     <script>
+        // Function to check for blocking errors
+        function checkForBlockingErrors() {
+            // Check for any red (error) status indicators
+            const errorIndicators = document.querySelectorAll('.bg-red-100');
+            return errorIndicators.length > 0;
+        }
+
         document.getElementById('installForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -146,6 +155,29 @@
             message.classList.add('hidden');
             
             try {
+                // Check for blocking errors before proceeding
+                const hasBlockingErrors = checkForBlockingErrors();
+                if (hasBlockingErrors) {
+                    message.className = 'mt-4 p-4 rounded-md bg-red-50 border border-red-200';
+                    message.innerHTML = `
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-red-800">Cannot Install</h3>
+                                <div class="mt-2 text-sm text-red-700">
+                                    <p>Please fix all required (red) system requirements before continuing. Optional extensions (yellow) can be ignored.</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    message.classList.remove('hidden');
+                    return;
+                }
+
                 const formData = new FormData(this);
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
                 

@@ -99,7 +99,10 @@ class InstallerController extends Controller
             // Check database connection
             DB::connection()->getPdo();
 
-            // Run migrations
+            // Auto-run migrations if database is empty
+            $this->autoRunMigrationsIfNeeded();
+
+            // Run migrations (will be no-op if already run)
             Artisan::call('migrate', ['--force' => true]);
 
             // Run seeders
@@ -157,6 +160,25 @@ class InstallerController extends Controller
     }
 
     /**
+     * Auto-run migrations if database is empty
+     */
+    private function autoRunMigrationsIfNeeded(): void
+    {
+        try {
+            // Check if migrations table exists
+            $hasMigrations = DB::getSchemaBuilder()->hasTable('migrations');
+            
+            if (!$hasMigrations) {
+                // Database is empty, run migrations
+                Artisan::call('migrate', ['--force' => true]);
+            }
+        } catch (\Exception $e) {
+            // If we can't check migrations, assume we need to run them
+            Artisan::call('migrate', ['--force' => true]);
+        }
+    }
+
+    /**
      * Check system requirements
      */
     private function checkRequirements(): array
@@ -170,14 +192,47 @@ class InstallerController extends Controller
             'status' => version_compare(PHP_VERSION, '8.1', '>=') ? 'ok' : 'error',
         ];
 
-        // Required extensions
-        $requiredExtensions = ['pdo', 'pdo_mysql', 'mbstring', 'tokenizer', 'xml', 'ctype', 'json', 'bcmath', 'fileinfo', 'openssl'];
+        // Get database connection type
+        $dbConnection = config('database.default', 'mysql');
+
+        // Critical extensions (always required)
+        $criticalExtensions = ['pdo', 'mbstring', 'tokenizer', 'xml', 'ctype', 'json', 'fileinfo', 'openssl'];
         
-        foreach ($requiredExtensions as $extension) {
+        // Database-specific extensions
+        $databaseExtensions = [];
+        if ($dbConnection === 'mysql') {
+            $databaseExtensions[] = 'pdo_mysql';
+        } elseif ($dbConnection === 'sqlite') {
+            $databaseExtensions[] = 'pdo_sqlite';
+        }
+
+        // Optional extensions (should not block installation)
+        $optionalExtensions = ['bcmath'];
+
+        // Check critical extensions
+        foreach ($criticalExtensions as $extension) {
             $requirements['extension_' . $extension] = [
                 'required' => 'Required',
                 'current' => extension_loaded($extension) ? 'Loaded' : 'Not loaded',
                 'status' => extension_loaded($extension) ? 'ok' : 'error',
+            ];
+        }
+
+        // Check database-specific extensions
+        foreach ($databaseExtensions as $extension) {
+            $requirements['extension_' . $extension] = [
+                'required' => 'Required for ' . strtoupper($dbConnection),
+                'current' => extension_loaded($extension) ? 'Loaded' : 'Not loaded',
+                'status' => extension_loaded($extension) ? 'ok' : 'error',
+            ];
+        }
+
+        // Check optional extensions (warning only)
+        foreach ($optionalExtensions as $extension) {
+            $requirements['extension_' . $extension] = [
+                'required' => 'Optional',
+                'current' => extension_loaded($extension) ? 'Loaded' : 'Not loaded',
+                'status' => extension_loaded($extension) ? 'ok' : 'warning',
             ];
         }
 
@@ -213,6 +268,25 @@ class InstallerController extends Controller
     private function checkDatabaseConnection(): array
     {
         try {
+            $dbConnection = config('database.default', 'mysql');
+            
+            // Auto-create SQLite database file if needed
+            if ($dbConnection === 'sqlite') {
+                $databasePath = config('database.connections.sqlite.database');
+                
+                // Ensure database directory exists
+                $databaseDir = dirname($databasePath);
+                if (!is_dir($databaseDir)) {
+                    mkdir($databaseDir, 0755, true);
+                }
+                
+                // Create empty SQLite file if it doesn't exist
+                if (!file_exists($databasePath)) {
+                    touch($databasePath);
+                    chmod($databasePath, 0644);
+                }
+            }
+            
             DB::connection()->getPdo();
             return [
                 'required' => 'Connected',

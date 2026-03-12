@@ -35,10 +35,11 @@
     31 => 'App\\Providers\\EventServiceProvider',
     32 => 'App\\Providers\\RouteServiceProvider',
     33 => 'App\\Providers\\QueryOptimizationServiceProvider',
-    34 => 'App\\Providers\\AppServiceProvider',
-    35 => 'App\\Providers\\TenancyServiceProvider',
-    36 => 'App\\Providers\\ZenithaLmsServiceProvider',
-    37 => 'App\\Modules\\ModuleServiceProvider',
+    34 => 'App\\Providers\\SQLiteBootstrapServiceProvider',
+    35 => 'App\\Providers\\AppServiceProvider',
+    36 => 'App\\Providers\\TenancyServiceProvider',
+    37 => 'App\\Providers\\ZenithaLmsServiceProvider',
+    38 => 'App\\Modules\\ModuleServiceProvider',
   ),
   'eager' => 
   array (
@@ -63,10 +64,11 @@
     18 => 'App\\Providers\\EventServiceProvider',
     19 => 'App\\Providers\\RouteServiceProvider',
     20 => 'App\\Providers\\QueryOptimizationServiceProvider',
-    21 => 'App\\Providers\\AppServiceProvider',
-    22 => 'App\\Providers\\TenancyServiceProvider',
-    23 => 'App\\Providers\\ZenithaLmsServiceProvider',
-    24 => 'App\\Modules\\ModuleServiceProvider',
+    21 => 'App\\Providers\\SQLiteBootstrapServiceProvider',
+    22 => 'App\\Providers\\AppServiceProvider',
+    23 => 'App\\Providers\\TenancyServiceProvider',
+    24 => 'App\\Providers\\ZenithaLmsServiceProvider',
+    25 => 'App\\Modules\\ModuleServiceProvider',
   ),
   'deferred' => 
   array (
