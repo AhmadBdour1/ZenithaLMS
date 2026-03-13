@@ -21,14 +21,14 @@ class CourseBuilderController extends Controller
 
         // Load course content
         $lessons = $course->lessons()->orderBy('sort_order')->get();
-        $quizzes = $course->quizzes()->orderBy('sort_order')->get();
+        $quizzes = Quiz::where('course_id', $course->id)->orderBy('sort_order')->get();
         
-        // Combine all curriculum items
-        $curriculumItems = [];
+        // Combine all curriculum items into a Collection
+        $curriculumItems = collect();
         
         // Add lessons
         foreach ($lessons as $lesson) {
-            $curriculumItems[] = [
+            $curriculumItems->push([
                 'id' => $lesson->id,
                 'type' => 'lesson',
                 'title' => $lesson->title,
@@ -38,12 +38,12 @@ class CourseBuilderController extends Controller
                 'duration_minutes' => $lesson->duration_minutes,
                 'created_at' => $lesson->created_at,
                 'updated_at' => $lesson->updated_at,
-            ];
+            ]);
         }
         
         // Add quizzes
         foreach ($quizzes as $quiz) {
-            $curriculumItems[] = [
+            $curriculumItems->push([
                 'id' => $quiz->id,
                 'type' => 'quiz',
                 'title' => $quiz->title,
@@ -54,13 +54,11 @@ class CourseBuilderController extends Controller
                 'max_attempts' => $quiz->max_attempts,
                 'created_at' => $quiz->created_at,
                 'updated_at' => $quiz->updated_at,
-            ];
+            ]);
         }
         
         // Sort by sort_order
-        usort($curriculumItems, function ($a, $b) {
-            return $a['sort_order'] <=> $b['sort_order'];
-        });
+        $curriculumItems = $curriculumItems->sortBy('sort_order')->values();
         
         return view('courses.builder', compact('course', 'curriculumItems'));
     }
