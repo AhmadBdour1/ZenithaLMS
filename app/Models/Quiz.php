@@ -14,6 +14,7 @@ class Quiz extends Model
         'description',
         'course_id',
         'instructor_id',
+        'sort_order',
         'time_limit_minutes',
         'passing_score',
         'max_attempts',
@@ -30,6 +31,7 @@ class Quiz extends Model
         'time_limit_minutes' => 'integer',
         'passing_score' => 'integer',
         'max_attempts' => 'integer',
+        'sort_order' => 'integer',
         'settings' => 'array',
     ];
     
