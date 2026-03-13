@@ -288,8 +288,41 @@ class InstallerController extends Controller
             'tenancy_db_password' => config('database.connections.sqlite.password'),
         ]);
         
+        // Create tenant database file automatically
+        $this->createTenantDatabaseFile($tenant);
+        
         Log::info('Installer: Default tenant created', ['tenant_id' => $tenant->id]);
         return $tenant;
+    }
+
+    /**
+     * Create tenant database file automatically
+     */
+    private function createTenantDatabaseFile(\App\Models\Central\Tenant $tenant): void
+    {
+        $dbConnection = config('database.default', 'mysql');
+        
+        if ($dbConnection === 'sqlite') {
+            $tenantDbPath = database_path('tenant_' . $tenant->id . '.sqlite');
+            
+            Log::info('Installer: Creating tenant database file', ['path' => $tenantDbPath]);
+            
+            // Ensure database directory exists
+            $tenantDbDir = dirname($tenantDbPath);
+            if (!is_dir($tenantDbDir)) {
+                Log::info('Installer: Creating tenant database directory', ['dir' => $tenantDbDir]);
+                mkdir($tenantDbDir, 0755, true);
+            }
+            
+            // Create empty SQLite file if it doesn't exist
+            if (!file_exists($tenantDbPath)) {
+                Log::info('Installer: Creating tenant SQLite database file', ['file' => $tenantDbPath]);
+                touch($tenantDbPath);
+                chmod($tenantDbPath, 0644);
+            } else {
+                Log::info('Installer: Tenant SQLite database file already exists', ['file' => $tenantDbPath]);
+            }
+        }
     }
 
     /**
@@ -320,22 +353,22 @@ class InstallerController extends Controller
                 Log::info('Installer: Central SQLite database file already exists', ['file' => $databasePath]);
             }
             
-            // Tenant database directory and file
-            $tenantDbPath = database_path('tenant_default.sqlite');
-            $tenantDbDir = dirname($tenantDbPath);
-            
-            if (!is_dir($tenantDbDir)) {
-                Log::info('Installer: Creating tenant database directory', ['dir' => $tenantDbDir]);
-                mkdir($tenantDbDir, 0755, true);
-            }
-            
-            if (!file_exists($tenantDbPath)) {
-                Log::info('Installer: Creating tenant SQLite database file', ['file' => $tenantDbPath]);
-                touch($tenantDbPath);
-                chmod($tenantDbPath, 0644);
-            } else {
-                Log::info('Installer: Tenant SQLite database file already exists', ['file' => $tenantDbPath]);
-            }
+            // Tenant database directory and file (removed - now handled in createTenantDatabaseFile)
+            // $tenantDbPath = database_path('tenant_default.sqlite');
+            // $tenantDbDir = dirname($tenantDbPath);
+            // 
+            // if (!is_dir($tenantDbDir)) {
+            //     Log::info('Installer: Creating tenant database directory', ['dir' => $tenantDbDir]);
+            //     mkdir($tenantDbDir, 0755, true);
+            // }
+            // 
+            // if (!file_exists($tenantDbPath)) {
+            //     Log::info('Installer: Creating tenant SQLite database file', ['file' => $tenantDbPath]);
+            //     touch($tenantDbPath);
+            //     chmod($tenantDbPath, 0644);
+            // } else {
+            //     Log::info('Installer: Tenant SQLite database file already exists', ['file' => $tenantDbPath]);
+            // }
         }
     }
 

@@ -29,14 +29,17 @@ class ZenithaCreateDefaultTenant extends Command
             
             $this->info('✓ Tenant created: ' . $tenant->id);
             
-            // Step 2: Initialize tenancy context
+            // Step 2: Create tenant database file
+            $this->createTenantDatabaseFile($tenant);
+            
+            // Step 3: Initialize tenancy context
             tenancy()->initialize($tenant);
             $this->info('✓ Tenancy context initialized');
             
-            // Step 3: Verify tenant schema
+            // Step 4: Verify tenant schema
             $this->verifyTenantSchema();
             
-            // Step 4: End tenancy
+            // Step 5: End tenancy
             tenancy()->end();
             $this->info('✓ Tenancy ended');
             
@@ -51,6 +54,33 @@ class ZenithaCreateDefaultTenant extends Command
                 'line' => $e->getLine()
             ]);
             return Command::FAILURE;
+        }
+    }
+    
+    private function createTenantDatabaseFile($tenant)
+    {
+        $dbConnection = config('database.default', 'mysql');
+        
+        if ($dbConnection === 'sqlite') {
+            $tenantDbPath = database_path('tenant_' . $tenant->id . '.sqlite');
+            
+            $this->info('Creating tenant database file: ' . $tenantDbPath);
+            
+            // Ensure database directory exists
+            $tenantDbDir = dirname($tenantDbPath);
+            if (!is_dir($tenantDbDir)) {
+                mkdir($tenantDbDir, 0755, true);
+                $this->info('✓ Created tenant database directory');
+            }
+            
+            // Create empty SQLite file if it doesn't exist
+            if (!file_exists($tenantDbPath)) {
+                touch($tenantDbPath);
+                chmod($tenantDbPath, 0644);
+                $this->info('✓ Created tenant SQLite database file');
+            } else {
+                $this->info('✓ Tenant SQLite database file already exists');
+            }
         }
     }
     
