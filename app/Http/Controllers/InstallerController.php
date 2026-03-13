@@ -101,65 +101,59 @@ class InstallerController extends Controller
         Log::info('Installer: Running migrations before validation');
         $this->ensureDatabaseFileExists();
 
-        /* force fresh migration for SQLite */
+        // Step 1: Run central migrations
+        Log::info('Installer: Step 1 - Running central migrations');
         if (config('database.default') === 'sqlite') {
-            Log::info('Installer: Using SQLite - running fresh migration');
             DB::statement('PRAGMA foreign_keys=OFF');
             
-            // Run central migrations first
             Artisan::call('migrate:fresh', [
                 '--force' => true,
                 '--path' => 'database/migrations'
             ]);
             
-            // Create default tenant for installation
-            $this->createDefaultTenant();
-            
-            // Run tenant migrations for the default tenant
-            Artisan::call('tenants:migrate', [
-                '--force' => true,
-                '--tenants' => ['default']
-            ]);
-            
             DB::statement('PRAGMA foreign_keys=ON');
-            Log::info('Installer: SQLite fresh migration completed');
         } else {
-            Log::info('Installer: Using standard migration');
-            // Run central migrations first
             Artisan::call('migrate', [
                 '--force' => true,
                 '--path' => 'database/migrations'
             ]);
-            
-            // Create default tenant for installation
-            $this->createDefaultTenant();
-            
-            // Run tenant migrations for the default tenant
-            Artisan::call('tenants:migrate', [
-                '--force' => true,
-                '--tenants' => ['default']
-            ]);
-            
-            Log::info('Installer: Standard migration completed');
         }
+        Log::info('Installer: Central migrations completed');
 
-        // Immediately verify tables exist in tenant context
-        $tenant = \App\Models\Central\Tenant::find('default');
-        if ($tenant) {
-            tenancy()->initialize($tenant);
-        }
+        // Step 2: Create tenant
+        Log::info('Installer: Step 2 - Creating default tenant');
+        $tenant = $this->createDefaultTenant();
         
+        // Step 3: Initialize tenant context
+        Log::info('Installer: Step 3 - Initializing tenant context');
+        tenancy()->initialize($tenant);
+        
+        // Step 4: Run tenant migrations
+        Log::info('Installer: Step 4 - Running tenant migrations');
+        Artisan::call('tenants:migrate', [
+            '--force' => true,
+            '--tenants' => ['default']
+        ]);
+        Log::info('Installer: Tenant migrations completed');
+
+        // Step 5: Verify tenant tables exist
+        Log::info('Installer: Step 5 - Verifying tenant tables exist');
         if (!Schema::hasTable('users')) {
-            Log::error('Installer: Users table still missing after migrations');
-            throw new \Exception('Users table still missing after migrations');
+            Log::error('Installer: Users table still missing after tenant migrations');
+            throw new \Exception('Users table still missing after tenant migrations');
         }
         
         if (!Schema::hasTable('roles')) {
-            Log::error('Installer: Roles table still missing after migrations');
-            throw new \Exception('Roles table still missing after migrations');
+            Log::error('Installer: Roles table still missing after tenant migrations');
+            throw new \Exception('Roles table still missing after tenant migrations');
         }
         
-        Log::info('Installer: Tables verified to exist after migrations');
+        if (!Schema::hasTable('courses')) {
+            Log::error('Installer: Courses table still missing after tenant migrations');
+            throw new \Exception('Courses table still missing after tenant migrations');
+        }
+        
+        Log::info('Installer: All tenant tables verified to exist');
 
         // Validate input (now safe to query users table)
         Log::info('Installer: Validating input data');
@@ -182,14 +176,8 @@ class InstallerController extends Controller
         }
 
         try {
-            // Ensure tenant context for all operations
-            $tenant = \App\Models\Central\Tenant::find('default');
-            if ($tenant) {
-                tenancy()->initialize($tenant);
-            }
-            
-            // Step 1: Run seeders in tenant context
-            Log::info('Installer: Step 1 - Running database seeders');
+            // Step 6: Run tenant seeders
+            Log::info('Installer: Step 6 - Running tenant seeders');
             Artisan::call('tenants:seed', [
                 '--class' => 'RoleSeeder',
                 '--tenants' => ['default'],
@@ -210,10 +198,10 @@ class InstallerController extends Controller
                 '--tenants' => ['default'],
                 '--force' => true
             ]);
-            Log::info('Installer: Database seeders completed');
+            Log::info('Installer: Tenant seeders completed');
 
-            // Step 2: Create admin user in tenant context
-            Log::info('Installer: Step 2 - Creating admin user', [
+            // Step 7: Create admin user
+            Log::info('Installer: Step 7 - Creating admin user', [
                 'email' => $request->admin_email,
                 'name' => $request->admin_name
             ]);
@@ -225,8 +213,8 @@ class InstallerController extends Controller
             ]);
             Log::info('Installer: Admin user created', ['user_id' => $admin->id]);
 
-            // Step 3: Assign admin role in tenant context
-            Log::info('Installer: Step 3 - Assigning admin role to user');
+            // Step 8: Assign admin role
+            Log::info('Installer: Step 8 - Assigning admin role to user');
             $adminRole = \App\Models\Role::where('name', 'admin')->first();
             if (!$adminRole) {
                 Log::error('Installer: Admin role not found after seeding');
@@ -235,8 +223,8 @@ class InstallerController extends Controller
             $admin->roles()->attach($adminRole->id);
             Log::info('Installer: Admin role assigned successfully');
 
-            // Step 4: Mark app installed
-            Log::info('Installer: Step 4 - Marking application as installed');
+            // Step 9: Mark installation complete
+            Log::info('Installer: Step 9 - Marking installation complete');
             InstallState::markInstalled([
                 'admin_user_id' => $admin->id,
                 'site_name' => $request->site_name,
@@ -287,7 +275,7 @@ class InstallerController extends Controller
     /**
      * Create default tenant for installation
      */
-    private function createDefaultTenant(): void
+    private function createDefaultTenant(): \App\Models\Central\Tenant
     {
         Log::info('Installer: Creating default tenant');
         
@@ -301,6 +289,7 @@ class InstallerController extends Controller
         ]);
         
         Log::info('Installer: Default tenant created', ['tenant_id' => $tenant->id]);
+        return $tenant;
     }
 
     /**
@@ -311,23 +300,41 @@ class InstallerController extends Controller
         $dbConnection = config('database.default', 'mysql');
         
         if ($dbConnection === 'sqlite') {
+            // Central database
             $databasePath = config('database.connections.sqlite.database');
-            Log::info('Installer: SQLite database path', ['path' => $databasePath]);
+            Log::info('Installer: SQLite central database path', ['path' => $databasePath]);
             
             // Ensure database directory exists
             $databaseDir = dirname($databasePath);
             if (!is_dir($databaseDir)) {
-                Log::info('Installer: Creating database directory', ['dir' => $databaseDir]);
+                Log::info('Installer: Creating central database directory', ['dir' => $databaseDir]);
                 mkdir($databaseDir, 0755, true);
             }
             
             // Create empty SQLite file if it doesn't exist
             if (!file_exists($databasePath)) {
-                Log::info('Installer: Creating SQLite database file', ['file' => $databasePath]);
+                Log::info('Installer: Creating central SQLite database file', ['file' => $databasePath]);
                 touch($databasePath);
                 chmod($databasePath, 0644);
             } else {
-                Log::info('Installer: SQLite database file already exists', ['file' => $databasePath]);
+                Log::info('Installer: Central SQLite database file already exists', ['file' => $databasePath]);
+            }
+            
+            // Tenant database directory and file
+            $tenantDbPath = database_path('tenant_default.sqlite');
+            $tenantDbDir = dirname($tenantDbPath);
+            
+            if (!is_dir($tenantDbDir)) {
+                Log::info('Installer: Creating tenant database directory', ['dir' => $tenantDbDir]);
+                mkdir($tenantDbDir, 0755, true);
+            }
+            
+            if (!file_exists($tenantDbPath)) {
+                Log::info('Installer: Creating tenant SQLite database file', ['file' => $tenantDbPath]);
+                touch($tenantDbPath);
+                chmod($tenantDbPath, 0644);
+            } else {
+                Log::info('Installer: Tenant SQLite database file already exists', ['file' => $tenantDbPath]);
             }
         }
     }
