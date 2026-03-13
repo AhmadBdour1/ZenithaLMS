@@ -164,13 +164,12 @@ class InstallerController extends Controller
             'site_name' => 'required|string|max:255',
         ]);
 
-        // Check if admin email already exists and provide a helpful error
-        if (\App\Models\User::where('email', $request->admin_email)->exists()) {
-            Log::warning('Installer: Admin email already exists', ['email' => $request->admin_email]);
+        // For partial-install recovery, allow existing admin user
+        // Just validate the password if user exists
+        $existingAdmin = \App\Models\User::where('email', $request->admin_email)->first();
+        if ($existingAdmin) {
+            Log::info('Installer: Admin user already exists, validating password for recovery', ['email' => $request->admin_email]);
             
-            // For re-installation, we can allow existing admin user
-            // but we need to validate the password matches existing user
-            $existingAdmin = \App\Models\User::where('email', $request->admin_email)->first();
             if (!Hash::check($request->admin_password, $existingAdmin->password)) {
                 return response()->json([
                     'success' => false,
@@ -301,17 +300,17 @@ class InstallerController extends Controller
     }
 
     /**
-     * Create default tenant for installation
+     * Create default tenant for installation (idempotent)
      */
     private function createDefaultTenant(): \App\Models\Central\Tenant
     {
         Log::info('Installer: Creating or reusing default tenant');
         
-        // Check if tenant already exists
+        // Check if tenant already exists (partial-install recovery)
         $existingTenant = \App\Models\Central\Tenant::find('default');
         
         if ($existingTenant) {
-            Log::info('Installer: Default tenant already exists, reusing it', ['tenant_id' => $existingTenant->id]);
+            Log::info('Installer: Default tenant already exists, reusing for recovery', ['tenant_id' => $existingTenant->id]);
             
             // Ensure tenant database file exists
             $this->createTenantDatabaseFile($existingTenant);
@@ -320,6 +319,7 @@ class InstallerController extends Controller
         }
         
         // Create new tenant
+        Log::info('Installer: Creating new default tenant');
         $tenant = \App\Models\Central\Tenant::create([
             'id' => 'default',
             'tenancy_db_name' => 'tenant_default',
