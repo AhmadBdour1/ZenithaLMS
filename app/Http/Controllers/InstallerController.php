@@ -97,7 +97,13 @@ class InstallerController extends Controller
             ], 422);
         }
 
-        // Validate input
+        // RUN MIGRATIONS FIRST - BEFORE ANY VALIDATION THAT QUERIES TABLES
+        Log::info('Installer: Running migrations before validation');
+        $this->ensureDatabaseFileExists();
+        Artisan::call('migrate', ['--force' => true]);
+        Log::info('Installer: Migrations completed');
+
+        // Validate input (now safe to query users table)
         Log::info('Installer: Validating input data');
         $validator = Validator::make($request->all(), [
             'admin_name' => 'required|string|max:255',
@@ -118,18 +124,8 @@ class InstallerController extends Controller
         }
 
         try {
-            // Step 1: Ensure database file exists
-            Log::info('Installer: Step 1 - Ensuring database file exists');
-            $this->ensureDatabaseFileExists();
-            Log::info('Installer: Database file exists');
-
-            // Step 2: Run migrations first
-            Log::info('Installer: Step 2 - Running migrations');
-            Artisan::call('migrate', ['--force' => true]);
-            Log::info('Installer: Migrations completed');
-
-            // Step 3: Verify tables exist after migrations
-            Log::info('Installer: Step 3 - Verifying users and roles tables exist');
+            // Step 1: Verify tables exist (migrations already run before validation)
+            Log::info('Installer: Step 1 - Verifying users and roles tables exist');
             if (!Schema::hasTable('users')) {
                 Log::error('Installer: Users table was not created after migrations');
                 return response()->json([
@@ -150,16 +146,16 @@ class InstallerController extends Controller
             
             Log::info('Installer: Users and roles tables verified');
 
-            // Step 4: Run seeders if needed
-            Log::info('Installer: Step 4 - Running database seeders');
+            // Step 2: Run seeders if needed
+            Log::info('Installer: Step 2 - Running database seeders');
             Artisan::call('db:seed', ['--class' => 'RoleSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'OrganizationSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'CategorySeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'SkillSeeder', '--force' => true]);
             Log::info('Installer: Database seeders completed');
 
-            // Step 5: Create admin user
-            Log::info('Installer: Step 5 - Creating admin user', [
+            // Step 3: Create admin user
+            Log::info('Installer: Step 3 - Creating admin user', [
                 'email' => $request->admin_email,
                 'name' => $request->admin_name
             ]);
@@ -171,8 +167,8 @@ class InstallerController extends Controller
             ]);
             Log::info('Installer: Admin user created', ['user_id' => $admin->id]);
 
-            // Step 6: Assign admin role
-            Log::info('Installer: Step 6 - Assigning admin role to user');
+            // Step 4: Assign admin role
+            Log::info('Installer: Step 4 - Assigning admin role to user');
             $adminRole = \App\Models\Role::where('name', 'admin')->first();
             if (!$adminRole) {
                 Log::error('Installer: Admin role not found after seeding');
@@ -181,8 +177,8 @@ class InstallerController extends Controller
             $admin->roles()->attach($adminRole->id);
             Log::info('Installer: Admin role assigned successfully');
 
-            // Step 7: Mark app installed
-            Log::info('Installer: Step 7 - Marking application as installed');
+            // Step 5: Mark app installed
+            Log::info('Installer: Step 5 - Marking application as installed');
             InstallState::markInstalled([
                 'admin_user_id' => $admin->id,
                 'site_name' => $request->site_name,
