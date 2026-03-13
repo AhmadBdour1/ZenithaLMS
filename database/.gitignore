@@ -1,1 +1,5 @@
-*.sqlite*
+# Keep central database for initial setup
+!database.sqlite
+
+# Exclude tenant databases
+tenant*

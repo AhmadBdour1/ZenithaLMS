@@ -40,3 +40,7 @@ storage/app/installed.json-e
 # Environment files
 *.env
 *.env.*
+
+# Database artifacts - exclude tenant databases but keep central
+/database/tenant*
+/database/*tenant*.sqlite
