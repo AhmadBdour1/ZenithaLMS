@@ -142,54 +142,83 @@ ZenithaLMS is an **enterprise-grade Learning Management System** designed for ed
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Installation
 
-### 1. Installation (5 minutes)
+ZenithaLMS uses **multi-tenant architecture** with `stancl/tenancy`. Each organization gets its own isolated database.
 
+### Prerequisites
+- **PHP:** 8.2 or higher
+- **Database:** MySQL 8.0+ / PostgreSQL 12+ / SQLite  
+- **Web Server:** Apache 2.4+ / Nginx 1.18+
+- **Composer:** 2.x
+- **Node.js:** 18+ & NPM/Yarn
+
+### Method 1: Web Installer (Recommended)
+
+1. **Clone & Setup**
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/ZenithaLMS.git
+git clone https://github.com/AhmadBdour1/ZenithaLMS.git
 cd ZenithaLMS
-
-# Install dependencies
-composer install
+composer install --optimize-autoloader --no-dev
 npm install
-
-# Environment setup
+npm run build
 cp .env.example .env
 php artisan key:generate
 ```
 
-### 2. Database Setup (3 minutes)
-
-```bash
-# Configure database in .env
-nano .env
-
-# Run migrations
-php artisan migrate
-
-# Seed demo data (optional)
-php artisan db:seed
+2. **Configure Database**
+Edit `.env` with your database settings:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=zenithalms_central
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
 ```
 
-### 3. Build & Run (2 minutes)
-
+3. **Run Web Installer**
 ```bash
-# Build assets
-npm run build
-
-# Start server
 php artisan serve
-
-# Visit: http://localhost:8000
+# Visit: http://localhost:8000/install
 ```
 
-**🔑 Default Login:**
-- Email: `admin@zenithalms.test`
-- Password: `password123`
+The installer will:
+- Check system requirements
+- Create central database schema
+- Create default tenant with isolated database
+- Run tenant migrations
+- Create admin user
+- Configure storage links
 
-📖 **Detailed Guide:** See [QUICKSTART.md](/QUICKSTART.md)
+### Method 2: CLI Installer
+
+1. **Setup Dependencies** (same as above)
+
+2. **Run Installation Command**
+```bash
+php artisan zenitha:create-default-tenant
+php artisan tenants:migrate --force
+php artisan tenants:seed --class=RoleSeeder --force
+```
+
+3. **Create Admin User**
+```bash
+php artisan tinker
+# In tinker:
+tenancy()->initialize(\App\Models\Central\Tenant::find('default'));
+\App\Models\User::create(['name' => 'Admin', 'email' => 'admin@yourdomain.com', 'password' => bcrypt('password'), 'email_verified_at' => now()]);
+\App\Models\Role::where('name', 'admin')->first()->users()->attach(\App\Models\User::where('email', 'admin@yourdomain.com')->first()->id);
+```
+
+### Multi-Tenant Architecture
+
+- **Central Database:** Stores tenants, domains, plans
+- **Tenant Databases:** Each organization gets isolated database
+- **Automatic Database Creation:** Tenant databases created automatically
+- **Domain-Based Routing:** `tenant.yourdomain.com` routes to tenant context
+
+**� Login:** Use the admin credentials created during installation
 
 ---
 
@@ -197,13 +226,14 @@ php artisan serve
 
 | Document | Description |
 |----------|-------------|
-| [Quick Start Guide](/QUICKSTART.md) | Get started in 15 minutes |
 | [Installation Guide](/docs/INSTALLATION.md) | Detailed installation instructions |
+| [Requirements](/docs/requirements.md) | System requirements & dependencies |
+| [Deployment Guide](/docs/deployment.md) | Production deployment instructions |
 | [API Documentation](/docs/API_DOCUMENTATION.md) | Complete API reference |
 | [API Keys Guide](/docs/API_KEYS_GUIDE.md) | Configure external integrations |
 | [Database Setup](/docs/DATABASE_SETUP.md) | Database configuration |
+| [Tenancy Guide](/docs/TENANCY.md) | Multi-tenant architecture guide |
 | [Troubleshooting](/docs/TROUBLESHOOTING.md) | Common issues & solutions |
-| [Code Audit Report](/DEEP_CODE_AUDIT.md) | Professional code review |
 
 ---
 
