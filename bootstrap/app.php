@@ -48,6 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role.check' => \App\Http\Middleware\RoleMiddleware::class,
             'installed' => \App\Http\Middleware\EnsureInstalled::class,
             'feature' => \App\Http\Middleware\EnsureFeatureEnabled::class,
+            'InitializeTenantForAuth' => \App\Http\Middleware\InitializeTenantForAuth::class,
         ]);
         
         // Apply installation check to all web routes except installer

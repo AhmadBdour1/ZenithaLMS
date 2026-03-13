@@ -26,6 +26,7 @@ Route::middleware([
 ])->group(function () {
     
     // Include all tenant-specific route files
+    require __DIR__.'/auth.php';
     require __DIR__.'/profile.php';
     require __DIR__.'/zenithalms-tenant.php';
     require __DIR__.'/admin.php';
