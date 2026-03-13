@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\ZenithaLmsEbookController;
 use App\Http\Controllers\Frontend\ZenithaLmsBlogController;
 use App\Http\Controllers\Frontend\ZenithaLmsPaymentController;
+use App\Http\Controllers\CourseBuilderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +15,16 @@ use App\Http\Controllers\Frontend\ZenithaLmsPaymentController;
 | They include user-specific content, admin management, and tenant-scoped features.
 |
 */
+
+// ZenithaLMS: Course Builder (Tenant-Specific)
+Route::prefix('courses/builder')->name('courses.builder.')->middleware(['auth', 'feature:course_builder_v2'])->group(function () {
+    Route::get('/{course}', [CourseBuilderController::class, 'edit'])->name('edit');
+    Route::post('/{course}/structure', [CourseBuilderController::class, 'updateStructure'])->name('structure');
+    Route::post('/{course}/lesson', [CourseBuilderController::class, 'addLesson'])->name('lesson.add');
+    Route::post('/{course}/quiz', [CourseBuilderController::class, 'addQuiz'])->name('quiz.add');
+    Route::post('/{course}/{type}/{id}', [CourseBuilderController::class, 'updateItem'])->name('item.update');
+    Route::delete('/{course}/{type}/{id}', [CourseBuilderController::class, 'deleteItem'])->name('item.delete');
+});
 
 // ZenithaLMS: Dashboard Routes (Tenant-Specific)
 Route::prefix('dashboard')->name('zenithalms.tenant.dashboard.')->middleware('auth')->group(function () {
