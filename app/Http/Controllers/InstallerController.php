@@ -159,10 +159,26 @@ class InstallerController extends Controller
         Log::info('Installer: Validating input data');
         $validator = Validator::make($request->all(), [
             'admin_name' => 'required|string|max:255',
-            'admin_email' => 'required|email|max:255|unique:users,email',
+            'admin_email' => 'required|email|max:255',
             'admin_password' => 'required|string|min:8|confirmed',
             'site_name' => 'required|string|max:255',
         ]);
+
+        // Check if admin email already exists and provide a helpful error
+        if (\App\Models\User::where('email', $request->admin_email)->exists()) {
+            Log::warning('Installer: Admin email already exists', ['email' => $request->admin_email]);
+            
+            // For re-installation, we can allow existing admin user
+            // but we need to validate the password matches existing user
+            $existingAdmin = \App\Models\User::where('email', $request->admin_email)->first();
+            if (!Hash::check($request->admin_password, $existingAdmin->password)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Admin user already exists but password does not match. Please use the correct password for the existing admin user.',
+                    'errors' => ['admin_password' => 'Password does not match existing admin user password.']
+                ], 422);
+            }
+        }
 
         if ($validator->fails()) {
             Log::error('Installer: Validation failed', [
@@ -200,28 +216,40 @@ class InstallerController extends Controller
             ]);
             Log::info('Installer: Tenant seeders completed');
 
-            // Step 7: Create admin user
-            Log::info('Installer: Step 7 - Creating admin user', [
+            // Step 7: Create admin user (if not exists)
+            Log::info('Installer: Step 7 - Creating admin user if not exists', [
                 'email' => $request->admin_email,
                 'name' => $request->admin_name
             ]);
-            $admin = \App\Models\User::create([
-                'name' => $request->admin_name,
-                'email' => $request->admin_email,
-                'password' => Hash::make($request->admin_password),
-                'email_verified_at' => now(),
-            ]);
-            Log::info('Installer: Admin user created', ['user_id' => $admin->id]);
+            
+            $admin = \App\Models\User::where('email', $request->admin_email)->first();
+            
+            if (!$admin) {
+                $admin = \App\Models\User::create([
+                    'name' => $request->admin_name,
+                    'email' => $request->admin_email,
+                    'password' => Hash::make($request->admin_password),
+                    'email_verified_at' => now(),
+                ]);
+                Log::info('Installer: Admin user created', ['user_id' => $admin->id]);
+            } else {
+                Log::info('Installer: Admin user already exists, reusing', ['user_id' => $admin->id]);
+            }
 
-            // Step 8: Assign admin role
-            Log::info('Installer: Step 8 - Assigning admin role to user');
+            // Step 8: Assign admin role (if not already assigned)
+            Log::info('Installer: Step 8 - Assigning admin role to user if not already assigned');
             $adminRole = \App\Models\Role::where('name', 'admin')->first();
             if (!$adminRole) {
                 Log::error('Installer: Admin role not found after seeding');
                 throw new \Exception('Admin role was not created during seeding');
             }
-            $admin->roles()->attach($adminRole->id);
-            Log::info('Installer: Admin role assigned successfully');
+            
+            if (!$admin->roles()->where('role_id', $adminRole->id)->exists()) {
+                $admin->roles()->attach($adminRole->id);
+                Log::info('Installer: Admin role assigned successfully');
+            } else {
+                Log::info('Installer: Admin role already assigned to user');
+            }
 
             // Step 9: Mark installation complete
             Log::info('Installer: Step 9 - Marking installation complete');
@@ -277,11 +305,22 @@ class InstallerController extends Controller
      */
     private function createDefaultTenant(): \App\Models\Central\Tenant
     {
-        Log::info('Installer: Creating default tenant');
+        Log::info('Installer: Creating or reusing default tenant');
         
-        $tenant = \App\Models\Central\Tenant::firstOrCreate([
-            'id' => 'default'
-        ], [
+        // Check if tenant already exists
+        $existingTenant = \App\Models\Central\Tenant::find('default');
+        
+        if ($existingTenant) {
+            Log::info('Installer: Default tenant already exists, reusing it', ['tenant_id' => $existingTenant->id]);
+            
+            // Ensure tenant database file exists
+            $this->createTenantDatabaseFile($existingTenant);
+            
+            return $existingTenant;
+        }
+        
+        // Create new tenant
+        $tenant = \App\Models\Central\Tenant::create([
             'id' => 'default',
             'tenancy_db_name' => 'tenant_default',
             'tenancy_db_username' => config('database.connections.sqlite.username'),

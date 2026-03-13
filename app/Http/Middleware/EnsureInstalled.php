@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Support\Install\InstallState;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureInstalled
@@ -32,7 +33,8 @@ class EnsureInstalled
 
         // If installed and trying to access installer, redirect to login
         if ($request->is('install*')) {
-            return redirect('/login');
+            Log::info('Application already installed, redirecting installer access to login');
+            return redirect('/login')->with('info', 'Application is already installed.');
         }
 
         return $next($request);
