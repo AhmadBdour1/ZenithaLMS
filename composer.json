@@ -1,10 +1,11 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "zenithalms/zenithalms",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "A multi-tenant Learning Management System with AI-powered adaptive learning paths.",
+    "keywords": ["lms", "learning", "education", "multi-tenant", "laravel", "ai"],
     "license": "MIT",
+    "homepage": "https://github.com/AhmadBdour1/ZenithaLMS",
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",

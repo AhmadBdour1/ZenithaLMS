@@ -106,21 +106,49 @@ class InstallerController extends Controller
             Log::info('Installer: Using SQLite - running fresh migration');
             DB::statement('PRAGMA foreign_keys=OFF');
             
+            // Run central migrations first
             Artisan::call('migrate:fresh', [
-                '--force' => true
+                '--force' => true,
+                '--path' => 'database/migrations'
+            ]);
+            
+            // Create default tenant for installation
+            $this->createDefaultTenant();
+            
+            // Run tenant migrations for the default tenant
+            Artisan::call('tenants:migrate', [
+                '--force' => true,
+                '--tenants' => ['default']
             ]);
             
             DB::statement('PRAGMA foreign_keys=ON');
             Log::info('Installer: SQLite fresh migration completed');
         } else {
             Log::info('Installer: Using standard migration');
+            // Run central migrations first
             Artisan::call('migrate', [
-                '--force' => true
+                '--force' => true,
+                '--path' => 'database/migrations'
             ]);
+            
+            // Create default tenant for installation
+            $this->createDefaultTenant();
+            
+            // Run tenant migrations for the default tenant
+            Artisan::call('tenants:migrate', [
+                '--force' => true,
+                '--tenants' => ['default']
+            ]);
+            
             Log::info('Installer: Standard migration completed');
         }
 
-        // Immediately verify tables exist
+        // Immediately verify tables exist in tenant context
+        $tenant = \App\Models\Central\Tenant::find('default');
+        if ($tenant) {
+            tenancy()->initialize($tenant);
+        }
+        
         if (!Schema::hasTable('users')) {
             Log::error('Installer: Users table still missing after migrations');
             throw new \Exception('Users table still missing after migrations');
@@ -154,15 +182,37 @@ class InstallerController extends Controller
         }
 
         try {
-            // Step 1: Run seeders (tables already verified to exist)
+            // Ensure tenant context for all operations
+            $tenant = \App\Models\Central\Tenant::find('default');
+            if ($tenant) {
+                tenancy()->initialize($tenant);
+            }
+            
+            // Step 1: Run seeders in tenant context
             Log::info('Installer: Step 1 - Running database seeders');
-            Artisan::call('db:seed', ['--class' => 'RoleSeeder', '--force' => true]);
-            Artisan::call('db:seed', ['--class' => 'OrganizationSeeder', '--force' => true]);
-            Artisan::call('db:seed', ['--class' => 'CategorySeeder', '--force' => true]);
-            Artisan::call('db:seed', ['--class' => 'SkillSeeder', '--force' => true]);
+            Artisan::call('tenants:seed', [
+                '--class' => 'RoleSeeder',
+                '--tenants' => ['default'],
+                '--force' => true
+            ]);
+            Artisan::call('tenants:seed', [
+                '--class' => 'OrganizationSeeder',
+                '--tenants' => ['default'],
+                '--force' => true
+            ]);
+            Artisan::call('tenants:seed', [
+                '--class' => 'CategorySeeder',
+                '--tenants' => ['default'],
+                '--force' => true
+            ]);
+            Artisan::call('tenants:seed', [
+                '--class' => 'SkillSeeder',
+                '--tenants' => ['default'],
+                '--force' => true
+            ]);
             Log::info('Installer: Database seeders completed');
 
-            // Step 2: Create admin user
+            // Step 2: Create admin user in tenant context
             Log::info('Installer: Step 2 - Creating admin user', [
                 'email' => $request->admin_email,
                 'name' => $request->admin_name
@@ -175,7 +225,7 @@ class InstallerController extends Controller
             ]);
             Log::info('Installer: Admin user created', ['user_id' => $admin->id]);
 
-            // Step 3: Assign admin role
+            // Step 3: Assign admin role in tenant context
             Log::info('Installer: Step 3 - Assigning admin role to user');
             $adminRole = \App\Models\Role::where('name', 'admin')->first();
             if (!$adminRole) {
@@ -232,6 +282,25 @@ class InstallerController extends Controller
                 'exception_line' => $e->getLine()
             ], 500);
         }
+    }
+
+    /**
+     * Create default tenant for installation
+     */
+    private function createDefaultTenant(): void
+    {
+        Log::info('Installer: Creating default tenant');
+        
+        $tenant = \App\Models\Central\Tenant::firstOrCreate([
+            'id' => 'default'
+        ], [
+            'id' => 'default',
+            'tenancy_db_name' => 'tenant_default',
+            'tenancy_db_username' => config('database.connections.sqlite.username'),
+            'tenancy_db_password' => config('database.connections.sqlite.password'),
+        ]);
+        
+        Log::info('Installer: Default tenant created', ['tenant_id' => $tenant->id]);
     }
 
     /**
