@@ -100,8 +100,38 @@ class InstallerController extends Controller
         // RUN MIGRATIONS FIRST - BEFORE ANY VALIDATION THAT QUERIES TABLES
         Log::info('Installer: Running migrations before validation');
         $this->ensureDatabaseFileExists();
-        Artisan::call('migrate', ['--force' => true]);
-        Log::info('Installer: Migrations completed');
+
+        /* force fresh migration for SQLite */
+        if (config('database.default') === 'sqlite') {
+            Log::info('Installer: Using SQLite - running fresh migration');
+            DB::statement('PRAGMA foreign_keys=OFF');
+            
+            Artisan::call('migrate:fresh', [
+                '--force' => true
+            ]);
+            
+            DB::statement('PRAGMA foreign_keys=ON');
+            Log::info('Installer: SQLite fresh migration completed');
+        } else {
+            Log::info('Installer: Using standard migration');
+            Artisan::call('migrate', [
+                '--force' => true
+            ]);
+            Log::info('Installer: Standard migration completed');
+        }
+
+        // Immediately verify tables exist
+        if (!Schema::hasTable('users')) {
+            Log::error('Installer: Users table still missing after migrations');
+            throw new \Exception('Users table still missing after migrations');
+        }
+        
+        if (!Schema::hasTable('roles')) {
+            Log::error('Installer: Roles table still missing after migrations');
+            throw new \Exception('Roles table still missing after migrations');
+        }
+        
+        Log::info('Installer: Tables verified to exist after migrations');
 
         // Validate input (now safe to query users table)
         Log::info('Installer: Validating input data');
@@ -124,38 +154,16 @@ class InstallerController extends Controller
         }
 
         try {
-            // Step 1: Verify tables exist (migrations already run before validation)
-            Log::info('Installer: Step 1 - Verifying users and roles tables exist');
-            if (!Schema::hasTable('users')) {
-                Log::error('Installer: Users table was not created after migrations');
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Installation failed',
-                    'exception_message' => 'Users table was not created after migrations'
-                ], 500);
-            }
-            
-            if (!Schema::hasTable('roles')) {
-                Log::error('Installer: Roles table was not created after migrations');
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Installation failed',
-                    'exception_message' => 'Roles table was not created after migrations'
-                ], 500);
-            }
-            
-            Log::info('Installer: Users and roles tables verified');
-
-            // Step 2: Run seeders if needed
-            Log::info('Installer: Step 2 - Running database seeders');
+            // Step 1: Run seeders (tables already verified to exist)
+            Log::info('Installer: Step 1 - Running database seeders');
             Artisan::call('db:seed', ['--class' => 'RoleSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'OrganizationSeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'CategorySeeder', '--force' => true]);
             Artisan::call('db:seed', ['--class' => 'SkillSeeder', '--force' => true]);
             Log::info('Installer: Database seeders completed');
 
-            // Step 3: Create admin user
-            Log::info('Installer: Step 3 - Creating admin user', [
+            // Step 2: Create admin user
+            Log::info('Installer: Step 2 - Creating admin user', [
                 'email' => $request->admin_email,
                 'name' => $request->admin_name
             ]);
@@ -167,8 +175,8 @@ class InstallerController extends Controller
             ]);
             Log::info('Installer: Admin user created', ['user_id' => $admin->id]);
 
-            // Step 4: Assign admin role
-            Log::info('Installer: Step 4 - Assigning admin role to user');
+            // Step 3: Assign admin role
+            Log::info('Installer: Step 3 - Assigning admin role to user');
             $adminRole = \App\Models\Role::where('name', 'admin')->first();
             if (!$adminRole) {
                 Log::error('Installer: Admin role not found after seeding');
@@ -177,8 +185,8 @@ class InstallerController extends Controller
             $admin->roles()->attach($adminRole->id);
             Log::info('Installer: Admin role assigned successfully');
 
-            // Step 5: Mark app installed
-            Log::info('Installer: Step 5 - Marking application as installed');
+            // Step 4: Mark app installed
+            Log::info('Installer: Step 4 - Marking application as installed');
             InstallState::markInstalled([
                 'admin_user_id' => $admin->id,
                 'site_name' => $request->site_name,
