@@ -153,8 +153,11 @@ ZenithaLMS uses **multi-tenant architecture** with `stancl/tenancy`. Each organi
 - **Composer:** 2.x
 - **Node.js:** 18+ & NPM/Yarn
 
-### Method 1: Web Installer (Recommended)
+### Method 1: Web Installer (Primary Method ⭐)
 
+**Recommended for:** Shared hosting, non-technical users, quick deployments
+
+**Installation Steps:**
 1. **Clone & Setup**
 ```bash
 git clone https://github.com/AhmadBdour1/ZenithaLMS.git
@@ -191,14 +194,17 @@ The installer will:
 - Create admin user
 - Configure storage links
 
-### Method 2: CLI Installer
+### Method 2: CLI Installer (Advanced Method)
 
+**Recommended for:** VPS/Dedicated servers, CI/CD pipelines, technical users
+
+**Installation Steps:**
 1. **Setup Dependencies** (same as above)
 
-2. **Run Installation Command**
+2. **Run Installation Commands**
 ```bash
+php artisan migrate:fresh --force
 php artisan zenitha:create-default-tenant
-php artisan tenants:migrate --force
 php artisan tenants:seed --class=RoleSeeder --force
 ```
 
@@ -208,7 +214,8 @@ php artisan tinker
 # In tinker:
 tenancy()->initialize(\App\Models\Central\Tenant::find('default'));
 \App\Models\User::create(['name' => 'Admin', 'email' => 'admin@yourdomain.com', 'password' => bcrypt('password'), 'email_verified_at' => now()]);
-\App\Models\Role::where('name', 'admin')->first()->users()->attach(\App\Models\User::where('email', 'admin@yourdomain.com')->first()->id);
+\$adminRole = \App\Models\Role::where('name', 'admin')->first();
+\$user->roles()->attach(\$adminRole->id);
 ```
 
 ### Multi-Tenant Architecture
