@@ -4,6 +4,7 @@ namespace App\Support\Install;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class InstallState
@@ -16,7 +17,9 @@ class InstallState
      */
     public static function isInstalled(): bool
     {
-        return File::exists(storage_path(self::INSTALL_PATH . '/' . self::INSTALL_FILE));
+        $path = base_path('storage/app/' . self::INSTALL_FILE);
+        Log::debug('InstallState::isInstalled() checking path: ' . $path);
+        return File::exists($path);
     }
 
     /**
@@ -24,6 +27,8 @@ class InstallState
      */
     public static function markInstalled(array $metadata = []): void
     {
+        $path = base_path('storage/app/' . self::INSTALL_FILE);
+        
         $data = array_merge([
             'installed_at' => now()->toISOString(),
             'app_version' => config('app.version', '1.0.0'),
@@ -32,11 +37,10 @@ class InstallState
             'environment' => app()->environment(),
         ], $metadata);
 
-        File::ensureDirectoryExists(storage_path(self::INSTALL_PATH));
-        File::put(
-            storage_path(self::INSTALL_PATH . '/' . self::INSTALL_FILE),
-            json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
-        );
+        Log::debug('InstallState::markInstalled() writing to path: ' . $path);
+        
+        File::ensureDirectoryExists(dirname($path));
+        File::put($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
     /**
@@ -48,7 +52,8 @@ class InstallState
             return [];
         }
 
-        $content = File::get(storage_path(self::INSTALL_PATH . '/' . self::INSTALL_FILE));
+        $path = base_path('storage/app/' . self::INSTALL_FILE);
+        $content = File::get($path);
         return json_decode($content, true) ?? [];
     }
 
@@ -63,7 +68,8 @@ class InstallState
         }
 
         if (self::isInstalled()) {
-            File::delete(storage_path(self::INSTALL_PATH . '/' . self::INSTALL_FILE));
+            $path = base_path('storage/app/' . self::INSTALL_FILE);
+            File::delete($path);
         }
     }
 
@@ -72,6 +78,6 @@ class InstallState
      */
     public static function getInstallFilePath(): string
     {
-        return storage_path(self::INSTALL_PATH . '/' . self::INSTALL_FILE);
+        return base_path('storage/app/' . self::INSTALL_FILE);
     }
 }

@@ -250,8 +250,12 @@ class InstallerController extends Controller
                 Log::info('Installer: Admin role already assigned to user');
             }
 
-            // Step 9: Mark installation complete
-            Log::info('Installer: Step 9 - Marking installation complete');
+            // Step 9: End tenancy context before marking installation complete
+            Log::info('Installer: Step 9 - Ending tenancy context');
+            tenancy()->end();
+            
+            // Step 10: Mark installation complete in central context
+            Log::info('Installer: Step 10 - Marking installation complete');
             InstallState::markInstalled([
                 'admin_user_id' => $admin->id,
                 'site_name' => $request->site_name,
