@@ -17,23 +17,24 @@ class InstallState
      */
     public static function isInstalled(): bool
     {
-        // Check 1: installed.json file
         $path = base_path('storage/app/' . self::INSTALL_FILE);
+
         if (File::exists($path)) {
             return true;
         }
-        
-        // Check 2: database fallback
+
         try {
-            $tenantsTableExists = \Illuminate\Support\Facades\Schema::hasTable('tenants');
-            if ($tenantsTableExists) {
-                $defaultTenantExists = \Illuminate\Support\Facades\DB::table('tenants')->where('id', 'default')->exists();
-                return $defaultTenantExists;
+            if (\Illuminate\Support\Facades\Schema::hasTable('tenants')) {
+                return \Illuminate\Support\Facades\DB::table('tenants')
+                    ->where('id', 'default')
+                    ->exists();
             }
         } catch (\Exception $e) {
-            // Log but continue to return false
+            Log::warning('InstallState::isInstalled() fallback check failed', [
+                'error' => $e->getMessage(),
+            ]);
         }
-        
+
         return false;
     }
 
