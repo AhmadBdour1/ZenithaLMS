@@ -16,10 +16,10 @@ class DashboardRedirectService
         
         return match($role) {
             'admin' => 'zenithalms.dashboard.admin',
-            'instructor' => 'zenithalms.dashboard.instructor',
-            'student' => 'zenithalms.dashboard.student',
-            'organization_admin' => 'zenithalms.dashboard.organization',
-            default => 'zenithalms.dashboard.student'
+            'instructor' => 'zenithalms.tenant.dashboard.instructor',
+            'student' => 'zenithalms.tenant.dashboard.student',
+            'organization_admin' => 'zenithalms.tenant.dashboard.organization',
+            default => 'zenithalms.tenant.dashboard.student'
         };
     }
     
