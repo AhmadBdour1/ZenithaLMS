@@ -38,7 +38,7 @@ Route::prefix('dashboard')->name('zenithalms.tenant.dashboard.')->middleware('au
             'current_courses' => $user->enrolledCourses()->take(4)->get(),
         ];
         return view('zenithalms.dashboard.student', compact('user', 'stats'));
-    })->name('student')->middleware('role:student');
+    })->name('zenithalms.tenant.dashboard.student')->middleware('role:student');
     
     Route::get('/instructor', function () {
         $user = auth()->user();
@@ -50,11 +50,11 @@ Route::prefix('dashboard')->name('zenithalms.tenant.dashboard.')->middleware('au
             'recent_courses' => $user->courses()->latest()->take(4)->get(),
         ];
         return view('zenithalms.dashboard.instructor', compact('user', 'stats'));
-    })->name('instructor')->middleware('role:instructor');
+    })->name('zenithalms.tenant.dashboard.instructor')->middleware('role:instructor');
     
     Route::get('/admin', function () {
         return view('zenithalms.dashboard.admin');
-    })->name('admin')->middleware('role:admin');
+    })->name('zenithalms.tenant.dashboard.admin')->middleware('role:admin');
     
     Route::get('/organization', function () {
         $user = auth()->user();
@@ -65,7 +65,7 @@ Route::prefix('dashboard')->name('zenithalms.tenant.dashboard.')->middleware('au
             'total_students' => $user->organization->courses()->withCount('enrollments')->get()->sum('enrollments_count'),
         ];
         return view('zenithalms.dashboard.organization', compact('user', 'stats'));
-    })->name('organization')->middleware('role:organization');
+    })->name('zenithalms.tenant.dashboard.organization')->middleware('role:organization');
 });
 
 // ZenithaLMS: Payment Routes (Tenant-Specific)
