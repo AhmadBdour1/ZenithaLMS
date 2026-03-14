@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Log;
+use App\Models\Central\Tenant;
 
 class LoginRequest extends FormRequest
 {
@@ -41,6 +43,9 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
+        // Defensive safeguard: Ensure tenancy is initialized for single-domain production
+        $this->ensureTenancyInitialized();
+
         if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
@@ -50,6 +55,52 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+    }
+
+    /**
+     * Ensure tenancy is initialized for single-domain deployments.
+     * This is a safety net, not the primary mechanism.
+     */
+    private function ensureTenancyInitialized(): void
+    {
+        // Skip in testing environment
+        if (app()->environment('testing')) {
+            return;
+        }
+
+        // Skip if tenancy is already initialized
+        if (tenancy()->initialized) {
+            return;
+        }
+
+        // Skip if app is not installed
+        if (!app()->isInstalled()) {
+            return;
+        }
+
+        try {
+            $tenantId = env('TENANCY_DEFAULT_TENANT_ID', 'default');
+            $tenant = Tenant::find($tenantId);
+
+            if ($tenant) {
+                Log::debug('LoginRequest: Initializing tenant as safety net', [
+                    'tenant_id' => $tenant->id,
+                    'email' => $this->input('email')
+                ]);
+                
+                tenancy()->initialize($tenant);
+            } else {
+                Log::warning('LoginRequest: Default tenant not found for authentication', [
+                    'tenant_id' => $tenantId,
+                    'email' => $this->input('email')
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('LoginRequest: Failed to initialize tenancy', [
+                'error' => $e->getMessage(),
+                'email' => $this->input('email')
+            ]);
+        }
     }
 
     /**

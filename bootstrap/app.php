@@ -49,11 +49,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'installed' => \App\Http\Middleware\EnsureInstalled::class,
             'feature' => \App\Http\Middleware\EnsureFeatureEnabled::class,
             'InitializeTenantForAuth' => \App\Http\Middleware\InitializeTenantForAuth::class,
+            'InitializeSingleDomainTenancy' => \App\Http\Middleware\InitializeSingleDomainTenancy::class,
         ]);
         
         // Apply installation check to all web routes except installer
         $middleware->group('web', [
             \App\Http\Middleware\EnsureInstalled::class,
+            \App\Http\Middleware\InitializeSingleDomainTenancy::class,
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
