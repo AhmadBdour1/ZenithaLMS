@@ -24,17 +24,8 @@ Route::get('/quick-access', function () {
     return view('quick-access');
 })->name('quick-access');
 
-// Unified dashboard entry point - using centralized service
-Route::get('/dashboard', function () {
-    $user = Auth::user();
-    
-    if (!$user) {
-        return redirect()->route('login');
-    }
-    
-    // For now, redirect to a simple central dashboard
-    return view('dashboard.central', compact('user'));
-})
+// Unified dashboard entry point - using controller
+Route::get('/dashboard', [DashboardController::class, 'index'])
     ->name('dashboard')
     ->middleware('auth');
 

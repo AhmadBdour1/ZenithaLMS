@@ -2,11 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\DashboardRedirectService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+    /**
+     * Main dashboard entry point - redirect to appropriate dashboard
+     */
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        
+        if (!$user) {
+            return redirect()->route('login');
+        }
+        
+        // Use the redirect service to determine correct dashboard
+        return redirect()->route(DashboardRedirectService::getDashboardRouteForUser($user));
+    }
+    
     /**
      * Redirect user to appropriate dashboard based on role
      */
