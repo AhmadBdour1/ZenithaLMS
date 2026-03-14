@@ -18,8 +18,11 @@ class InstallState
     public static function isInstalled(): bool
     {
         $path = base_path('storage/app/' . self::INSTALL_FILE);
-        Log::debug('InstallState::isInstalled() checking path: ' . $path);
-        return File::exists($path);
+        $exists = File::exists($path);
+        
+        Log::debug('InstallState::isInstalled() checking path: ' . $path . ', exists: ' . ($exists ? 'true' : 'false'));
+        
+        return $exists;
     }
 
     /**

@@ -45,3 +45,6 @@ storage/app/installed.json-e
 /database/*.sqlite
 !/database/database.sqlite
 /database/tenant*
+
+# Keep installation state file (critical for Railway persistence)
+!/storage/app/installed.json
