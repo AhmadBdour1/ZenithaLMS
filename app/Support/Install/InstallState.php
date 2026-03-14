@@ -22,6 +22,21 @@ class InstallState
         
         Log::debug('InstallState::isInstalled() checking path: ' . $path . ', exists: ' . ($exists ? 'true' : 'false'));
         
+        // Production-safe fallback: Check if central database has default tenant
+        if (!$exists && app()->environment('production')) {
+            try {
+                // Use central connection directly to avoid facade issues
+                $centralDb = config('database.connections.central');
+                if ($centralDb) {
+                    \Illuminate\Support\Facades\DB::connection('central')->table('tenants')->where('id', 'default')->exists();
+                }
+            } catch (\Exception $e) {
+                Log::warning('InstallState::isInstalled() fallback check failed', [
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+        
         return $exists;
     }
 
