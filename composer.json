@@ -79,7 +79,8 @@
             "@php artisan migrate --graceful --ansi",
             "@php artisan route:clear --ansi",
             "@php artisan config:clear --ansi",
-            "@php artisan optimize:clear --ansi"
+            "@php artisan optimize:clear --ansi",
+            "@php artisan view:clear --ansi"
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
