@@ -26,29 +26,25 @@ class DashboardController extends Controller
     /**
      * Redirect user to appropriate dashboard based on role
      */
-    public function redirectByRole(Request $request)
-    {
-        $user = Auth::user();
-        
-        if (!$user) {
-            return redirect()->route('login');
-        }
-        
-        $role = $user->role_name;
-        
-        // Redirect based on role
-        switch ($role) {
-            case 'admin':
-                return redirect()->route('zenithalms.dashboard.admin');
-            case 'instructor':
-                return redirect()->route('zenithalms.dashboard.instructor');
-            case 'student':
-                return redirect()->route('zenithalms.dashboard.student');
-            case 'organization_admin':
-                return redirect()->route('zenithalms.dashboard.organization');
-            default:
-                // Default to student dashboard for unknown roles
-                return redirect()->route('zenithalms.dashboard.student');
+        protected function redirectByRole(User $user): RedirectResponse
+        {
+            if ($user->hasRole('admin')) {
+                return redirect()->route('zenithalms.tenant.dashboard.admin');
+            }
+
+            if ($user->hasRole('instructor')) {
+                return redirect()->route('zenithalms.tenant.dashboard.instructor');
+            }
+
+            if ($user->hasRole('student')) {
+                return redirect()->route('zenithalms.tenant.dashboard.student');
+            }
+
+            if ($user->hasRole('organization_admin')) {
+                return redirect()->route('zenithalms.tenant.dashboard.organization');
+            }
+
+            return redirect()->route('zenithalms.tenant.dashboard.student');
         }
     }
     

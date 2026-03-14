@@ -15,11 +15,11 @@ class DashboardRedirectService
         $role = $user->roles()->first()?->slug ?? 'student';
         
         return match($role) {
-            'admin' => 'zenithalms.dashboard.admin',
+            'admin' => 'zenithalms.tenant.dashboard.admin',
             'instructor' => 'zenithalms.tenant.dashboard.instructor',
             'student' => 'zenithalms.tenant.dashboard.student',
             'organization_admin' => 'zenithalms.tenant.dashboard.organization',
-            default => 'zenithalms.tenant.dashboard.student'
+            default => 'zenithalms.tenant.dashboard.student',
         };
     }
     
