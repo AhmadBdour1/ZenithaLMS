@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -9,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 |
 | In single-domain deployment, tenant initialization is already handled
 | globally by InitializeSingleDomainTenancy in the web middleware group.
-| Therefore, we must NOT use InitializeTenancyByDomain here.
+| These routes must NOT use InitializeTenancyByDomain.
 |
 */
 
