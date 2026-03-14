@@ -16,27 +16,27 @@ class InstallState
      * Check if the application is installed
      */
     public static function isInstalled(): bool
-    {
-        $path = base_path('storage/app/' . self::INSTALL_FILE);
+{
+    $path = base_path('storage/app/' . self::INSTALL_FILE);
 
-        if (File::exists($path)) {
-            return true;
-        }
-
-        try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('tenants')) {
-                return \Illuminate\Support\Facades\DB::table('tenants')
-                    ->where('id', 'default')
-                    ->exists();
-            }
-        } catch (\Exception $e) {
-            Log::warning('InstallState::isInstalled() fallback check failed', [
-                'error' => $e->getMessage(),
-            ]);
-        }
-
-        return false;
+    if (File::exists($path)) {
+        return true;
     }
+
+    try {
+        if (\Illuminate\Support\Facades\Schema::hasTable('tenants')) {
+            return \Illuminate\Support\Facades\DB::table('tenants')
+                ->where('id', 'default')
+                ->exists();
+        }
+    } catch (\Exception $e) {
+        Log::warning('InstallState::isInstalled() fallback check failed', [
+            'error' => $e->getMessage(),
+        ]);
+    }
+
+    return false;
+}
 
     /**
      * Mark the application as installed
