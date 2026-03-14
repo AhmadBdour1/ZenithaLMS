@@ -50,7 +50,7 @@ Route::prefix('dashboard')->name('zenithalms.tenant.dashboard.')->middleware('au
             'recent_courses' => $user->courses()->latest()->take(4)->get(),
         ];
         return view('zenithalms.dashboard.instructor', compact('user', 'stats'));
-    })->name('instructor')->middleware('role:instructor');
+    })->name('zenithalms.dashboard.instructor')->middleware('role:instructor');
     
     Route::get('/admin', function () {
         return view('zenithalms.dashboard.admin');
