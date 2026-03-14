@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.central')
 
 @section('title', 'Dashboard - ZenithaLMS')
 
