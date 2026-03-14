@@ -22,22 +22,57 @@ class InstallState
         
         Log::debug('InstallState::isInstalled() checking path: ' . $path . ', exists: ' . ($exists ? 'true' : 'false'));
         
-        // Production-safe fallback: Check if central database has default tenant
-        if (!$exists && app()->environment('production')) {
-            try {
-                // Use central connection directly to avoid facade issues
-                $centralDb = config('database.connections.central');
-                if ($centralDb) {
-                    \Illuminate\Support\Facades\DB::connection('central')->table('tenants')->where('id', 'default')->exists();
-                }
-            } catch (\Exception $e) {
-                Log::warning('InstallState::isInstalled() fallback check failed', [
-                    'error' => $e->getMessage()
-                ]);
-            }
+        // Primary check: installed.json file
+        if ($exists) {
+            return true;
         }
         
-        return $exists;
+        // Production-safe fallback: Check if central database has default tenant
+        try {
+            // Use direct database connection to avoid facade bootstrap issues
+            $centralConfig = config('database.connections.central');
+            if ($centralConfig) {
+                $centralDbPath = $centralConfig['database'];
+                
+                // Handle database_path() function call
+                if (str_contains($centralDbPath, 'database_path(')) {
+                    $centralDbPath = database_path('central.sqlite');
+                }
+                
+                // Fallback to main database if central.sqlite doesn't exist
+                if (!file_exists($centralDbPath)) {
+                    $centralDbPath = database_path('database.sqlite');
+                }
+                
+                $pdo = new \PDO(
+                    'sqlite:' . $centralDbPath,
+                    null,
+                    null,
+                    [\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION]
+                );
+                
+                // Check if tenants table exists
+                $stmt = $pdo->query("SELECT name FROM sqlite_master WHERE type='table' AND name='tenants'");
+                $tenantsTableExists = $stmt->fetchColumn() !== false;
+                
+                if ($tenantsTableExists) {
+                    // Check if default tenant exists
+                    $stmt = $pdo->prepare("SELECT COUNT(*) FROM tenants WHERE id = 'default'");
+                    $stmt->execute();
+                    $defaultTenantExists = $stmt->fetchColumn() > 0;
+                    
+                    Log::debug('InstallState::isInstalled() fallback check - DB: ' . $centralDbPath . ', tenants table: ' . ($tenantsTableExists ? 'true' : 'false') . ', default tenant: ' . ($defaultTenantExists ? 'true' : 'false'));
+                    
+                    return $defaultTenantExists;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning('InstallState::isInstalled() fallback check failed', [
+                'error' => $e->getMessage()
+            ]);
+        }
+        
+        return false;
     }
 
     /**
