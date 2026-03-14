@@ -1,39 +1,27 @@
 <?php
 
-declare(strict_types=1);
-
 use Illuminate\Support\Facades\Route;
-use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
-use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 /*
 |--------------------------------------------------------------------------
 | Tenant Routes
 |--------------------------------------------------------------------------
 |
-| Here you can register the tenant routes for your application.
-| These routes are loaded by the TenancyServiceProvider and are
-| automatically scoped to the current tenant.
-|
-| All routes here run in TENANT context with tenant database.
+| In single-domain deployment, tenant initialization is already handled
+| globally by InitializeSingleDomainTenancy in the web middleware group.
+| Therefore, we must NOT use InitializeTenancyByDomain here.
 |
 */
 
-Route::middleware([
-    'web',
-    InitializeTenancyByDomain::class,
-    PreventAccessFromCentralDomains::class,
-])->group(function () {
-    
-    // Include all tenant-specific route files
-    require __DIR__.'/profile.php';
-    require __DIR__.'/zenithalms-tenant.php';
-    require __DIR__.'/admin.php';
-    require __DIR__.'/certificates.php';
-    require __DIR__.'/payments.php';
-    require __DIR__.'/marketplace.php';
-    require __DIR__.'/affiliate.php';
-    require __DIR__.'/stuff.php';
-    require __DIR__.'/aura.php';
-    require __DIR__.'/aura-builder.php';
+Route::group(function () {
+    require __DIR__ . '/profile.php';
+    require __DIR__ . '/zenithalms-tenant.php';
+    require __DIR__ . '/admin.php';
+    require __DIR__ . '/certificates.php';
+    require __DIR__ . '/payments.php';
+    require __DIR__ . '/marketplace.php';
+    require __DIR__ . '/affiliate.php';
+    require __DIR__ . '/stuff.php';
+    require __DIR__ . '/aura.php';
+    require __DIR__ . '/aura-builder.php';
 });
