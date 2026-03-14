@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 |
 | In single-domain deployment, tenant initialization is already handled
 | globally by InitializeSingleDomainTenancy in the web middleware group.
-| These routes must NOT use InitializeTenancyByDomain.
+| Therefore, these routes must NOT use InitializeTenancyByDomain.
 |
 */
 
