@@ -38,8 +38,8 @@ Route::prefix('dashboard')->name('zenithalms.tenant.dashboard.')->middleware('au
             'current_courses' => $user->enrolledCourses()->take(4)->get(),
         ];
         return view('zenithalms.dashboard.student', compact('user', 'stats'));
-    })->name('zenithalms.tenant.dashboard.student')->middleware('role:student');
-    
+    })->name('student')->middleware('role:student');
+
     Route::get('/instructor', function () {
         $user = auth()->user();
         $stats = [
@@ -50,12 +50,12 @@ Route::prefix('dashboard')->name('zenithalms.tenant.dashboard.')->middleware('au
             'recent_courses' => $user->courses()->latest()->take(4)->get(),
         ];
         return view('zenithalms.dashboard.instructor', compact('user', 'stats'));
-    })->name('zenithalms.tenant.dashboard.instructor')->middleware('role:instructor');
-    
+    })->name('instructor')->middleware('role:instructor');
+
     Route::get('/admin', function () {
         return view('zenithalms.dashboard.admin');
-    })->name('zenithalms.tenant.dashboard.admin')->middleware('role:admin');
-    
+    })->name('admin')->middleware('role:admin');
+
     Route::get('/organization', function () {
         $user = auth()->user();
         $stats = [
@@ -65,7 +65,7 @@ Route::prefix('dashboard')->name('zenithalms.tenant.dashboard.')->middleware('au
             'total_students' => $user->organization->courses()->withCount('enrollments')->get()->sum('enrollments_count'),
         ];
         return view('zenithalms.dashboard.organization', compact('user', 'stats'));
-    })->name('zenithalms.tenant.dashboard.organization')->middleware('role:organization');
+    })->name('organization')->middleware('role:organization');
 });
 
 // ZenithaLMS: Payment Routes (Tenant-Specific)
@@ -88,13 +88,13 @@ Route::prefix('ebooks')->name('zenithalms.tenant.ebooks.')->middleware('feature:
     Route::post('/', [ZenithaLmsEbookController::class, 'store'])->name('store')->middleware('auth');
     Route::put('/{id}', [ZenithaLmsEbookController::class, 'update'])->name('update')->middleware('auth');
     Route::delete('/{id}', [ZenithaLmsEbookController::class, 'destroy'])->name('destroy')->middleware('auth');
-    
+
     // User interactions
     Route::post('/{ebookId}/favorite', [ZenithaLmsEbookController::class, 'addToFavorites'])->name('favorite')->middleware('auth');
     Route::delete('/{ebookId}/favorite', [ZenithaLmsEbookController::class, 'removeFromFavorites'])->name('unfavorite')->middleware('auth');
     Route::get('/{ebookId}/download', [ZenithaLmsEbookController::class, 'download'])->name('download')->middleware('auth');
     Route::get('/{ebookId}/read', [ZenithaLmsEbookController::class, 'read'])->name('read')->middleware('auth');
-    
+
     // Admin ebook routes
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/{id}', [ZenithaLmsEbookController::class, 'adminShow'])->name('show')->middleware('auth');
@@ -112,7 +112,7 @@ Route::prefix('blog')->name('zenithalms.tenant.blog.')->group(function () {
     Route::get('/{id}/edit', [ZenithaLmsBlogController::class, 'edit'])->name('edit')->middleware('auth');
     Route::put('/{id}', [ZenithaLmsBlogController::class, 'update'])->name('update')->middleware('auth');
     Route::delete('/{id}', [ZenithaLmsBlogController::class, 'destroy'])->name('destroy')->middleware('auth');
-    
+
     // Admin blog routes
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/{id}', [ZenithaLmsBlogController::class, 'adminShow'])->name('show')->middleware('auth');
