@@ -18,26 +18,25 @@ class InstallState
     public static function isInstalled(): bool
     {
         $path = base_path('storage/app/' . self::INSTALL_FILE);
-        $exists = File::exists($path);
+        $fileExists = File::exists($path);
         
-        Log::debug('InstallState::isInstalled() checking path: ' . $path . ', exists: ' . ($exists ? 'true' : 'false'));
+        Log::debug('InstallState::isInstalled() checking path: ' . $path . ', exists: ' . ($fileExists ? 'true' : 'false'));
         
-        // Primary check: installed.json file
-        if ($exists) {
+        // Primary check: installed.json exists and is valid
+        if ($fileExists) {
             return true;
         }
         
-        // Production-safe fallback: Check if central database has default tenant
+        // Fallback: check central database for default tenant
         try {
-            // Use DB facade with error handling
             $tenantsTableExists = \Illuminate\Support\Facades\Schema::hasTable('tenants');
             
             if ($tenantsTableExists) {
-                // Check if default tenant exists
                 $defaultTenantExists = \Illuminate\Support\Facades\DB::table('tenants')->where('id', 'default')->exists();
                 
                 Log::debug('InstallState::isInstalled() fallback check - tenants table: ' . ($tenantsTableExists ? 'true' : 'false') . ', default tenant: ' . ($defaultTenantExists ? 'true' : 'false'));
                 
+                // Explicitly return the database fallback result
                 return $defaultTenantExists;
             }
         } catch (\Exception $e) {
@@ -46,6 +45,7 @@ class InstallState
             ]);
         }
         
+        // Both checks failed
         return false;
     }
 
