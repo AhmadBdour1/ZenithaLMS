@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Log;
 use App\Models\Central\Tenant;
+use App\Support\Install\InstallState;
 
 class InitializeSingleDomainTenancy
 {
@@ -34,7 +35,7 @@ class InitializeSingleDomainTenancy
         }
 
         // Skip if app is not yet installed
-        if (!app()->isInstalled()) {
+        if (!InstallState::isInstalled()) {
             return $next($request);
         }
 
@@ -53,17 +54,12 @@ class InitializeSingleDomainTenancy
                 tenancy()->initialize($tenant);
             } else {
                 // Fail safely and clearly if tenant is missing after installation
-                if (app()->isInstalled()) {
+                if (InstallState::isInstalled()) {
                     Log::error('InitializeSingleDomainTenancy: Default tenant not found after installation', [
                         'tenant_id' => $tenantId,
                         'path' => $request->path(),
                         'available_tenants' => Tenant::pluck('id')->toArray()
                     ]);
-                    
-                    // In production, this is a critical error
-                    if (app()->environment('production')) {
-                        abort(500, 'Tenant configuration error. Please contact administrator.');
-                    }
                 }
             }
         } catch (\Exception $e) {

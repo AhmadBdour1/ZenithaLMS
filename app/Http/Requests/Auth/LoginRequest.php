@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
 use App\Models\Central\Tenant;
+use App\Support\Install\InstallState;
 
 class LoginRequest extends FormRequest
 {
@@ -74,7 +75,7 @@ class LoginRequest extends FormRequest
         }
 
         // Skip if app is not installed
-        if (!app()->isInstalled()) {
+        if (!InstallState::isInstalled()) {
             return;
         }
 
