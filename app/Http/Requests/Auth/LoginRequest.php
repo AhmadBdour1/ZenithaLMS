@@ -11,7 +11,6 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
 use App\Models\Central\Tenant;
 use App\Support\Install\InstallState;
-use Stancl\Tenancy\Facades\Tenancy;
 
 class LoginRequest extends FormRequest
 {
@@ -46,7 +45,7 @@ class LoginRequest extends FormRequest
         $this->ensureIsNotRateLimited();
 
         // CRITICAL FIX: Force tenant initialization before authentication
-        if (!Tenancy::initialized()) {
+        if (!tenancy()->initialized) {
             $tenant = Tenant::find('default');
             
             if ($tenant) {
