@@ -5,6 +5,8 @@ namespace App\Support\Install;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class InstallState
@@ -16,35 +18,37 @@ class InstallState
      * Check if the application is installed
      */
     public static function isInstalled(): bool
-{
-    $path = base_path('storage/app/' . self::INSTALL_FILE);
+    {
+        $path = storage_path(self::INSTALL_PATH . '/' . self::INSTALL_FILE);
 
-    if (File::exists($path)) {
-        return true;
-    }
-
-    try {
-        if (\Illuminate\Support\Facades\Schema::hasTable('tenants')) {
-            return \Illuminate\Support\Facades\DB::table('tenants')
-                ->where('id', 'default')
-                ->exists();
+        // Primary check: installation file
+        if (File::exists($path)) {
+            return true;
         }
-    } catch (\Exception $e) {
-        Log::warning('InstallState::isInstalled() fallback check failed', [
-            'error' => $e->getMessage(),
-        ]);
-    }
 
-    return false;
-}
+        // Fallback: check database state
+        try {
+            if (Schema::hasTable('tenants')) {
+                return DB::table('tenants')
+                    ->where('id', 'default')
+                    ->exists();
+            }
+        } catch (\Exception $e) {
+            Log::warning('InstallState::isInstalled() fallback check failed', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return false;
+    }
 
     /**
      * Mark the application as installed
      */
     public static function markInstalled(array $metadata = []): void
     {
-        $path = base_path('storage/app/' . self::INSTALL_FILE);
-        
+        $path = storage_path(self::INSTALL_PATH . '/' . self::INSTALL_FILE);
+
         $data = array_merge([
             'installed_at' => now()->toISOString(),
             'app_version' => config('app.version', '1.0.0'),
@@ -54,7 +58,7 @@ class InstallState
         ], $metadata);
 
         Log::debug('InstallState::markInstalled() writing to path: ' . $path);
-        
+
         File::ensureDirectoryExists(dirname($path));
         File::put($path, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
@@ -68,8 +72,9 @@ class InstallState
             return [];
         }
 
-        $path = base_path('storage/app/' . self::INSTALL_FILE);
+        $path = storage_path(self::INSTALL_PATH . '/' . self::INSTALL_FILE);
         $content = File::get($path);
+
         return json_decode($content, true) ?? [];
     }
 
@@ -83,8 +88,9 @@ class InstallState
             throw new \RuntimeException('InstallState::reset() can only be used in testing environment');
         }
 
-        if (self::isInstalled()) {
-            $path = base_path('storage/app/' . self::INSTALL_FILE);
+        $path = storage_path(self::INSTALL_PATH . '/' . self::INSTALL_FILE);
+
+        if (File::exists($path)) {
             File::delete($path);
         }
     }
@@ -94,6 +100,6 @@ class InstallState
      */
     public static function getInstallFilePath(): string
     {
-        return base_path('storage/app/' . self::INSTALL_FILE);
+        return storage_path(self::INSTALL_PATH . '/' . self::INSTALL_FILE);
     }
 }
