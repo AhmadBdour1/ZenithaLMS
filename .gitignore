@@ -42,9 +42,8 @@ storage/app/installed.json-e
 *.env.*
 !.env.example
 
-# Database artifacts - exclude tenant databases but keep central
+# Database artifacts - exclude all SQLite files
 /database/*.sqlite
-!/database/database.sqlite
 /database/tenant*
 
 # Keep installation state file (critical for Railway persistence)
