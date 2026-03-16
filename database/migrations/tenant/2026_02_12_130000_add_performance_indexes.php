@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,92 +12,70 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Get current connection driver
-        $driver = Schema::getConnection()->getDriverName();
-        
-        // Courses table indexes
-        Schema::table('courses', function (Blueprint $table) use ($driver) {
-            // Check if index exists before creating
-            if (!Schema::hasIndex('courses', 'courses_category_id_is_active_index')) {
-                $table->index(['category_id', 'is_active']);
-            }
-            if (!Schema::hasIndex('courses', 'courses_instructor_id_created_at_index')) {
-                $table->index(['instructor_id', 'created_at']);
-            }
-            if (!Schema::hasIndex('courses', 'courses_price_is_active_index')) {
-                $table->index(['price', 'is_active']);
-            }
-            if (!Schema::hasIndex('courses', 'courses_slug_index')) {
-                $table->index(['slug']);
-            }
-            // Skip fulltext for SQLite
-            if ($driver !== 'sqlite') {
-                $table->fullText(['title', 'description']);
-            }
-        });
+        $indexes = [
+            'courses' => [
+                ['category_id', 'is_published'],
+                ['instructor_id', 'is_published'],
+                ['level', 'is_published'],
+                ['is_free', 'is_published'],
+                ['created_at'],
+            ],
+            'enrollments' => [
+                ['user_id', 'status'],
+                ['course_id', 'status'],
+                ['organization_id', 'status'],
+                ['enrolled_at'],
+                ['status', 'progress_percentage'],
+            ],
+            'quiz_attempts' => [
+                ['user_id', 'quiz_id'],
+                ['quiz_id', 'status'],
+                ['submitted_at'],
+                ['created_at'],
+            ],
+            'forums' => [
+                ['course_id', 'created_at'],
+                ['user_id', 'created_at'],
+                ['created_at'],
+            ],
+            'virtual_classes' => [
+                ['course_id', 'scheduled_at'],
+                ['instructor_id', 'scheduled_at'],
+                ['scheduled_at'],
+                ['created_at'],
+            ],
+            'notifications' => [
+                ['user_id', 'read_at'],
+                ['type'],
+                ['created_at'],
+            ],
+            'wallet_transactions' => [
+                ['user_id', 'type'],
+                ['user_id', 'status'],
+                ['created_at'],
+            ],
+        ];
 
-        // Enrollments table indexes
-        Schema::table('enrollments', function (Blueprint $table) {
-            if (!Schema::hasIndex('enrollments', 'enrollments_user_id_course_id_index')) {
-                $table->index(['user_id', 'course_id']);
+        foreach ($indexes as $table => $tableIndexes) {
+            if (!Schema::hasTable($table)) {
+                continue;
             }
-            if (!Schema::hasIndex('enrollments', 'enrollments_course_id_created_at_index')) {
-                $table->index(['course_id', 'created_at']);
-            }
-            if (!Schema::hasIndex('enrollments', 'enrollments_status_created_at_index')) {
-                $table->index(['status', 'created_at']);
-            }
-        });
 
-        // Quiz attempts table indexes
-        Schema::table('quiz_attempts', function (Blueprint $table) {
-            if (!Schema::hasIndex('quiz_attempts', 'quiz_attempts_user_id_quiz_id_index')) {
-                $table->index(['user_id', 'quiz_id']);
-            }
-            if (!Schema::hasIndex('quiz_attempts', 'quiz_attempts_quiz_id_status_index')) {
-                $table->index(['quiz_id', 'status']);
-            }
-            if (!Schema::hasIndex('quiz_attempts', 'quiz_attempts_user_id_status_created_at_index')) {
-                $table->index(['user_id', 'status', 'created_at']);
-            }
-            if (!Schema::hasIndex('quiz_attempts', 'quiz_attempts_created_at_index')) {
-                $table->index(['created_at']);
-            }
-        });
+            foreach ($tableIndexes as $columns) {
+                if (!$this->allColumnsExist($table, $columns)) {
+                    continue;
+                }
 
-        // Forums table indexes
-        Schema::table('forums', function (Blueprint $table) use ($driver) {
-            $table->index(['category', 'is_active']);
-            $table->index(['user_id', 'created_at']);
-            $table->index(['course_id']);
-            // Skip fulltext for SQLite
-            if ($driver !== 'sqlite') {
-                $table->fullText(['title', 'content']);
+                $indexName = $this->makeIndexName($table, $columns);
+
+                if ($this->indexExists($table, $indexName)) {
+                    continue;
+                }
+
+                Schema::table($table, function (Blueprint $tableBlueprint) use ($columns, $indexName) {
+                    $tableBlueprint->index($columns, $indexName);
+                });
             }
-        });
-
-        // Virtual classes table indexes
-        Schema::table('virtual_classes', function (Blueprint $table) {
-            $table->index(['instructor_id', 'status']);
-            $table->index(['course_id', 'status']);
-            $table->index(['start_time', 'status']);
-            $table->index(['meeting_id']);
-        });
-
-        // Notifications table indexes
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->index(['notifiable_type', 'notifiable_id', 'read_at']);
-            $table->index(['created_at']);
-            $table->index(['type']);
-        });
-
-        // Wallet transactions table indexes (if exists)
-        if (Schema::hasTable('wallet_transactions')) {
-            Schema::table('wallet_transactions', function (Blueprint $table) {
-                $table->index(['wallet_id', 'type', 'status']);
-                $table->index(['created_at']);
-                $table->index(['type', 'status']);
-            });
         }
     }
 
@@ -105,55 +84,109 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Get current connection driver
-        $driver = Schema::getConnection()->getDriverName();
-        
-        // Drop indexes (simplified - in production, you'd want to be more specific)
-        Schema::table('courses', function (Blueprint $table) use ($driver) {
-            $table->dropIndex(['category_id', 'is_active']);
-            $table->dropIndex(['instructor_id', 'created_at']);
-            $table->dropIndex(['price', 'is_active']);
-            $table->dropIndex(['slug']);
-            // Skip fulltext for SQLite
-            if ($driver !== 'sqlite') {
-                $table->dropFullText(['title', 'description']);
+        $indexes = [
+            'courses' => [
+                ['category_id', 'is_published'],
+                ['instructor_id', 'is_published'],
+                ['level', 'is_published'],
+                ['is_free', 'is_published'],
+                ['created_at'],
+            ],
+            'enrollments' => [
+                ['user_id', 'status'],
+                ['course_id', 'status'],
+                ['organization_id', 'status'],
+                ['enrolled_at'],
+                ['status', 'progress_percentage'],
+            ],
+            'quiz_attempts' => [
+                ['user_id', 'quiz_id'],
+                ['quiz_id', 'status'],
+                ['submitted_at'],
+                ['created_at'],
+            ],
+            'forums' => [
+                ['course_id', 'created_at'],
+                ['user_id', 'created_at'],
+                ['created_at'],
+            ],
+            'virtual_classes' => [
+                ['course_id', 'scheduled_at'],
+                ['instructor_id', 'scheduled_at'],
+                ['scheduled_at'],
+                ['created_at'],
+            ],
+            'notifications' => [
+                ['user_id', 'read_at'],
+                ['type'],
+                ['created_at'],
+            ],
+            'wallet_transactions' => [
+                ['user_id', 'type'],
+                ['user_id', 'status'],
+                ['created_at'],
+            ],
+        ];
+
+        foreach ($indexes as $table => $tableIndexes) {
+            if (!Schema::hasTable($table)) {
+                continue;
             }
-        });
 
-        Schema::table('enrollments', function (Blueprint $table) {
-            $table->dropIndex(['user_id', 'course_id']);
-            $table->dropIndex(['course_id', 'created_at']);
-            $table->dropIndex(['status', 'created_at']);
-        });
+            foreach ($tableIndexes as $columns) {
+                $indexName = $this->makeIndexName($table, $columns);
 
-        Schema::table('quiz_attempts', function (Blueprint $table) {
-            $table->dropIndex(['user_id', 'quiz_id']);
-            $table->dropIndex(['quiz_id', 'status']);
-            $table->dropIndex(['user_id', 'status', 'created_at']);
-            $table->dropIndex(['created_at']);
-        });
+                if (!$this->indexExists($table, $indexName)) {
+                    continue;
+                }
 
-        Schema::table('forums', function (Blueprint $table) use ($driver) {
-            $table->dropIndex(['category', 'is_active']);
-            $table->dropIndex(['user_id', 'created_at']);
-            $table->dropIndex(['course_id']);
-            // Skip fulltext for SQLite
-            if ($driver !== 'sqlite') {
-                $table->dropFullText(['title', 'content']);
+                try {
+                    Schema::table($table, function (Blueprint $tableBlueprint) use ($indexName) {
+                        $tableBlueprint->dropIndex($indexName);
+                    });
+                } catch (\Throwable $e) {
+                    // تجاهل أي خطأ إذا كان الـ index غير قابل للحذف أو غير موجود فعليًا
+                }
             }
-        });
+        }
+    }
 
-        Schema::table('virtual_classes', function (Blueprint $table) {
-            $table->dropIndex(['instructor_id', 'status']);
-            $table->dropIndex(['course_id', 'status']);
-            $table->dropIndex(['start_time', 'status']);
-            $table->dropIndex(['meeting_id']);
-        });
+    private function allColumnsExist(string $table, array $columns): bool
+    {
+        foreach ($columns as $column) {
+            if (!Schema::hasColumn($table, $column)) {
+                return false;
+            }
+        }
 
-        Schema::table('notifications', function (Blueprint $table) {
-            $table->dropIndex(['notifiable_type', 'notifiable_id', 'read_at']);
-            $table->dropIndex(['created_at']);
-            $table->dropIndex(['type']);
-        });
+        return true;
+    }
+
+    private function makeIndexName(string $table, array $columns): string
+    {
+        return $table . '_' . implode('_', $columns) . '_index';
+    }
+
+    private function indexExists(string $table, string $indexName): bool
+    {
+        $connection = Schema::getConnection();
+        $driver = $connection->getDriverName();
+        $databaseName = $connection->getDatabaseName();
+
+        if ($driver === 'sqlite') {
+            $existingIndexes = DB::select("PRAGMA index_list('{$table}')");
+
+            return collect($existingIndexes)->pluck('name')->contains($indexName);
+        }
+
+        if (in_array($driver, ['mysql', 'mariadb'], true)) {
+            return DB::table('information_schema.statistics')
+                ->where('table_schema', $databaseName)
+                ->where('table_name', $table)
+                ->where('index_name', $indexName)
+                ->exists();
+        }
+
+        return false;
     }
 };
