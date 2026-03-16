@@ -42,9 +42,19 @@ return [
             'transaction_mode' => 'DEFERRED',
         ],
 
-        // Central database connection for multi-tenancy
+        /*
+        |--------------------------------------------------------------------------
+        | Central Database Connection for Multi-Tenancy
+        |--------------------------------------------------------------------------
+        |
+        | This connection is used by the central application context.
+        | It is intentionally MySQL-first for runtime, with dedicated CENTRAL_DB_*
+        | variables and safe fallback to DB_* values when needed.
+        |
+        */
+
         'central' => [
-            'driver' => 'mysql',
+            'driver' => env('CENTRAL_DB_DRIVER', 'mysql'),
             'url' => env('CENTRAL_DB_URL'),
             'host' => env('CENTRAL_DB_HOST', env('DB_HOST', '127.0.0.1')),
             'port' => env('CENTRAL_DB_PORT', env('DB_PORT', '3306')),
@@ -54,7 +64,7 @@ return [
             'unix_socket' => env('CENTRAL_DB_SOCKET', env('DB_SOCKET', '')),
             'charset' => env('CENTRAL_DB_CHARSET', env('DB_CHARSET', 'utf8mb4')),
             'collation' => env('CENTRAL_DB_COLLATION', env('DB_COLLATION', 'utf8mb4_unicode_ci')),
-            'prefix' => '',
+            'prefix' => env('CENTRAL_DB_PREFIX', ''),
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
@@ -68,7 +78,7 @@ return [
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'laravel'),
+            'database' => env('DB_DATABASE', 'zenithalms'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
@@ -88,7 +98,7 @@ return [
             'url' => env('DB_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '3306'),
-            'database' => env('DB_DATABASE', 'laravel'),
+            'database' => env('DB_DATABASE', 'zenithalms'),
             'username' => env('DB_USERNAME', 'root'),
             'password' => env('DB_PASSWORD', ''),
             'unix_socket' => env('DB_SOCKET', ''),
