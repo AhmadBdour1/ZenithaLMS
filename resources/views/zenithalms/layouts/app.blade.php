@@ -147,8 +147,8 @@
                     <a href="{{ route('zenithalms.courses.index') }}" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Courses') }}</a>
                     <a href="{{ route('zenithalms.ebooks.index') }}" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Ebooks') }}</a>
                     <a href="{{ route('zenithalms.blog.index') }}" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Blog') }}</a>
-                    <a href="{{ route('zenithalms.dashboard.instructor') }}" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Instructor') }}</a>
-                    <a href="{{ route('zenithalms.dashboard.student') }}" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Student') }}</a>
+                    <a href="{{ route('zenithalms.tenant.dashboard.instructor') }}" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Instructor') }}</a>
+                    <a href="{{ route('zenithalms.tenant.dashboard.student') }}" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('Student') }}</a>
                     <a href="{{ route('ai.assistant') }}" class="text-neutral-600 hover:text-primary-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md p-2">{{ __('AI Assistant') }}</a>
                 </div>
 
