@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(function () {
+Route::group([], function () {
     require __DIR__ . '/profile.php';
     require __DIR__ . '/zenithalms-tenant.php';
     require __DIR__ . '/admin.php';
