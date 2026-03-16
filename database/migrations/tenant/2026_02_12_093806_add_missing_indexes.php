@@ -12,7 +12,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Add missing indexes safely using raw SQL
         $indexes = [
             'users' => [
                 ['role_id', 'is_active'],
@@ -60,20 +59,25 @@ return new class extends Migration
             ],
         ];
 
+        $connection = Schema::getConnection();
+        $driver = $connection->getDriverName();
+        $databaseName = $connection->getDatabaseName();
+
         foreach ($indexes as $table => $tableIndexes) {
-            if (Schema::hasTable($table)) {
-                foreach ($tableIndexes as $columns) {
-                    $indexName = $table . '_' . implode('_', $columns) . '_index';
-                    
-                    // Check if index exists
-                    $existingIndexes = DB::select("PRAGMA index_list('{$table}')");
-                    $indexExists = collect($existingIndexes)->pluck('name')->contains($indexName);
-                    
-                    if (!$indexExists) {
-                        $columnList = implode(', ', $columns);
-                        DB::statement("CREATE INDEX {$indexName} ON {$table} ({$columnList})");
-                    }
+            if (!Schema::hasTable($table)) {
+                continue;
+            }
+
+            foreach ($tableIndexes as $columns) {
+                $indexName = $table . '_' . implode('_', $columns) . '_index';
+
+                if ($this->indexExists($driver, $databaseName, $table, $indexName)) {
+                    continue;
                 }
+
+                $columnList = implode(', ', array_map(fn ($column) => "`{$column}`", $columns));
+
+                DB::statement("CREATE INDEX `{$indexName}` ON `{$table}` ({$columnList})");
             }
         }
     }
@@ -83,7 +87,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Drop indexes safely
         $indexes = [
             'users' => [
                 ['role_id', 'is_active'],
@@ -132,19 +135,40 @@ return new class extends Migration
         ];
 
         foreach ($indexes as $table => $tableIndexes) {
-            if (Schema::hasTable($table)) {
-                foreach ($tableIndexes as $columns) {
-                    $indexName = $table . '_' . implode('_', $columns) . '_index';
-                    
-                    try {
-                        Schema::table($table, function (Blueprint $table) use ($indexName) {
-                            $table->dropIndex($indexName);
-                        });
-                    } catch (\Exception $e) {
-                        // Index doesn't exist, continue
-                    }
+            if (!Schema::hasTable($table)) {
+                continue;
+            }
+
+            foreach ($tableIndexes as $columns) {
+                $indexName = $table . '_' . implode('_', $columns) . '_index';
+
+                try {
+                    Schema::table($table, function (Blueprint $table) use ($indexName) {
+                        $table->dropIndex($indexName);
+                    });
+                } catch (\Throwable $e) {
+                    // Ignore if index does not exist or cannot be dropped safely.
                 }
             }
         }
+    }
+
+    private function indexExists(string $driver, string $databaseName, string $table, string $indexName): bool
+    {
+        if ($driver === 'sqlite') {
+            $existingIndexes = DB::select("PRAGMA index_list('{$table}')");
+
+            return collect($existingIndexes)->pluck('name')->contains($indexName);
+        }
+
+        if (in_array($driver, ['mysql', 'mariadb'], true)) {
+            return DB::table('information_schema.statistics')
+                ->where('table_schema', $databaseName)
+                ->where('table_name', $table)
+                ->where('index_name', $indexName)
+                ->exists();
+        }
+
+        return false;
     }
 };
